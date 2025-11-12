@@ -870,13 +870,17 @@ const previewBaseScale = 0.22;
       ) : (
         <>
         <div className="space-y-2 md:space-y-3">
-          {paginatedMeetings.map((meeting) => (
+          {paginatedMeetings.map((meeting, index) => (
         <div
           key={meeting.id}
-          className={`relative bg-gradient-to-br from-white to-orange-50/30 border-2 border-orange-100 rounded-xl md:rounded-2xl overflow-hidden transition-all duration-150 ease-out ${
+          className={`relative bg-gradient-to-br from-white to-orange-50/30 border-2 border-orange-100 rounded-xl md:rounded-2xl overflow-hidden transition-all duration-300 ease-out animate-fadeInUp ${
             deletingId === meeting.id ? 'animate-slideOut opacity-0 scale-95' : ''
-          } ${draggedMeetingId === meeting.id ? 'scale-95 opacity-70 shadow-lg border-coral-200' : 'hover:border-coral-300 hover:shadow-lg'}`}
-          style={{ zIndex: draggedMeetingId === meeting.id ? 20 : undefined, cursor: draggedMeetingId === meeting.id ? 'grabbing' : 'grab' }}
+          } ${draggedMeetingId === meeting.id ? 'scale-95 opacity-70 shadow-lg border-coral-200' : 'hover:border-coral-300 hover:shadow-xl hover:-translate-y-1'}`}
+          style={{
+            zIndex: draggedMeetingId === meeting.id ? 20 : undefined,
+            cursor: draggedMeetingId === meeting.id ? 'grabbing' : 'grab',
+            animationDelay: `${index * 50}ms`
+          }}
           draggable
           onDragStart={(e) => handleDragStart(e, meeting)}
           onDragEnd={handleDragEnd}
@@ -985,7 +989,7 @@ const previewBaseScale = 0.22;
               </div>
               {meeting.category && (
                 <span
-                  className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full border"
+                  className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full border animate-fadeInRight transition-all duration-300 hover:scale-110"
                   style={getCategoryBadgeStyle(meeting.category.color)}
                 >
                   <Tag className="w-3.5 h-3.5" />
@@ -1073,7 +1077,7 @@ const previewBaseScale = 0.22;
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between mt-6 px-2">
+          <div className="flex items-center justify-between mt-6 px-2 animate-fadeInUp delay-300">
             <div className="text-sm text-cocoa-600">
               Page {currentPage} sur {totalPages} • {filteredMeetings.length} réunion{filteredMeetings.length !== 1 ? 's' : ''}
             </div>
@@ -1081,7 +1085,7 @@ const previewBaseScale = 0.22;
               <button
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
-                className="h-10 w-10 flex items-center justify-center rounded-full border border-coral-200 text-coral-700 hover:bg-coral-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                className="h-10 w-10 flex items-center justify-center rounded-full border border-coral-200 text-coral-700 hover:bg-coral-100 hover:scale-110 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:scale-100"
                 aria-label="Page précédente"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -1094,9 +1098,9 @@ const previewBaseScale = 0.22;
                     <button
                       key={`page-${item}`}
                       onClick={() => setCurrentPage(item)}
-                      className={`min-w-[2.5rem] h-10 px-3 rounded-full text-sm font-semibold transition-all ${
+                      className={`min-w-[2.5rem] h-10 px-3 rounded-full text-sm font-semibold transition-all duration-300 hover:scale-110 ${
                         currentPage === item
-                          ? 'bg-coral-500 text-white shadow-md'
+                          ? 'bg-gradient-to-r from-coral-500 to-sunset-500 text-white shadow-lg shadow-coral-500/30'
                           : 'border border-coral-200 text-coral-700 hover:bg-coral-100'
                       }`}
                       aria-current={currentPage === item ? 'page' : undefined}
@@ -1109,7 +1113,7 @@ const previewBaseScale = 0.22;
               <button
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
-                className="h-10 w-10 flex items-center justify-center rounded-full border border-coral-200 text-coral-700 hover:bg-coral-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                className="h-10 w-10 flex items-center justify-center rounded-full border border-coral-200 text-coral-700 hover:bg-coral-100 hover:scale-110 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:scale-100"
                 aria-label="Page suivante"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -1158,10 +1162,11 @@ const previewBaseScale = 0.22;
                 />
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-coral-500 to-sunset-500 text-white font-semibold hover:from-coral-600 hover:to-sunset-600 transition-all shadow-md hover:shadow-lg"
+                  className="group relative inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-coral-500 to-sunset-500 text-white font-semibold transition-all duration-300 shadow-md hover:shadow-xl hover:scale-105 overflow-hidden"
                 >
-                  <PlusCircle className="w-4 h-4" />
-                  Ajouter
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                  <PlusCircle className="relative w-4 h-4" />
+                  <span className="relative">Ajouter</span>
                 </button>
               </div>
               <div className="flex flex-wrap gap-2">
