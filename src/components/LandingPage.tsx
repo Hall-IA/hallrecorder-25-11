@@ -99,33 +99,34 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
 
       <section className="max-w-7xl mx-auto px-4 py-20">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 bg-coral-100 text-coral-700 px-4 py-2 rounded-full font-semibold mb-6">
+          <div className="inline-flex items-center gap-2 bg-coral-100 text-coral-700 px-4 py-2 rounded-full font-semibold mb-6 animate-fadeInDown">
             <Star className="w-4 h-4" />
             <span>Solution IA pour vos réunions professionnelles</span>
           </div>
-          <h1 className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-coral-500 via-sunset-500 to-amber-600 bg-clip-text text-transparent mb-6 leading-tight">
+          <h1 className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-coral-500 via-sunset-500 to-amber-600 bg-clip-text text-transparent mb-6 leading-tight animate-fadeInUp delay-100">
             Transformez vos réunions<br />en comptes-rendus parfaits
           </h1>
-          <p className="text-xl md:text-2xl text-cocoa-600 max-w-3xl mx-auto mb-10 leading-relaxed">
+          <p className="text-xl md:text-2xl text-cocoa-600 max-w-3xl mx-auto mb-10 leading-relaxed animate-fadeInUp delay-200">
             Fini les prises de notes interminables. Notre IA enregistre, transcrit et résume vos réunions automatiquement.
             Concentrez-vous sur l'essentiel, nous gérons le reste.
           </p>
           <button
             onClick={onGetStarted}
-            className="group relative inline-flex items-center gap-3 px-8 py-5 bg-gradient-to-r from-coral-500 via-sunset-500 to-coral-600 text-white text-lg font-bold rounded-2xl transition-all duration-300 shadow-2xl shadow-coral-500/40 hover:shadow-glow-coral hover:scale-105 overflow-hidden"
+            className="group relative inline-flex items-center gap-3 px-8 py-5 bg-gradient-to-r from-coral-500 via-sunset-500 to-coral-600 text-white text-lg font-bold rounded-2xl transition-all duration-300 shadow-2xl shadow-coral-500/40 hover:shadow-glow-coral hover:scale-105 overflow-hidden animate-zoomIn delay-300"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
             <span className="relative">Commencer gratuitement</span>
             <ArrowRight className="relative w-6 h-6 transition-transform duration-300 group-hover:translate-x-1" />
           </button>
-          <p className="text-sm text-cocoa-500 mt-4">Aucune carte bancaire requise pour essayer</p>
+          <p className="text-sm text-cocoa-500 mt-4 animate-fadeIn delay-400">Aucune carte bancaire requise pour essayer</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
           {features.map((feature, index) => (
             <div
               key={index}
-              className="group relative bg-white rounded-3xl p-8 shadow-xl border-2 border-orange-100 hover:border-coral-300 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 overflow-hidden"
+              className="group relative bg-white rounded-3xl p-8 shadow-xl border-2 border-orange-100 hover:border-coral-300 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 overflow-hidden animate-fadeInUp"
+              style={{ animationDelay: `${500 + index * 100}ms` }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-coral-50 to-sunset-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative w-16 h-16 bg-gradient-to-br from-coral-500 via-sunset-500 to-coral-600 rounded-2xl flex items-center justify-center text-white mb-6 shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
@@ -141,14 +142,14 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
       <section className="bg-gradient-to-br from-coral-50 to-orange-50 py-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-cocoa-800 mb-4">
+            <h2 className="text-5xl font-bold text-cocoa-800 mb-4 animate-fadeInDown">
               Choisissez votre plan
             </h2>
-            <p className="text-xl text-cocoa-600 mb-8">
+            <p className="text-xl text-cocoa-600 mb-8 animate-fadeInUp delay-100">
               Des tarifs simples et transparents pour tous vos besoins
             </p>
 
-            <div className="inline-flex items-center gap-3 bg-white rounded-full p-1.5 shadow-lg">
+            <div className="inline-flex items-center gap-3 bg-white rounded-full p-1.5 shadow-lg animate-zoomIn delay-200">
               <button
                 onClick={() => setBillingCycle('monthly')}
                 className={`px-6 py-2.5 rounded-full font-semibold transition-all ${
@@ -179,7 +180,9 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
             {plans.map((plan, index) => (
               <div
                 key={index}
-                className={`relative bg-white rounded-3xl p-8 shadow-2xl border-2 transition-all hover:scale-105 ${
+                className={`relative bg-white rounded-3xl p-8 shadow-2xl border-2 transition-all hover:scale-105 animate-fadeInUp ${
+                  plan.popular ? 'delay-300' : 'delay-400'
+                } ${
                   plan.popular
                     ? 'border-coral-400 shadow-coral-500/30'
                     : 'border-orange-100 hover:border-coral-300'

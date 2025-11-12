@@ -657,7 +657,7 @@ const previewBaseScale = 0.22;
 
   return (
     <div className="space-y-4 md:space-y-5">
-      <div className={`bg-gradient-to-r from-white via-[#fff7f0] to-[#ffeede] border-2 border-[#ffd7b7] rounded-xl md:rounded-2xl p-4 md:p-5 sticky top-4 z-30 transition-shadow ${draggedMeetingId ? 'shadow-xl shadow-coral-200/30' : 'shadow-inner shadow-orange-100/30'}`}>
+      <div className={`bg-gradient-to-r from-white via-[#fff7f0] to-[#ffeede] border-2 border-[#ffd7b7] rounded-xl md:rounded-2xl p-4 md:p-5 sticky top-4 z-30 transition-shadow animate-fadeInDown ${draggedMeetingId ? 'shadow-xl shadow-coral-200/30' : 'shadow-inner shadow-orange-100/30'}`}>
         <div className="flex items-center justify-between mb-3 md:mb-4">
           <div className="flex items-center gap-2">
             <Search className="w-5 h-5 text-coral-500" />

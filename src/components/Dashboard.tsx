@@ -230,12 +230,12 @@ export function Dashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-peach-50 via-white to-coral-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between animate-fadeInDown">
           <div>
             <h1 className="text-3xl font-bold text-cocoa-900 mb-2">Tableau de bord</h1>
             <p className="text-cocoa-600">Vue d'ensemble de votre utilisation</p>
           </div>
-          <div className="bg-white border-2 border-coral-200 rounded-2xl shadow-sm px-5 py-4 flex flex-col lg:flex-row lg:items-end gap-4">
+          <div className="bg-white border-2 border-coral-200 rounded-2xl shadow-sm px-5 py-4 flex flex-col lg:flex-row lg:items-end gap-4 animate-fadeInLeft delay-100">
             <div className="flex items-center gap-2 text-cocoa-600 font-semibold text-sm sm:min-w-[150px] self-center lg:self-end lg:pb-1">
               <Filter className="w-4 h-4 text-coral-500" />
               Filtrer par dates
@@ -280,7 +280,7 @@ export function Dashboard() {
 
         {/* Carte d'abonnement */}
         {subscription && (
-          <div className={`mb-8 rounded-2xl shadow-xl border-2 p-6 ${
+          <div className={`mb-8 rounded-2xl shadow-xl border-2 p-6 animate-fadeInUp delay-150 ${
             subscription.plan_type === 'unlimited'
               ? 'bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 border-amber-300'
               : 'bg-gradient-to-br from-coral-50 via-peach-50 to-sunset-50 border-coral-300'
@@ -369,7 +369,7 @@ export function Dashboard() {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="group relative bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6 hover:shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden">
+          <div className="group relative bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6 hover:shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden animate-fadeInUp delay-200">
             <div className="absolute inset-0 bg-gradient-to-br from-coral-50 to-sunset-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div className="relative flex items-center justify-between mb-4">
               <div className="p-3 bg-gradient-to-br from-coral-100 to-coral-50 rounded-xl group-hover:shadow-lg transition-all duration-300">
@@ -384,7 +384,7 @@ export function Dashboard() {
             </div>
           </div>
 
-          <div className="group relative bg-white rounded-2xl shadow-lg border-2 border-sunset-200 p-6 hover:shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden">
+          <div className="group relative bg-white rounded-2xl shadow-lg border-2 border-sunset-200 p-6 hover:shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden animate-fadeInUp delay-300">
             <div className="absolute inset-0 bg-gradient-to-br from-sunset-50 to-orange-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div className="relative flex items-center justify-between mb-4">
               <div className="p-3 bg-gradient-to-br from-sunset-100 to-sunset-50 rounded-xl group-hover:shadow-lg transition-all duration-300">
@@ -399,7 +399,7 @@ export function Dashboard() {
             </div>
           </div>
 
-          <div className="group relative bg-white rounded-2xl shadow-lg border-2 border-peach-300 p-6 hover:shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden">
+          <div className="group relative bg-white rounded-2xl shadow-lg border-2 border-peach-300 p-6 hover:shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden animate-fadeInUp delay-400">
             <div className="absolute inset-0 bg-gradient-to-br from-peach-50 to-coral-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div className="relative flex items-center justify-between mb-4">
               <div className="p-3 bg-gradient-to-br from-peach-100 to-peach-50 rounded-xl group-hover:shadow-lg transition-all duration-300">
@@ -414,7 +414,7 @@ export function Dashboard() {
             </div>
           </div>
 
-          <div className="group relative bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6 hover:shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden">
+          <div className="group relative bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6 hover:shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden animate-fadeInUp delay-500">
             <div className="absolute inset-0 bg-gradient-to-br from-coral-50 to-sunset-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div className="relative flex items-center justify-between mb-4">
               <div className="p-3 bg-gradient-to-br from-coral-100 to-sunset-50 rounded-xl group-hover:shadow-lg transition-all duration-300">
@@ -430,7 +430,7 @@ export function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6">
+          <div className="bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6 animate-fadeInLeft delay-600">
             <h2 className="text-lg font-semibold text-cocoa-900 mb-4 flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-coral-600" />
               Activité récente (7 derniers jours)

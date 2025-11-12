@@ -446,7 +446,7 @@ export const Settings = ({ userId }: SettingsProps) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-peach-50 via-white to-coral-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-3xl font-bold text-cocoa-900 mb-8">
+        <h2 className="text-3xl font-bold text-cocoa-900 mb-8 animate-fadeInDown">
           Paramètres
         </h2>
 
@@ -475,7 +475,7 @@ export const Settings = ({ userId }: SettingsProps) => {
 
       <div className="space-y-6">
         {/* Section Abonnement */}
-        <div className="bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6">
+        <div className="bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6 animate-fadeInUp delay-100">
           <h3 className="text-2xl font-bold text-cocoa-900 mb-4 flex items-center gap-2">
             <CreditCard className="w-6 h-6 text-coral-600" />
             Gérer mon abonnement
@@ -623,7 +623,7 @@ export const Settings = ({ userId }: SettingsProps) => {
         </div>
 
         {/* Choix de la méthode d'envoi email */}
-        <div className="bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6">
+        <div className="bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6 animate-fadeInUp delay-200">
           <h3 className="text-xl font-bold text-cocoa-900 mb-4">Méthode d'envoi email</h3>
           <p className="text-sm text-cocoa-600 mb-4">
             Choisissez comment vous souhaitez envoyer vos emails de compte-rendu
@@ -982,7 +982,7 @@ export const Settings = ({ userId }: SettingsProps) => {
           )}
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6">
+        <div className="bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6 animate-fadeInUp delay-300">
           <h3 className="text-xl font-bold text-cocoa-900 mb-6">Signature Email</h3>
           <p className="text-sm text-cocoa-600 mb-4">
             Cette signature sera ajoutée automatiquement en bas de tous les emails de compte-rendu
@@ -1072,7 +1072,7 @@ export const Settings = ({ userId }: SettingsProps) => {
         <button
           onClick={handleSave}
           disabled={isSaving || isUploading}
-          className="group relative flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-coral-500 to-sunset-500 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
+          className="group relative flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-coral-500 to-sunset-500 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden animate-fadeInUp delay-400"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
           <Save className="relative w-5 h-5" />
