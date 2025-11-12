@@ -1312,7 +1312,7 @@ const previewBaseScale = 0.22;
             <button
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              className="h-10 w-10 flex items-center justify-center rounded-full border border-coral-200 text-coral-700 hover:bg-coral-100 hover:scale-110 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:scale-100"
+              className="h-10 w-10 flex items-center justify-center rounded-full border border-coral-200 text-coral-700 hover:bg-coral-100 hover:border-coral-300 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
               aria-label="Page précédente"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -1320,15 +1320,15 @@ const previewBaseScale = 0.22;
             <div className="flex items-center gap-1">
               {paginationRange.map((item, index) => (
                 item === 'dots' ? (
-                  <span key={`dots-${index}`} className="px-2 text-sm font-medium text-cocoa-400">...</span>
+                  <span key={`dots-${index}`} className="w-10 text-center text-sm font-medium text-cocoa-400">...</span>
                 ) : (
                   <button
                     key={`page-${item}`}
                     onClick={() => setCurrentPage(item)}
-                    className={`min-w-[2.5rem] h-10 px-3 rounded-full text-sm font-semibold transition-all duration-300 hover:scale-110 ${
+                    className={`w-10 h-10 flex items-center justify-center rounded-full text-sm font-semibold transition-all duration-200 ${
                       currentPage === item
                         ? 'bg-gradient-to-r from-coral-500 to-sunset-500 text-white shadow-lg shadow-coral-500/30'
-                        : 'border border-coral-200 text-coral-700 hover:bg-coral-100'
+                        : 'border border-coral-200 text-coral-700 hover:bg-coral-100 hover:border-coral-300'
                     }`}
                     aria-current={currentPage === item ? 'page' : undefined}
                   >
@@ -1340,7 +1340,7 @@ const previewBaseScale = 0.22;
             <button
               onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
-              className="h-10 w-10 flex items-center justify-center rounded-full border border-coral-200 text-coral-700 hover:bg-coral-100 hover:scale-110 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:scale-100"
+              className="h-10 w-10 flex items-center justify-center rounded-full border border-coral-200 text-coral-700 hover:bg-coral-100 hover:border-coral-300 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
               aria-label="Page suivante"
             >
               <ChevronRight className="w-4 h-4" />
