@@ -211,20 +211,22 @@ export const FloatingStartButton = ({ onStartRecording, isVisible }: FloatingSta
         </div>
       )}
       <button
-        className={`relative w-24 h-24 bg-gradient-to-br from-coral-500 to-coral-600 rounded-full shadow-2xl flex items-center justify-center transition-opacity duration-200 hover:shadow-coral-500/50 group ${
+        className={`relative w-24 h-24 bg-gradient-to-br from-coral-500 via-coral-600 to-sunset-500 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:rotate-12 shadow-glow-coral group ${
           isAnimating ? 'opacity-0' : 'opacity-100'
         }`}
         title="Démarrer un enregistrement"
       >
         <div className="absolute inset-0 bg-coral-400 rounded-full opacity-20 animate-ping pointer-events-none" style={{ animationDuration: '2s' }}></div>
         <div className="absolute inset-1 bg-coral-400 rounded-full opacity-30 animate-pulse pointer-events-none" style={{ animationDuration: '2s' }}></div>
-        <div className="absolute inset-3 bg-gradient-to-tr from-white/25 to-transparent rounded-full pointer-events-none"></div>
+        <div className="absolute inset-0 bg-coral-400 rounded-full opacity-10 blur-xl pointer-events-none"></div>
+        <div className="absolute inset-3 bg-gradient-to-tr from-white/30 to-transparent rounded-full pointer-events-none"></div>
+        <div className="absolute inset-0 bg-white rounded-full opacity-0 group-hover:opacity-10 transition-opacity duration-300 pointer-events-none"></div>
         <div className="relative">
           <Mic className="w-10 h-10 text-white drop-shadow-lg" />
         </div>
-        <div className="absolute -top-14 left-1/2 -translate-x-1/2 bg-cocoa-800 text-white px-4 py-2.5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none shadow-xl">
-          <span className="text-sm font-bold">Démarrer</span>
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-cocoa-800"></div>
+        <div className="absolute -top-14 left-1/2 -translate-x-1/2 glass border-2 border-coral-200 px-5 py-3 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-200 whitespace-nowrap pointer-events-none shadow-xl scale-95 group-hover:scale-100">
+          <span className="text-sm font-bold bg-gradient-to-r from-coral-600 to-sunset-600 bg-clip-text text-transparent">Démarrer</span>
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-l-[8px] border-r-[8px] border-t-[8px] border-l-transparent border-r-transparent border-t-white"></div>
         </div>
       </button>
     </div>

@@ -263,13 +263,14 @@ export function Dashboard() {
             <div className="flex gap-2 sm:ml-auto self-center lg:self-end">
               <button
                 onClick={handleApplyRange}
-                className="px-4 py-2 bg-gradient-to-r from-coral-500 to-sunset-500 text-white text-sm font-semibold rounded-xl shadow hover:shadow-lg transition-transform hover:scale-105"
+                className="group relative px-4 py-2 bg-gradient-to-r from-coral-500 to-sunset-500 text-white text-sm font-semibold rounded-xl shadow hover:shadow-lg transition-all duration-300 hover:scale-105 overflow-hidden"
               >
-                Appliquer
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                <span className="relative">Appliquer</span>
               </button>
               <button
                 onClick={handleResetRange}
-                className="px-4 py-2 border border-coral-200 text-cocoa-600 text-sm font-semibold rounded-xl hover:bg-coral-50 transition-transform hover:scale-105"
+                className="px-4 py-2 border-2 border-coral-200 text-cocoa-600 text-sm font-semibold rounded-xl hover:bg-coral-50 hover:border-coral-300 transition-all duration-300 hover:scale-105"
               >
                 Réinitialiser
               </button>
@@ -368,55 +369,59 @@ export function Dashboard() {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6 hover:shadow-xl hover:scale-105 transition-all">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-coral-100 to-coral-50 rounded-xl">
+          <div className="group relative bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6 hover:shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-coral-50 to-sunset-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative flex items-center justify-between mb-4">
+              <div className="p-3 bg-gradient-to-br from-coral-100 to-coral-50 rounded-xl group-hover:shadow-lg transition-all duration-300">
                 <FileText className="w-6 h-6 text-coral-600" />
               </div>
               <TrendingUp className="w-5 h-5 text-emerald-500" />
             </div>
-            <div className="space-y-1">
+            <div className="relative space-y-1">
               <p className="text-sm font-medium text-cocoa-600">Total de réunions</p>
               <p className="text-3xl font-bold bg-gradient-to-r from-coral-600 to-sunset-600 bg-clip-text text-transparent">{stats.totalMeetings}</p>
               <p className="text-xs text-cocoa-500">Depuis le début</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg border-2 border-sunset-200 p-6 hover:shadow-xl hover:scale-105 transition-all">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-sunset-100 to-sunset-50 rounded-xl">
+          <div className="group relative bg-white rounded-2xl shadow-lg border-2 border-sunset-200 p-6 hover:shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-sunset-50 to-orange-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative flex items-center justify-between mb-4">
+              <div className="p-3 bg-gradient-to-br from-sunset-100 to-sunset-50 rounded-xl group-hover:shadow-lg transition-all duration-300">
                 <Clock className="w-6 h-6 text-sunset-600" />
               </div>
               <TrendingUp className="w-5 h-5 text-emerald-500" />
             </div>
-            <div className="space-y-1">
+            <div className="relative space-y-1">
               <p className="text-sm font-medium text-cocoa-600">Minutes utilisées</p>
               <p className="text-3xl font-bold bg-gradient-to-r from-sunset-600 to-coral-600 bg-clip-text text-transparent">{stats.totalMinutes}</p>
               <p className="text-xs text-cocoa-500">Depuis le début</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg border-2 border-peach-300 p-6 hover:shadow-xl hover:scale-105 transition-all">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-peach-100 to-peach-50 rounded-xl">
+          <div className="group relative bg-white rounded-2xl shadow-lg border-2 border-peach-300 p-6 hover:shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-peach-50 to-coral-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative flex items-center justify-between mb-4">
+              <div className="p-3 bg-gradient-to-br from-peach-100 to-peach-50 rounded-xl group-hover:shadow-lg transition-all duration-300">
                 <Calendar className="w-6 h-6 text-coral-600" />
               </div>
               <span className="text-xs font-medium text-coral-600 bg-coral-50 px-2 py-1 rounded-lg">{periodLabel}</span>
             </div>
-            <div className="space-y-1">
+            <div className="relative space-y-1">
               <p className="text-sm font-medium text-cocoa-600">Réunions</p>
               <p className="text-3xl font-bold bg-gradient-to-r from-coral-600 to-peach-600 bg-clip-text text-transparent">{stats.periodMeetings}</p>
               <p className="text-xs text-cocoa-500">{stats.periodMinutes} minute{stats.periodMinutes > 1 ? 's' : ''} sur la période</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6 hover:shadow-xl hover:scale-105 transition-all">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-coral-100 to-sunset-50 rounded-xl">
+          <div className="group relative bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6 hover:shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-coral-50 to-sunset-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative flex items-center justify-between mb-4">
+              <div className="p-3 bg-gradient-to-br from-coral-100 to-sunset-50 rounded-xl group-hover:shadow-lg transition-all duration-300">
                 <BarChart3 className="w-6 h-6 text-sunset-600" />
               </div>
             </div>
-            <div className="space-y-1">
+            <div className="relative space-y-1">
               <p className="text-sm font-medium text-cocoa-600">Durée moyenne</p>
               <p className="text-3xl font-bold bg-gradient-to-r from-sunset-600 to-coral-600 bg-clip-text text-transparent">{stats.averageDuration}</p>
               <p className="text-xs text-cocoa-500">minutes par réunion</p>

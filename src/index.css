@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  * {
+    @apply transition-colors duration-200;
+  }
+
+  body {
+    @apply antialiased;
+  }
+}
+
 @keyframes slide-in-right {
   from {
     transform: translateX(100%);
@@ -160,42 +170,52 @@
 @layer utilities {
   /* Masquer la scrollbar sur mobile */
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* Internet Explorer 10+ */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
   .scrollbar-hide::-webkit-scrollbar {
-    display: none;  /* Safari and Chrome */
+    display: none;
   }
 
-  /* Scrollbars personnalisées pour les suggestions */
+  /* Scrollbars personnalisées */
   .scrollbar-thin {
     scrollbar-width: thin;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
-  }
-  
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: #f3f4f6;
-    border-radius: 3px;
-  }
-  
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: #d1d5db;
-    border-radius: 3px;
-  }
-  
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: #9ca3af;
+    width: 8px;
   }
 
-  /* Scrollbars pour les suggestions avec couleurs purple */
-  .scrollbar-thumb-purple-300::-webkit-scrollbar-thumb {
-    background: #c4b5fd;
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: linear-gradient(180deg, #fff5f3 0%, #ffe8e3 100%);
+    border-radius: 4px;
   }
-  
-  .scrollbar-track-purple-100::-webkit-scrollbar-track {
-    background: #f3e8ff;
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #ff8f73 0%, #FF5F4F 100%);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #FF5F4F 0%, #f03d2d 100%);
+    background-clip: padding-box;
+  }
+
+  /* Effets de glassmorphism */
+  .glass {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Ombres personnalisées */
+  .shadow-glow-coral {
+    box-shadow: 0 0 20px rgba(255, 95, 79, 0.3), 0 4px 12px rgba(255, 95, 79, 0.2);
+  }
+
+  .shadow-glow-sunset {
+    box-shadow: 0 0 20px rgba(255, 182, 58, 0.3), 0 4px 12px rgba(255, 182, 58, 0.2);
   }
 }

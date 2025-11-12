@@ -600,18 +600,20 @@ export const Settings = ({ userId }: SettingsProps) => {
           {subscription && subscription.plan_type !== selectedPlan && (
             <button
               onClick={handleChangePlan}
-              className="w-full px-6 py-3 bg-gradient-to-r from-coral-500 to-sunset-500 text-white rounded-xl font-semibold hover:from-coral-600 hover:to-sunset-600 transition-all shadow-lg"
+              className="group relative w-full px-6 py-3 bg-gradient-to-r from-coral-500 to-sunset-500 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 overflow-hidden"
             >
-              Changer pour la formule {selectedPlan === 'starter' ? 'Starter (29€)' : 'Illimitée (39€)'}
+              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+              <span className="relative">Changer pour la formule {selectedPlan === 'starter' ? 'Starter (29€)' : 'Illimitée (39€)'}</span>
             </button>
           )}
 
           {!subscription && (
             <button
               onClick={handleChangePlan}
-              className="w-full px-6 py-3 bg-gradient-to-r from-coral-500 to-sunset-500 text-white rounded-xl font-semibold hover:from-coral-600 hover:to-sunset-600 transition-all shadow-lg"
+              className="group relative w-full px-6 py-3 bg-gradient-to-r from-coral-500 to-sunset-500 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 overflow-hidden"
             >
-              Activer la formule {selectedPlan === 'starter' ? 'Starter (29€)' : 'Illimitée (39€)'}
+              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+              <span className="relative">Activer la formule {selectedPlan === 'starter' ? 'Starter (29€)' : 'Illimitée (39€)'}</span>
             </button>
           )}
 
@@ -1070,10 +1072,11 @@ export const Settings = ({ userId }: SettingsProps) => {
         <button
           onClick={handleSave}
           disabled={isSaving || isUploading}
-          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-coral-500 to-sunset-500 text-white hover:from-coral-600 hover:to-sunset-600 rounded-xl transition-all shadow-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          className="group relative flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-coral-500 to-sunset-500 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
         >
-          <Save className="w-5 h-5" />
-          {isUploading ? 'Téléchargement...' : isSaving ? 'Sauvegarde...' : 'Sauvegarder'}
+          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+          <Save className="relative w-5 h-5" />
+          <span className="relative">{isUploading ? 'Téléchargement...' : isSaving ? 'Sauvegarde...' : 'Sauvegarder'}</span>
         </button>
       </div>
       </div>

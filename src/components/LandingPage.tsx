@@ -88,9 +88,10 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
             </div>
             <button
               onClick={onGetStarted}
-              className="px-6 py-3 bg-gradient-to-r from-coral-500 to-coral-600 text-white font-semibold rounded-xl hover:from-coral-600 hover:to-coral-700 transition-all shadow-lg shadow-coral-500/30"
+              className="group relative px-6 py-3 bg-gradient-to-r from-coral-500 to-sunset-600 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-coral-500/30 hover:shadow-xl hover:shadow-coral-500/50 hover:scale-105 overflow-hidden"
             >
-              Connexion
+              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+              <span className="relative">Connexion</span>
             </button>
           </div>
         </div>
@@ -111,10 +112,11 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
           </p>
           <button
             onClick={onGetStarted}
-            className="inline-flex items-center gap-3 px-8 py-5 bg-gradient-to-r from-coral-500 to-coral-600 text-white text-lg font-bold rounded-2xl hover:from-coral-600 hover:to-coral-700 transition-all shadow-2xl shadow-coral-500/40 hover:scale-105"
+            className="group relative inline-flex items-center gap-3 px-8 py-5 bg-gradient-to-r from-coral-500 via-sunset-500 to-coral-600 text-white text-lg font-bold rounded-2xl transition-all duration-300 shadow-2xl shadow-coral-500/40 hover:shadow-glow-coral hover:scale-105 overflow-hidden"
           >
-            <span>Commencer gratuitement</span>
-            <ArrowRight className="w-6 h-6" />
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
+            <span className="relative">Commencer gratuitement</span>
+            <ArrowRight className="relative w-6 h-6 transition-transform duration-300 group-hover:translate-x-1" />
           </button>
           <p className="text-sm text-cocoa-500 mt-4">Aucune carte bancaire requise pour essayer</p>
         </div>
@@ -123,13 +125,14 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="bg-white rounded-3xl p-8 shadow-xl border-2 border-orange-100 hover:border-coral-300 transition-all hover:shadow-2xl hover:-translate-y-1"
+              className="group relative bg-white rounded-3xl p-8 shadow-xl border-2 border-orange-100 hover:border-coral-300 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 overflow-hidden"
             >
-              <div className="w-16 h-16 bg-gradient-to-br from-coral-500 to-sunset-500 rounded-2xl flex items-center justify-center text-white mb-6 shadow-lg">
+              <div className="absolute inset-0 bg-gradient-to-br from-coral-50 to-sunset-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative w-16 h-16 bg-gradient-to-br from-coral-500 via-sunset-500 to-coral-600 rounded-2xl flex items-center justify-center text-white mb-6 shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
                 {feature.icon}
               </div>
-              <h3 className="text-xl font-bold text-cocoa-800 mb-3">{feature.title}</h3>
-              <p className="text-cocoa-600 leading-relaxed">{feature.description}</p>
+              <h3 className="relative text-xl font-bold text-cocoa-800 mb-3">{feature.title}</h3>
+              <p className="relative text-cocoa-600 leading-relaxed">{feature.description}</p>
             </div>
           ))}
         </div>
