@@ -14,7 +14,8 @@ interface MeetingHistoryProps {
   userId?: string;
 }
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE_LIST = 10;
+const ITEMS_PER_PAGE_GRID = 12;
 
 export const MeetingHistory = ({ meetings = [], onDelete, onView, onSendEmail, onUpdateMeetings, isLoading = false, userId }: MeetingHistoryProps) => {
   const [viewMode, setViewMode] = useState<'list' | 'grid'>(() => {
@@ -520,18 +521,19 @@ const previewBaseScale = 0.22;
     });
   }, [meetings, searchTitle, searchDate, selectedCategoryId]);
 
-  // Pagination
-  const totalPages = Math.ceil(filteredMeetings.length / ITEMS_PER_PAGE);
+  // Pagination - nombre d'items selon le mode de vue
+  const itemsPerPage = viewMode === 'grid' ? ITEMS_PER_PAGE_GRID : ITEMS_PER_PAGE_LIST;
+  const totalPages = Math.ceil(filteredMeetings.length / itemsPerPage);
 
-  // Ajuster la page courante si elle dépasse le nombre total de pages
+  // Ajuster la page courante si elle dépasse le nombre total de pages ou lors du changement de mode
   useEffect(() => {
     if (totalPages > 0 && currentPage > totalPages) {
       setCurrentPage(totalPages);
     }
-  }, [totalPages, currentPage]);
+  }, [totalPages, currentPage, viewMode]);
 
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
   const paginatedMeetings = filteredMeetings.slice(startIndex, endIndex);
 
   const paginationRange = useMemo(() => {
