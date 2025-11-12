@@ -257,13 +257,13 @@ export const FloatingRecordButton = ({
         {/* Bouton principal rond avec animation douce */}
         <div className="relative">
           {/* Ondes douces en arrière-plan */}
-          <div className="absolute inset-0 bg-coral-400 rounded-full opacity-20 animate-ping pointer-events-none" style={{ animationDuration: '2s' }}></div>
-          <div className="absolute inset-0 bg-coral-400 rounded-full opacity-30 animate-pulse pointer-events-none" style={{ animationDuration: '2s' }}></div>
-          
+          <div className="absolute inset-0 bg-coral-400 rounded-full opacity-20 animate-ping pointer-events-none" style={{ animationDuration: '4s' }}></div>
+          <div className="absolute inset-0 bg-coral-400 rounded-full opacity-30 animate-pulse pointer-events-none" style={{ animationDuration: '3s' }}></div>
+
           {/* Bouton rond principal */}
           <div className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 bg-gradient-to-br from-coral-500 to-coral-600 rounded-full shadow-2xl flex flex-col items-center justify-center border-2 md:border-4 border-white transition-transform hover:scale-105 cursor-pointer">
             {/* Indicateur d'enregistrement */}
-            <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 bg-white rounded-full animate-pulse shadow-lg mb-1 md:mb-2" />
+            <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 bg-white rounded-full animate-pulse shadow-lg mb-1 md:mb-2" style={{ animationDuration: '2s' }} />
             
             {/* Timer */}
             <span className="font-mono font-bold text-white text-[11px] sm:text-xs md:text-sm tabular-nums">
