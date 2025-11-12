@@ -220,12 +220,12 @@ export const FloatingStartButton = ({ onStartRecording, isVisible }: FloatingSta
         }}
       >
         {/* Pulse animé extérieur multiple */}
-        <div className="absolute -inset-2 bg-coral-400 rounded-full opacity-40 animate-ping pointer-events-none" style={{ animationDuration: '2s' }}></div>
-        <div className="absolute -inset-4 bg-coral-400 rounded-full opacity-20 animate-ping pointer-events-none" style={{ animationDuration: '2.5s', animationDelay: '0.3s' }}></div>
-        <div className="absolute -inset-6 bg-coral-400 rounded-full opacity-10 animate-ping pointer-events-none" style={{ animationDuration: '3s', animationDelay: '0.6s' }}></div>
+        <div className="absolute -inset-2 bg-coral-400 rounded-full opacity-40 animate-ping pointer-events-none" style={{ animationDuration: '3s' }}></div>
+        <div className="absolute -inset-4 bg-coral-400 rounded-full opacity-20 animate-ping pointer-events-none" style={{ animationDuration: '3.5s', animationDelay: '0.5s' }}></div>
+        <div className="absolute -inset-6 bg-coral-400 rounded-full opacity-10 animate-ping pointer-events-none" style={{ animationDuration: '4s', animationDelay: '1s' }}></div>
 
         {/* Glow pulsant */}
-        <div className="absolute inset-1 bg-coral-400 rounded-full opacity-40 animate-pulse pointer-events-none" style={{ animationDuration: '1.5s' }}></div>
+        <div className="absolute inset-1 bg-coral-400 rounded-full opacity-40 animate-pulse pointer-events-none" style={{ animationDuration: '3s' }}></div>
 
         {/* Effet de brillance tournant */}
         <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
@@ -233,8 +233,8 @@ export const FloatingStartButton = ({ onStartRecording, isVisible }: FloatingSta
         </div>
 
         {/* Cercles concentriques animés */}
-        <div className="absolute inset-2 border-4 border-white/20 rounded-full animate-spin-slow pointer-events-none"></div>
-        <div className="absolute inset-4 border-2 border-white/30 rounded-full animate-spin-reverse pointer-events-none"></div>
+        <div className="absolute inset-2 border-4 border-white/20 rounded-full pointer-events-none"></div>
+        <div className="absolute inset-4 border-2 border-white/30 rounded-full pointer-events-none"></div>
 
         {/* Reflet 3D */}
         <div className="absolute inset-3 bg-gradient-to-tr from-white/40 via-white/20 to-transparent rounded-full pointer-events-none"></div>
