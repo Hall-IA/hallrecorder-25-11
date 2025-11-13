@@ -1086,8 +1086,8 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
           </div>
         </div>
 
-        <div className="p-4 md:p-10 flex-1 overflow-auto">
-          <div className="w-full">
+        <div className="p-4 md:p-10 flex-1 overflow-auto flex justify-center">
+          <div className="w-full max-w-5xl">
           {!isEditing && (meeting.participant_first_name || meeting.participant_last_name || meeting.participant_email || meeting.attachment_name) && (
             <div className="mb-8">
               <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-6 border-2 border-orange-100">
