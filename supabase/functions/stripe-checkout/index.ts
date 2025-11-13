@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Method not allowed' }, 405);
     }
 
-    const { price_id, success_url, cancel_url, mode } = await req.json();
+    const { price_id, success_url, cancel_url, mode, tax_id_collection } = await req.json();
 
     const error = validateParameters(
       { price_id, success_url, cancel_url, mode },
@@ -178,7 +178,7 @@ Deno.serve(async (req) => {
     }
 
     // create Checkout Session
-    const session = await stripe.checkout.sessions.create({
+    const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       customer: customerId,
       payment_method_types: ['card'],
       line_items: [
@@ -190,7 +190,26 @@ Deno.serve(async (req) => {
       mode,
       success_url,
       cancel_url,
-    });
+      automatic_tax: {
+        enabled: true,
+      },
+      customer_update: {
+        address: 'auto',
+      },
+      billing_address_collection: 'required',
+      phone_number_collection: {
+        enabled: true,
+      },
+    };
+
+    // Enable tax ID collection for businesses if requested
+    if (tax_id_collection) {
+      sessionConfig.tax_id_collection = {
+        enabled: true,
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
 
     console.log(`Created checkout session ${session.id} for customer ${customerId}`);
 
