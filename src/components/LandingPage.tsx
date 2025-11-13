@@ -81,9 +81,9 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src="/logohallia.png" alt="Logo" className="w-12 h-12 object-contain" />
+              <img src="/image copy.png" alt="Logo" className="w-12 h-12 object-contain" />
               <span className="text-2xl font-bold bg-gradient-to-r from-coral-500 to-sunset-500 bg-clip-text text-transparent">
-                Meeting Recorder
+                Meeting recorder
               </span>
             </div>
             <button
@@ -279,7 +279,7 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <img src="/logohallia.png" alt="Logo" className="w-10 h-10 object-contain" />
+              <img src="/image copy.png" alt="Logo" className="w-10 h-10 object-contain" />
               <span className="text-xl font-bold">Meeting Recorder</span>
             </div>
             <div className="text-center md:text-right text-cocoa-400">

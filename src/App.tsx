@@ -1465,9 +1465,9 @@ function App() {
         <div className="p-4 md:p-6 border-b-2 border-orange-100">
           <div className="flex items-center justify-between gap-3 md:gap-4">
             <div className="flex items-center gap-3 md:gap-4">
-              <img src="/logohallia.png" alt="Logo" className="w-10 h-10 md:w-12 md:h-12 object-contain" />
+              <img src="/image copy.png" alt="Logo" className="w-10 h-10 md:w-12 md:h-12 object-contain" />
             <div>
-                <h1 className="text-lg md:text-2xl font-bold bg-gradient-to-r from-coral-500 to-sunset-500 bg-clip-text text-transparent">Réunions</h1>
+                <h1 className="text-lg md:text-2xl font-bold bg-gradient-to-r from-coral-500 to-sunset-500 bg-clip-text text-transparent">Meeting recorder</h1>
               </div>
             </div>
             {/* Bouton déconnexion mobile uniquement */}

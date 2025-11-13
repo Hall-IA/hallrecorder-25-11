@@ -59,10 +59,10 @@ export const Login = ({ onSuccess }: LoginProps) => {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-6">
-            <img src="/logohallia.png" alt="Logo" className="w-20 h-20 object-contain" />
+            <img src="/image copy.png" alt="Logo" className="w-20 h-20 object-contain" />
           </div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-coral-500 to-sunset-500 bg-clip-text text-transparent mb-2">
-            Meeting Recorder
+            Meeting recorder
           </h1>
           <p className="text-cocoa-600 text-lg">
             {isSignUp ? 'Créez votre compte' : 'Connectez-vous à votre compte'}
