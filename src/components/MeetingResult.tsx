@@ -920,7 +920,7 @@ export const MeetingResult = ({ title, transcript, summary, suggestions = [], us
                 <textarea
                   value={editedSummary}
                   onChange={(e) => setEditedSummary(e.target.value)}
-                  className="w-full min-h-[400px] p-6 border-2 border-orange-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-coral-500 focus:border-coral-500 text-cocoa-800 text-lg leading-relaxed"
+                  className="w-full min-h-[600px] p-6 border-2 border-orange-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-coral-500 focus:border-coral-500 text-cocoa-800 text-lg leading-relaxed"
                 />
               ) : (
                 <div className="prose prose-slate max-w-none">
