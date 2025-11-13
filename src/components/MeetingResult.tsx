@@ -188,6 +188,8 @@ export const MeetingResult = ({ title, transcript, summary, suggestions = [], us
   }, [loadSettings]);
 
   useEffect(() => {
+    console.log('🔧 MeetingResult: Installation du listener double-clic');
+
     const handleDblClick = (e: MouseEvent) => {
       console.log('🌍 Double-clic global détecté');
 
@@ -197,11 +199,18 @@ export const MeetingResult = ({ title, transcript, summary, suggestions = [], us
       if (summaryDiv && summaryDiv.contains(target)) {
         console.log('✅ Clic dans la zone résumé');
         handleWordDoubleClick(e as any);
+      } else {
+        console.log('❌ Clic hors zone résumé', target);
       }
     };
 
     document.addEventListener('dblclick', handleDblClick);
-    return () => document.removeEventListener('dblclick', handleDblClick);
+    console.log('✅ Listener double-clic installé');
+
+    return () => {
+      console.log('🗑️ MeetingResult: Suppression du listener double-clic');
+      document.removeEventListener('dblclick', handleDblClick);
+    };
   }, [editedSummary, editedTranscript, activeTab]);
 
   const handleSave = async () => {
