@@ -200,14 +200,6 @@ Deno.serve(async (req) => {
       phone_number_collection: {
         enabled: true,
       },
-      invoice_creation: mode === 'subscription' ? {
-        enabled: true,
-        invoice_data: {
-          rendering_options: {
-            amount_tax_display: 'include_inclusive_tax',
-          },
-        },
-      } : undefined,
     };
 
     // Enable tax ID collection for businesses if requested
