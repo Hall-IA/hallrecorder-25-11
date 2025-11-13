@@ -384,10 +384,10 @@ export function Dashboard() {
         {/* Cartes statistiques */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {/* Total de réunions */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all duration-300 animate-fadeInUp delay-100">
+          <div className="group bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-lg hover:scale-105 hover:-translate-y-1 transition-all duration-300 animate-fadeInUp delay-100">
             <div className="flex items-start justify-between mb-3">
               <p className="text-sm font-medium text-gray-600">Total de réunions</p>
-              <div className="p-2 bg-blue-50 rounded-lg">
+              <div className="p-2 bg-blue-50 rounded-lg group-hover:scale-110 transition-transform duration-300">
                 <FileText className="w-5 h-5 text-blue-600" />
               </div>
             </div>
@@ -396,10 +396,10 @@ export function Dashboard() {
           </div>
 
           {/* Minutes utilisées */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all duration-300 animate-fadeInUp delay-150">
+          <div className="group bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-lg hover:scale-105 hover:-translate-y-1 transition-all duration-300 animate-fadeInUp delay-150">
             <div className="flex items-start justify-between mb-3">
               <p className="text-sm font-medium text-gray-600">Minutes utilisées</p>
-              <div className="p-2 bg-green-50 rounded-lg">
+              <div className="p-2 bg-green-50 rounded-lg group-hover:scale-110 transition-transform duration-300">
                 <Clock className="w-5 h-5 text-green-600" />
               </div>
             </div>
@@ -408,10 +408,10 @@ export function Dashboard() {
           </div>
 
           {/* Réunions période */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all duration-300 animate-fadeInUp delay-200">
+          <div className="group bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-lg hover:scale-105 hover:-translate-y-1 transition-all duration-300 animate-fadeInUp delay-200">
             <div className="flex items-start justify-between mb-3">
               <p className="text-sm font-medium text-gray-600">Réunions</p>
-              <div className="p-2 bg-red-50 rounded-lg">
+              <div className="p-2 bg-red-50 rounded-lg group-hover:scale-110 transition-transform duration-300">
                 <Calendar className="w-5 h-5 text-red-600" />
               </div>
             </div>
@@ -420,10 +420,10 @@ export function Dashboard() {
           </div>
 
           {/* Durée moyenne */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all duration-300 animate-fadeInUp delay-250">
+          <div className="group bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-lg hover:scale-105 hover:-translate-y-1 transition-all duration-300 animate-fadeInUp delay-250">
             <div className="flex items-start justify-between mb-3">
               <p className="text-sm font-medium text-gray-600">Durée moyenne</p>
-              <div className="p-2 bg-purple-50 rounded-lg">
+              <div className="p-2 bg-purple-50 rounded-lg group-hover:scale-110 transition-transform duration-300">
                 <BarChart3 className="w-5 h-5 text-purple-600" />
               </div>
             </div>
@@ -447,10 +447,10 @@ export function Dashboard() {
             ) : (
               <div className="space-y-3">
                 {stats.recentActivity.slice(0, 3).map((activity, index) => (
-                  <div key={index} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+                  <div key={index} className="group flex items-center justify-between py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 hover:scale-105 transition-all duration-200 rounded-lg px-2 -mx-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                        <FileText className="w-5 h-5 text-gray-600" />
+                      <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center group-hover:bg-blue-100 transition-colors duration-200">
+                        <FileText className="w-5 h-5 text-gray-600 group-hover:text-blue-600 transition-colors duration-200" />
                       </div>
                       <div>
                         <p className="font-medium text-gray-900 text-sm">{formatDate(activity.date)}</p>
