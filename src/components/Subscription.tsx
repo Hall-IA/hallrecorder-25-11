@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Crown, Calendar, CreditCard, Download, AlertCircle, CheckCircle, XCircle, Loader, ExternalLink } from 'lucide-react';
+import { Crown, Calendar, CreditCard, Download, AlertCircle, CheckCircle, XCircle, Loader, ExternalLink, Zap } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface SubscriptionProps {
@@ -31,6 +31,7 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<'starter' | 'unlimited'>('starter');
 
   useEffect(() => {
     loadSubscription();
@@ -49,6 +50,9 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
 
       if (subError) throw subError;
       setSubscription(subData);
+      if (subData) {
+        setSelectedPlan(subData.plan_type);
+      }
 
       if (subData?.stripe_customer_id) {
         const { data: stripeData, error: stripeError } = await supabase
@@ -66,6 +70,37 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
       setError('Erreur lors du chargement de l\'abonnement');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleChangePlan = async () => {
+    if (!subscription) {
+      const { error } = await supabase
+        .from('user_subscriptions')
+        .insert({
+          user_id: userId,
+          plan_type: selectedPlan,
+          minutes_quota: selectedPlan === 'starter' ? 600 : null,
+          minutes_used_this_month: 0,
+        });
+
+      if (!error) {
+        alert(`Votre abonnement ${selectedPlan === 'starter' ? 'Starter' : 'Illimité'} a été activé!`);
+        loadSubscription();
+      }
+    } else {
+      const { error } = await supabase
+        .from('user_subscriptions')
+        .update({
+          plan_type: selectedPlan,
+          minutes_quota: selectedPlan === 'starter' ? 600 : null,
+        })
+        .eq('user_id', userId);
+
+      if (!error) {
+        alert(`Votre formule a été changée vers ${selectedPlan === 'starter' ? 'Starter' : 'Illimitée'}!`);
+        loadSubscription();
+      }
     }
   };
 
@@ -182,7 +217,7 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
     : 0;
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="max-w-6xl mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-cocoa-800">Mon Abonnement</h1>
         {getStatusBadge()}
@@ -194,6 +229,134 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
           <p className="text-red-700">{error}</p>
         </div>
       )}
+
+      {/* Section Choix de la formule */}
+      <div className="bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6">
+        <h3 className="text-2xl font-bold text-cocoa-900 mb-4">
+          Choisissez la formule qui correspond à vos besoins
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          {/* Formule Starter */}
+          <div
+            onClick={() => setSelectedPlan('starter')}
+            className={`relative rounded-2xl p-6 border-2 cursor-pointer transition-all ${
+              selectedPlan === 'starter'
+                ? 'border-coral-500 bg-gradient-to-br from-coral-50 to-sunset-50 shadow-xl scale-105'
+                : 'border-coral-200 bg-white hover:border-coral-300 hover:shadow-lg'
+            }`}
+          >
+            {selectedPlan === 'starter' && (
+              <div className="absolute -top-3 right-4 px-3 py-1 bg-coral-500 text-white text-xs font-bold rounded-full shadow-lg">
+                Sélectionné
+              </div>
+            )}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 bg-gradient-to-br from-coral-500 to-sunset-500 rounded-xl shadow-md">
+                <Zap className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h4 className="text-xl font-bold text-cocoa-900">Formule Starter</h4>
+                <p className="text-2xl font-bold text-coral-600">39€<span className="text-sm text-cocoa-600">/mois</span></p>
+                <p className="text-xs text-cocoa-500">Sans engagement</p>
+              </div>
+            </div>
+            <ul className="space-y-2">
+              <li className="flex items-center gap-2 text-cocoa-700">
+                <CheckCircle className="w-5 h-5 text-green-500" />
+                <span className="font-semibold">600 minutes/mois</span>
+              </li>
+              <li className="flex items-center gap-2 text-cocoa-700">
+                <CheckCircle className="w-5 h-5 text-green-500" />
+                <span>Transcription IA</span>
+              </li>
+              <li className="flex items-center gap-2 text-cocoa-700">
+                <CheckCircle className="w-5 h-5 text-green-500" />
+                <span>Résumés automatiques</span>
+              </li>
+              <li className="flex items-center gap-2 text-cocoa-700">
+                <CheckCircle className="w-5 h-5 text-green-500" />
+                <span>Envoi d'emails</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Formule Illimitée */}
+          <div
+            onClick={() => setSelectedPlan('unlimited')}
+            className={`relative rounded-2xl p-6 border-2 cursor-pointer transition-all ${
+              selectedPlan === 'unlimited'
+                ? 'border-amber-500 bg-gradient-to-br from-amber-50 to-yellow-50 shadow-xl scale-105'
+                : 'border-amber-200 bg-white hover:border-amber-300 hover:shadow-lg'
+            }`}
+          >
+            {selectedPlan === 'unlimited' && (
+              <div className="absolute -top-3 right-4 px-3 py-1 bg-amber-500 text-white text-xs font-bold rounded-full shadow-lg">
+                Sélectionné
+              </div>
+            )}
+            <div className="absolute -top-3 left-4 px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold rounded-full shadow-lg">
+              ⭐ POPULAIRE
+            </div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-xl shadow-md">
+                <Crown className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h4 className="text-xl font-bold text-cocoa-900">Formule Illimitée</h4>
+                <p className="text-2xl font-bold text-amber-600">49€<span className="text-sm text-cocoa-600">/mois</span></p>
+                <p className="text-xs text-cocoa-500">Sans engagement</p>
+              </div>
+            </div>
+            <ul className="space-y-2">
+              <li className="flex items-center gap-2 text-cocoa-700">
+                <CheckCircle className="w-5 h-5 text-green-500" />
+                <span className="font-semibold">Minutes illimitées</span>
+              </li>
+              <li className="flex items-center gap-2 text-cocoa-700">
+                <CheckCircle className="w-5 h-5 text-green-500" />
+                <span>Transcription IA</span>
+              </li>
+              <li className="flex items-center gap-2 text-cocoa-700">
+                <CheckCircle className="w-5 h-5 text-green-500" />
+                <span>Résumés automatiques</span>
+              </li>
+              <li className="flex items-center gap-2 text-cocoa-700">
+                <CheckCircle className="w-5 h-5 text-green-500" />
+                <span>Envoi d'emails</span>
+              </li>
+              <li className="flex items-center gap-2 text-cocoa-700">
+                <CheckCircle className="w-5 h-5 text-green-500" />
+                <span>Support prioritaire</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {subscription && subscription.plan_type !== selectedPlan && (
+          <button
+            onClick={handleChangePlan}
+            className="group relative w-full px-6 py-3 bg-gradient-to-r from-coral-500 to-sunset-500 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+            <span className="relative">Changer pour la formule {selectedPlan === 'starter' ? 'Starter (39€)' : 'Illimitée (49€)'}</span>
+          </button>
+        )}
+
+        {!subscription && (
+          <button
+            onClick={handleChangePlan}
+            className="group relative w-full px-6 py-3 bg-gradient-to-r from-coral-500 to-sunset-500 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+            <span className="relative">Activer la formule {selectedPlan === 'starter' ? 'Starter (39€)' : 'Illimitée (49€)'}</span>
+          </button>
+        )}
+
+        <p className="text-xs text-center text-cocoa-500 mt-4">
+          Note: Chaque réunion est limitée à un maximum de 4 heures
+        </p>
+      </div>
 
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-white border-2 border-coral-200 rounded-2xl p-6">
