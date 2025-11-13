@@ -1,10 +1,11 @@
 import { ArrowLeft, Calendar, Clock, Edit2, FileText, Mail, Save, X, Paperclip, Download, FileDown } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Meeting, EmailAttachment, supabase } from '../lib/supabase';
 import { generatePDFFromHTML } from '../services/pdfGenerator';
 import { EmailComposer } from './EmailComposer';
 import { generateEmailBody } from '../services/emailTemplates';
 import { EmailSuccessModal } from './EmailSuccessModal';
+import { WordCorrectionModal } from './WordCorrectionModal';
 
 interface MeetingDetailProps {
   meeting: Meeting;
@@ -36,6 +37,11 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
   const [audioTimeRemaining, setAudioTimeRemaining] = useState<string>('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successModalData, setSuccessModalData] = useState<{ recipientCount: number; method: 'gmail' | 'smtp' }>({ recipientCount: 0, method: 'smtp' });
+  const [showWordCorrection, setShowWordCorrection] = useState(false);
+  const [selectedWord, setSelectedWord] = useState('');
+  const [wordPosition, setWordPosition] = useState<{ start: number; end: number; text: string } | null>(null);
+  const summaryRef = useRef<HTMLDivElement>(null);
+  const transcriptRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadSignature();
@@ -43,6 +49,125 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
     checkAudioAvailability();
     loadAudioExpiration();
   }, [meeting.user_id, meeting.id]);
+
+  useEffect(() => {
+    console.log('🔧 MeetingDetail: Installation du listener double-clic');
+
+    const handleDblClick = (e: MouseEvent) => {
+      console.log('🌍 Double-clic global détecté sur MeetingDetail');
+
+      const target = e.target as HTMLElement;
+      const summaryDiv = summaryRef.current;
+      const transcriptDiv = transcriptRef.current;
+
+      if ((summaryDiv && summaryDiv.contains(target)) || (transcriptDiv && transcriptDiv.contains(target))) {
+        console.log('✅ Clic dans la zone de texte');
+        handleWordDoubleClick(e);
+      } else {
+        console.log('❌ Clic hors zone de texte', target);
+      }
+    };
+
+    document.addEventListener('dblclick', handleDblClick);
+    console.log('✅ Listener double-clic installé sur MeetingDetail');
+
+    return () => {
+      console.log('🗑️ MeetingDetail: Suppression du listener double-clic');
+      document.removeEventListener('dblclick', handleDblClick);
+    };
+  }, [editedSummary, editedTranscript, activeTab]);
+
+  const handleWordDoubleClick = (e: MouseEvent) => {
+    console.log('🖱️ Double-clic traité dans handleWordDoubleClick');
+
+    const selection = window.getSelection();
+    if (!selection) {
+      console.log('❌ Pas de sélection disponible');
+      return;
+    }
+
+    const selectedText = selection.toString().trim();
+    console.log('📝 Texte sélectionné:', selectedText);
+
+    if (selectedText && selectedText.length > 0 && selectedText.length < 50) {
+      const cleanWord = selectedText.replace(/[^\w'À-ſ\s-]/g, '').trim();
+      const words = cleanWord.split(/\s+/);
+      const word = words[0];
+
+      if (word && word.length > 0) {
+        console.log('✅ Ouverture modal pour:', word);
+        setSelectedWord(word);
+        setWordPosition({ start: 0, end: word.length, text: word });
+        setShowWordCorrection(true);
+      }
+    } else {
+      const target = e.target as HTMLElement;
+      const text = target.textContent || '';
+
+      if (text) {
+        selection.removeAllRanges();
+        const range = document.createRange();
+        const textNode = target.firstChild || target;
+
+        if (textNode.nodeType === Node.TEXT_NODE) {
+          range.selectNodeContents(textNode);
+          selection.addRange(range);
+
+          selection.modify('move', 'backward', 'word');
+          selection.modify('extend', 'forward', 'word');
+
+          const word = selection.toString().trim();
+          console.log('📝 Mot extrait:', word);
+
+          if (word && word.length > 0) {
+            const cleanWord = word.replace(/[^\w'À-ſ-]/g, '');
+            if (cleanWord) {
+              console.log('✅ Ouverture modal pour:', cleanWord);
+              setSelectedWord(cleanWord);
+              setWordPosition({ start: 0, end: cleanWord.length, text: cleanWord });
+              setShowWordCorrection(true);
+            }
+          }
+        }
+      }
+
+      selection.removeAllRanges();
+    }
+  };
+
+  const handleWordReplace = async (newWord: string, replaceAll: boolean, saveToDict: boolean) => {
+    if (saveToDict) {
+      const { error } = await supabase
+        .from('user_custom_dictionary')
+        .insert({
+          user_id: meeting.user_id,
+          original_word: selectedWord.toLowerCase(),
+          replacement_word: newWord.toLowerCase()
+        });
+
+      if (error) {
+        console.error('Erreur lors de l\'enregistrement dans le dictionnaire:', error);
+      } else {
+        console.log('✅ Mot ajouté au dictionnaire personnalisé');
+      }
+    }
+
+    if (activeTab === 'summary') {
+      const updatedText = replaceAll
+        ? editedSummary.replace(new RegExp(`\\b${selectedWord}\\b`, 'gi'), newWord)
+        : editedSummary.replace(selectedWord, newWord);
+      setEditedSummary(updatedText);
+    } else if (activeTab === 'transcript') {
+      const updatedText = replaceAll
+        ? editedTranscript.replace(new RegExp(`\\b${selectedWord}\\b`, 'gi'), newWord)
+        : editedTranscript.replace(selectedWord, newWord);
+      setEditedTranscript(updatedText);
+    }
+
+    setShowWordCorrection(false);
+    setSelectedWord('');
+    setWordPosition(null);
+  };
 
   // Timer pour mettre à jour le temps restant
   useEffect(() => {
@@ -1008,7 +1133,7 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
                     </div>
                   )}
                   <div className="prose prose-slate max-w-none">
-                    <div className="text-cocoa-800 whitespace-pre-wrap leading-relaxed text-lg">
+                    <div ref={summaryRef} className="text-cocoa-800 whitespace-pre-wrap leading-relaxed text-lg cursor-text">
                       {renderSummaryWithBold(meeting.summary)}
                     </div>
                   </div>
@@ -1025,7 +1150,7 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
                 />
               ) : (
                 <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-8 border-2 border-orange-100">
-                  <div className="max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-coral-300 scrollbar-track-coral-100">
+                  <div ref={transcriptRef} className="max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-coral-300 scrollbar-track-coral-100 cursor-text">
                     {(meeting.display_transcript || meeting.transcript) ? (
                       <div className="space-y-3">
                         {(meeting.display_transcript || meeting.transcript || '').split(/--- \d+s ---/).map((chunk, index) => {
@@ -1153,6 +1278,19 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
         onClose={() => setShowSuccessModal(false)}
         recipientCount={successModalData.recipientCount}
         method={successModalData.method}
+      />
+
+      {/* Modal de correction de mots */}
+      <WordCorrectionModal
+        isOpen={showWordCorrection}
+        onClose={() => {
+          setShowWordCorrection(false);
+          setSelectedWord('');
+          setWordPosition(null);
+        }}
+        word={selectedWord}
+        onReplace={handleWordReplace}
+        userId={meeting.user_id}
       />
 
     </>
