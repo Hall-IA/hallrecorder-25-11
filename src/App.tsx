@@ -1466,6 +1466,9 @@ function App() {
           <div className="flex items-center justify-between gap-3 md:gap-4">
             <div className="flex items-center gap-3 md:gap-4">
               <img src="/logohallia.png" alt="Logo Hallia" className="w-32 h-10 md:w-40 md:h-12 object-contain" />
+              <div>
+                <h1 className="text-lg md:text-2xl font-bold bg-gradient-to-r from-coral-500 to-sunset-500 bg-clip-text text-transparent">Meeting recorder</h1>
+              </div>
             </div>
             {/* Bouton déconnexion mobile uniquement */}
             <button
