@@ -700,7 +700,8 @@ export const Settings = ({ userId }: SettingsProps) => {
                 </div>
                 <div>
                   <h4 className="text-xl font-bold text-cocoa-900">Formule Starter</h4>
-                  <p className="text-2xl font-bold text-coral-600">29€<span className="text-sm text-cocoa-600">/mois</span></p>
+                  <p className="text-2xl font-bold text-coral-600">39€<span className="text-sm text-cocoa-600">/mois</span></p>
+                  <p className="text-xs text-cocoa-500">Sans engagement</p>
                 </div>
               </div>
               <ul className="space-y-2">
@@ -754,7 +755,8 @@ export const Settings = ({ userId }: SettingsProps) => {
                 </div>
                 <div>
                   <h4 className="text-xl font-bold text-cocoa-900">Formule Illimitée</h4>
-                  <p className="text-2xl font-bold text-amber-600">39€<span className="text-sm text-cocoa-600">/mois</span></p>
+                  <p className="text-2xl font-bold text-amber-600">49€<span className="text-sm text-cocoa-600">/mois</span></p>
+                  <p className="text-xs text-cocoa-500">Sans engagement</p>
                 </div>
               </div>
               <ul className="space-y-2">
