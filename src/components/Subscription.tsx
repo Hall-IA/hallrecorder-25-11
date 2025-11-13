@@ -195,10 +195,14 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
         throw new Error(data.error || 'Erreur lors du changement de plan');
       }
 
-      setChangeMessage(data.message);
-      setChangeType(data.type);
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       await loadSubscription();
+
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      setChangeMessage(data.message);
+      setChangeType(data.type);
 
       if (data.type === 'upgrade') {
         setTimeout(async () => {
@@ -266,12 +270,27 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isProcessing) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <Loader className="w-8 h-8 animate-spin text-coral-500 mx-auto mb-2" />
-          <p className="text-cocoa-600">Chargement...</p>
+      <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md mx-4 border-2 border-coral-200">
+          <div className="w-16 h-16 mx-auto mb-4 relative">
+            <Loader className="w-16 h-16 animate-spin text-coral-500" />
+          </div>
+          <h3 className="text-xl font-bold text-cocoa-800 mb-2">
+            {isProcessing ? 'Changement de plan en cours...' : 'Chargement...'}
+          </h3>
+          <p className="text-cocoa-600">
+            {isProcessing
+              ? 'Veuillez patienter pendant que nous mettons à jour votre abonnement et récupérons les dernières données.'
+              : 'Récupération de vos informations d\'abonnement...'
+            }
+          </p>
+          <div className="mt-4 flex justify-center gap-1">
+            <div className="w-2 h-2 bg-coral-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-2 h-2 bg-coral-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-2 h-2 bg-coral-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+          </div>
         </div>
       </div>
     );
