@@ -476,14 +476,21 @@ export function Dashboard() {
               <p className="text-xs text-gray-500 mb-2">Minutes ce mois</p>
               <div className="flex items-baseline gap-2 mb-3">
                 <span className="text-2xl font-bold text-orange-600">{subscription?.minutes_used_this_month || 0}</span>
-                <span className="text-sm text-gray-500">/ {subscription?.minutes_quota || 600} min</span>
+                {subscription?.plan_type === 'starter' && subscription?.minutes_quota && (
+                  <span className="text-sm text-gray-500">/ {subscription.minutes_quota} min</span>
+                )}
+                {subscription?.plan_type === 'unlimited' && (
+                  <span className="text-sm text-gray-500">min</span>
+                )}
               </div>
-              <div className="w-full bg-gray-100 rounded-full h-2">
-                <div
-                  className="bg-gradient-to-r from-orange-500 to-orange-600 h-2 rounded-full transition-all duration-500"
-                  style={{ width: `${Math.min(((subscription?.minutes_used_this_month || 0) / (subscription?.minutes_quota || 600)) * 100, 100)}%` }}
-                />
-              </div>
+              {subscription?.plan_type === 'starter' && subscription?.minutes_quota && (
+                <div className="w-full bg-gray-100 rounded-full h-2">
+                  <div
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min(((subscription?.minutes_used_this_month || 0) / subscription.minutes_quota) * 100, 100)}%` }}
+                  />
+                </div>
+              )}
               <p className="text-xs text-gray-400 mt-2">Facturation basée sur l'utilisation</p>
             </div>
 
