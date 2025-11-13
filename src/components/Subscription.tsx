@@ -194,6 +194,15 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
 
       if (!response.ok) {
         console.error('Billing portal error:', data);
+
+        if (data.error && data.error.includes('No configuration provided')) {
+          throw new Error('Le portail de facturation n\'est pas encore configuré. Veuillez contacter le support.');
+        }
+
+        if (data.error && data.error.includes('No Stripe customer found')) {
+          throw new Error('Vous devez d\'abord souscrire à un abonnement.');
+        }
+
         throw new Error(data.error || 'Erreur lors de la création de la session de facturation');
       }
 
