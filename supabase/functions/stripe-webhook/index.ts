@@ -60,6 +60,21 @@ async function handleEvent(event: Stripe.Event) {
     return;
   }
 
+  if (event.type === 'invoice.finalized') {
+    const invoice = stripeData as Stripe.Invoice;
+    try {
+      await stripe.invoices.update(invoice.id, {
+        rendering_options: {
+          amount_tax_display: 'include_inclusive_tax',
+        },
+      });
+      console.info(`Updated rendering options for invoice: ${invoice.id}`);
+    } catch (error) {
+      console.error(`Failed to update invoice rendering options: ${error}`);
+    }
+    return;
+  }
+
   if (!('customer' in stripeData)) {
     return;
   }
