@@ -424,9 +424,9 @@ export function EmailComposer({
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <label className="text-sm font-semibold text-gray-700 w-16">À:</label>
-              <div className="flex-1 space-y-2">
+              <div className="flex-1">
                 {recipients.map((recipient, index) => (
-                  <div key={index} className="flex gap-2">
+                  <div key={index} className="flex items-center gap-3 mb-2">
                     <input
                       type="email"
                       placeholder="email@exemple.com"
@@ -436,6 +436,46 @@ export function EmailComposer({
                       disabled={isSending}
                       required
                     />
+                    <div className="w-1/2 flex gap-3">
+                      <button
+                        onClick={addRecipient}
+                        disabled={isSending}
+                        className="flex items-center gap-2 text-sm text-[#EF6855] hover:text-[#E5503F] font-medium disabled:opacity-50"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Ajouter un destinataire
+                      </button>
+                      {!showCC && (
+                        <button
+                          onClick={() => {
+                            setShowCC(true);
+                            if (ccRecipients.length === 0) {
+                              setCcRecipients([{ name: '', email: '' }]);
+                            }
+                          }}
+                          disabled={isSending}
+                          className="flex items-center gap-2 text-sm text-[#EF6855] hover:text-[#E5503F] font-medium disabled:opacity-50"
+                        >
+                          <Plus className="w-4 h-4" />
+                          CC
+                        </button>
+                      )}
+                      {!showBCC && (
+                        <button
+                          onClick={() => {
+                            setShowBCC(true);
+                            if (bccRecipients.length === 0) {
+                              setBccRecipients([{ name: '', email: '' }]);
+                            }
+                          }}
+                          disabled={isSending}
+                          className="flex items-center gap-2 text-sm text-[#EF6855] hover:text-[#E5503F] font-medium disabled:opacity-50"
+                        >
+                          <Plus className="w-4 h-4" />
+                          CCI
+                        </button>
+                      )}
+                    </div>
                     {recipients.length > 1 && (
                       <button
                         onClick={() => removeRecipient(index)}
@@ -447,46 +487,6 @@ export function EmailComposer({
                     )}
                   </div>
                 ))}
-                <div className="flex gap-3">
-                  <button
-                    onClick={addRecipient}
-                    disabled={isSending}
-                    className="flex items-center gap-2 text-sm text-[#EF6855] hover:text-[#E5503F] font-medium disabled:opacity-50"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Ajouter un destinataire
-                  </button>
-                  {!showCC && (
-                    <button
-                      onClick={() => {
-                        setShowCC(true);
-                        if (ccRecipients.length === 0) {
-                          setCcRecipients([{ name: '', email: '' }]);
-                        }
-                      }}
-                      disabled={isSending}
-                      className="flex items-center gap-2 text-sm text-[#EF6855] hover:text-[#E5503F] font-medium disabled:opacity-50"
-                    >
-                      <Plus className="w-4 h-4" />
-                      CC
-                    </button>
-                  )}
-                  {!showBCC && (
-                    <button
-                      onClick={() => {
-                        setShowBCC(true);
-                        if (bccRecipients.length === 0) {
-                          setBccRecipients([{ name: '', email: '' }]);
-                        }
-                      }}
-                      disabled={isSending}
-                      className="flex items-center gap-2 text-sm text-[#EF6855] hover:text-[#E5503F] font-medium disabled:opacity-50"
-                    >
-                      <Plus className="w-4 h-4" />
-                      CCI
-                    </button>
-                  )}
-                </div>
               </div>
             </div>
 
