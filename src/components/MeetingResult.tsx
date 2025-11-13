@@ -764,7 +764,7 @@ export const MeetingResult = ({ title, transcript, summary, suggestions = [], us
         }
       }}
     >
-      <div className="bg-white rounded-2xl md:rounded-3xl max-w-4xl w-full max-h-[95vh] md:max-h-[90vh] overflow-hidden shadow-2xl border-2 border-orange-100 flex flex-col">
+      <div className="bg-white rounded-2xl md:rounded-3xl max-w-4xl w-full h-[95vh] md:h-[90vh] overflow-hidden shadow-2xl border-2 border-orange-100 flex flex-col">
         <div className="border-b-2 border-orange-100">
           <div className="p-4 md:p-8">
             <div className="flex items-center justify-between mb-4 md:mb-6">
