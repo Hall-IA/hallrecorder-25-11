@@ -215,6 +215,19 @@ async function syncCustomerFromStripe(customerId: string) {
       const billingCycleStart = new Date(subscription.current_period_start * 1000).toISOString();
       const billingCycleEnd = new Date(subscription.current_period_end * 1000).toISOString();
 
+      const { data: existingSub } = await supabase
+        .from('user_subscriptions')
+        .select('plan_type, pending_downgrade_plan')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      let pendingDowngrade = existingSub?.pending_downgrade_plan;
+
+      if (existingSub && existingSub.pending_downgrade_plan === planType) {
+        console.info(`Applying scheduled downgrade to ${planType} for user: ${userId}`);
+        pendingDowngrade = null;
+      }
+
       const { error: userSubError } = await supabase.from('user_subscriptions').upsert(
         {
           user_id: userId,
@@ -225,6 +238,7 @@ async function syncCustomerFromStripe(customerId: string) {
           is_active: isActive,
           stripe_customer_id: customerId,
           stripe_price_id: priceId,
+          pending_downgrade_plan: pendingDowngrade,
           updated_at: new Date().toISOString(),
         },
         {

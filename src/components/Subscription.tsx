@@ -15,6 +15,7 @@ interface SubscriptionData {
   billing_cycle_end: string;
   stripe_customer_id: string | null;
   stripe_price_id: string | null;
+  pending_downgrade_plan: 'starter' | 'unlimited' | null;
 }
 
 interface StripeSubscription {
@@ -48,6 +49,8 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
   const [selectedPlan, setSelectedPlan] = useState<'starter' | 'unlimited'>('starter');
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isLoadingInvoices, setIsLoadingInvoices] = useState(false);
+  const [changeMessage, setChangeMessage] = useState<string | null>(null);
+  const [changeType, setChangeType] = useState<'upgrade' | 'downgrade' | null>(null);
 
   useEffect(() => {
     loadSubscription();
@@ -121,6 +124,8 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
   const handleChangePlan = async () => {
     setIsProcessing(true);
     setError(null);
+    setChangeMessage(null);
+    setChangeType(null);
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -128,14 +133,43 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
         throw new Error('Vous devez être connecté');
       }
 
-      // Map plan types to Stripe Price IDs
-      const priceIds = {
-        starter: 'price_1SSyMI14zZqoQtSCb1gqGhke',
-        unlimited: 'price_1SSyNh14zZqoQtSCqPL9VwTj'
-      };
+      if (!subscription) {
+        const priceIds = {
+          starter: 'price_1SSyMI14zZqoQtSCb1gqGhke',
+          unlimited: 'price_1SSyNh14zZqoQtSCqPL9VwTj'
+        };
+
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`,
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              price_id: priceIds[selectedPlan],
+              success_url: `${window.location.origin}/#subscription`,
+              cancel_url: `${window.location.origin}/#subscription`,
+              mode: 'subscription'
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error('Erreur lors de la création de la session de paiement');
+        }
+
+        const { url } = await response.json();
+
+        if (url) {
+          window.location.href = url;
+        }
+        return;
+      }
 
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/change-subscription-plan`,
         {
           method: 'POST',
           headers: {
@@ -143,23 +177,21 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            price_id: priceIds[selectedPlan],
-            success_url: `${window.location.origin}/#subscription`,
-            cancel_url: `${window.location.origin}/#subscription`,
-            mode: 'subscription'
+            new_plan: selectedPlan
           }),
         }
       );
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Erreur lors de la création de la session de paiement');
+        throw new Error(data.error || 'Erreur lors du changement de plan');
       }
 
-      const { url } = await response.json();
+      setChangeMessage(data.message);
+      setChangeType(data.type);
 
-      if (url) {
-        window.location.href = url;
-      }
+      await loadSubscription();
     } catch (err: any) {
       console.error('Error:', err);
       setError(err.message || 'Une erreur est survenue. Veuillez réessayer.');
@@ -304,6 +336,33 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
           <p className="text-red-700">{error}</p>
+        </div>
+      )}
+
+      {changeMessage && (
+        <div className={`border rounded-xl p-4 flex items-start gap-3 ${
+          changeType === 'upgrade'
+            ? 'bg-green-50 border-green-200'
+            : 'bg-blue-50 border-blue-200'
+        }`}>
+          <CheckCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
+            changeType === 'upgrade' ? 'text-green-500' : 'text-blue-500'
+          }`} />
+          <p className={changeType === 'upgrade' ? 'text-green-700' : 'text-blue-700'}>
+            {changeMessage}
+          </p>
+        </div>
+      )}
+
+      {subscription?.pending_downgrade_plan && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+          <div className="text-blue-700">
+            <p className="font-semibold mb-1">Changement de plan programmé</p>
+            <p>
+              Votre abonnement passera au plan {subscription.pending_downgrade_plan === 'starter' ? 'Starter' : 'Illimité'} le {formatDate(subscription.billing_cycle_end)}.
+            </p>
+          </div>
         </div>
       )}
 
