@@ -809,11 +809,11 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
       <div className="bg-gradient-to-r from-coral-50 to-sunset-50 border-2 border-coral-200 rounded-2xl p-6">
         <h3 className="font-bold text-cocoa-800 mb-4 flex items-center gap-2">
           <Download className="w-5 h-5" />
-          Gestion de l'abonnement
+          Gestion de l'abonnement et annulation
         </h3>
 
         <p className="text-cocoa-600 mb-4">
-          Gérez votre abonnement, mettez à jour votre moyen de paiement ou annulez votre abonnement depuis le portail Stripe.
+          Accédez au portail Stripe pour gérer votre abonnement, mettre à jour votre moyen de paiement ou annuler votre abonnement.
         </p>
 
         <button
@@ -829,13 +829,13 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
           ) : (
             <>
               <ExternalLink className="w-5 h-5" />
-              <span>Accéder au portail de facturation</span>
+              <span>Gérer mon abonnement / Annuler</span>
             </>
           )}
         </button>
 
         <p className="text-xs text-cocoa-500 mt-3">
-          Vous serez redirigé vers le portail sécurisé Stripe pour gérer votre abonnement.
+          Vous serez redirigé vers le portail sécurisé Stripe où vous pourrez annuler votre abonnement en quelques clics.
         </p>
       </div>
     </div>
