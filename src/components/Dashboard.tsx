@@ -384,50 +384,50 @@ export function Dashboard() {
         {/* Cartes statistiques */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {/* Total de réunions */}
-          <div className="group bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-lg hover:scale-105 hover:-translate-y-1 transition-all duration-300 animate-fadeInUp delay-100">
+          <div className="group bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-2 hover:border-blue-300 transition-all duration-500 ease-out animate-fadeInUp delay-100">
             <div className="flex items-start justify-between mb-3">
-              <p className="text-sm font-medium text-gray-600">Total de réunions</p>
-              <div className="p-2 bg-blue-50 rounded-lg group-hover:scale-110 transition-transform duration-300">
+              <p className="text-sm font-medium text-gray-600 group-hover:text-blue-600 transition-colors duration-300">Total de réunions</p>
+              <div className="p-2 bg-blue-50 rounded-lg group-hover:scale-110 group-hover:bg-blue-100 transition-all duration-300">
                 <FileText className="w-5 h-5 text-blue-600" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-gray-900 mb-1">{stats.totalMinutes}min</p>
+            <p className="text-3xl font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors duration-300">{stats.totalMinutes}min</p>
             <p className="text-xs text-gray-500">Depuis le début</p>
           </div>
 
           {/* Minutes utilisées */}
-          <div className="group bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-lg hover:scale-105 hover:-translate-y-1 transition-all duration-300 animate-fadeInUp delay-150">
+          <div className="group bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-2 hover:border-green-300 transition-all duration-500 ease-out animate-fadeInUp delay-150">
             <div className="flex items-start justify-between mb-3">
-              <p className="text-sm font-medium text-gray-600">Minutes utilisées</p>
-              <div className="p-2 bg-green-50 rounded-lg group-hover:scale-110 transition-transform duration-300">
+              <p className="text-sm font-medium text-gray-600 group-hover:text-green-600 transition-colors duration-300">Minutes utilisées</p>
+              <div className="p-2 bg-green-50 rounded-lg group-hover:scale-110 group-hover:bg-green-100 transition-all duration-300">
                 <Clock className="w-5 h-5 text-green-600" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-gray-900 mb-1">{stats.periodMeetings}</p>
+            <p className="text-3xl font-bold text-gray-900 mb-1 group-hover:text-green-600 transition-colors duration-300">{stats.periodMeetings}</p>
             <p className="text-xs text-gray-500">Depuis le début</p>
           </div>
 
           {/* Réunions période */}
-          <div className="group bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-lg hover:scale-105 hover:-translate-y-1 transition-all duration-300 animate-fadeInUp delay-200">
+          <div className="group bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-2 hover:border-red-300 transition-all duration-500 ease-out animate-fadeInUp delay-200">
             <div className="flex items-start justify-between mb-3">
-              <p className="text-sm font-medium text-gray-600">Réunions</p>
-              <div className="p-2 bg-red-50 rounded-lg group-hover:scale-110 transition-transform duration-300">
+              <p className="text-sm font-medium text-gray-600 group-hover:text-red-600 transition-colors duration-300">Réunions</p>
+              <div className="p-2 bg-red-50 rounded-lg group-hover:scale-110 group-hover:bg-red-100 transition-all duration-300">
                 <Calendar className="w-5 h-5 text-red-600" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-gray-900 mb-1">{stats.periodMeetings}</p>
+            <p className="text-3xl font-bold text-gray-900 mb-1 group-hover:text-red-600 transition-colors duration-300">{stats.periodMeetings}</p>
             <p className="text-xs text-gray-500">{stats.periodMinutes} minutes sur la période</p>
           </div>
 
           {/* Durée moyenne */}
-          <div className="group bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-lg hover:scale-105 hover:-translate-y-1 transition-all duration-300 animate-fadeInUp delay-250">
+          <div className="group bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-2 hover:border-purple-300 transition-all duration-500 ease-out animate-fadeInUp delay-250">
             <div className="flex items-start justify-between mb-3">
-              <p className="text-sm font-medium text-gray-600">Durée moyenne</p>
-              <div className="p-2 bg-purple-50 rounded-lg group-hover:scale-110 transition-transform duration-300">
+              <p className="text-sm font-medium text-gray-600 group-hover:text-purple-600 transition-colors duration-300">Durée moyenne</p>
+              <div className="p-2 bg-purple-50 rounded-lg group-hover:scale-110 group-hover:bg-purple-100 transition-all duration-300">
                 <BarChart3 className="w-5 h-5 text-purple-600" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-gray-900 mb-1">{stats.averageDuration}</p>
+            <p className="text-3xl font-bold text-gray-900 mb-1 group-hover:text-purple-600 transition-colors duration-300">{stats.averageDuration}</p>
             <p className="text-xs text-gray-500">minutes par réunion</p>
           </div>
         </div>
