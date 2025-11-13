@@ -51,6 +51,8 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
   const [isLoadingInvoices, setIsLoadingInvoices] = useState(false);
   const [changeMessage, setChangeMessage] = useState<string | null>(null);
   const [changeType, setChangeType] = useState<'upgrade' | 'downgrade' | null>(null);
+  const [isWaitingForInvoice, setIsWaitingForInvoice] = useState(false);
+  const [lastInvoiceCount, setLastInvoiceCount] = useState(0);
 
   useEffect(() => {
     loadSubscription();
@@ -112,7 +114,13 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
 
       if (response.ok) {
         const data = await response.json();
-        setInvoices(data.invoices || []);
+        const newInvoices = data.invoices || [];
+        setInvoices(newInvoices);
+
+        if (isWaitingForInvoice && newInvoices.length > lastInvoiceCount) {
+          console.log('Nouvelle facture détectée, arrêt du rechargement automatique');
+          setIsWaitingForInvoice(false);
+        }
       }
     } catch (err) {
       console.error('Error loading invoices:', err);
@@ -209,16 +217,24 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
       setChangeType(data.type);
 
       if (data.type === 'upgrade') {
-        const reloadInvoicesMultipleTimes = async () => {
-          await loadInvoices();
-          await new Promise(resolve => setTimeout(resolve, 3000));
-          await loadInvoices();
-          await new Promise(resolve => setTimeout(resolve, 5000));
-          await loadInvoices();
-          await new Promise(resolve => setTimeout(resolve, 10000));
-          await loadInvoices();
+        setLastInvoiceCount(invoices.length);
+        setIsWaitingForInvoice(true);
+        const reloadInvoicesWithRetry = async () => {
+          const maxAttempts = 8;
+          const delays = [2000, 3000, 4000, 5000, 6000, 8000, 10000, 15000];
+
+          for (let i = 0; i < maxAttempts; i++) {
+            if (!isWaitingForInvoice) {
+              console.log('Rechargement arrêté : nouvelle facture détectée');
+              break;
+            }
+            await new Promise(resolve => setTimeout(resolve, delays[i]));
+            await loadInvoices();
+          }
+
+          setIsWaitingForInvoice(false);
         };
-        reloadInvoicesMultipleTimes();
+        reloadInvoicesWithRetry();
       } else {
         await loadInvoices();
       }
@@ -399,9 +415,18 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
             </p>
           </div>
           {changeType === 'upgrade' && (
-            <p className="text-sm text-green-600 ml-8">
-              La facture d'ajustement de prorata sera générée par Stripe dans quelques instants et apparaîtra dans votre liste de factures ci-dessous.
-            </p>
+            <div className="ml-8">
+              {isWaitingForInvoice ? (
+                <div className="flex items-center gap-2 text-sm text-green-600">
+                  <Loader className="w-4 h-4 animate-spin" />
+                  <span>Génération de la facture de prorata en cours...</span>
+                </div>
+              ) : (
+                <p className="text-sm text-green-600">
+                  La facture d'ajustement de prorata a été générée par Stripe et apparaît dans votre liste de factures ci-dessous.
+                </p>
+              )}
+            </div>
           )}
         </div>
       )}
@@ -696,6 +721,26 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
             Actualiser
           </button>
         </div>
+
+        {isWaitingForInvoice && (
+          <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Loader className="w-5 h-5 animate-spin text-amber-600 flex-shrink-0" />
+                <div className="text-sm text-amber-700">
+                  <p className="font-semibold">Facture en cours de génération</p>
+                  <p>Stripe génère votre facture de prorata. Elle apparaîtra ici dans quelques instants...</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsWaitingForInvoice(false)}
+                className="text-amber-600 hover:text-amber-800 text-sm font-medium px-3 py-1 rounded hover:bg-amber-100 transition-colors"
+              >
+                Arrêter
+              </button>
+            </div>
+          </div>
+        )}
 
         {isLoadingInvoices ? (
           <div className="flex items-center justify-center py-8">
