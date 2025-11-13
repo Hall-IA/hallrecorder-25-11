@@ -227,15 +227,6 @@ export const FloatingStartButton = ({ onStartRecording, isVisible }: FloatingSta
         {/* Glow pulsant */}
         <div className="absolute inset-1 bg-coral-400 rounded-full opacity-40 animate-pulse pointer-events-none" style={{ animationDuration: '1.5s' }}></div>
 
-        {/* Effet de brillance tournant */}
-        <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-shimmer"></div>
-        </div>
-
-        {/* Cercles concentriques animés */}
-        <div className="absolute inset-2 border-4 border-white/20 rounded-full animate-spin-slow pointer-events-none"></div>
-        <div className="absolute inset-4 border-2 border-white/30 rounded-full animate-spin-reverse pointer-events-none"></div>
-
         {/* Reflet 3D */}
         <div className="absolute inset-3 bg-gradient-to-tr from-white/40 via-white/20 to-transparent rounded-full pointer-events-none"></div>
 
