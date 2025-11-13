@@ -167,20 +167,41 @@ Deno.serve(async (req) => {
 
     const subscription = subscriptions.data[0];
     const subscriptionItemId = subscription.items.data[0].id;
+    const currentPriceId = subscription.items.data[0].price.id;
     const newPriceId = PLAN_TO_PRICE_ID[newPlan];
+
+    console.log(`Subscription details:`, {
+      subscriptionId: subscription.id,
+      subscriptionItemId,
+      currentPriceId,
+      newPriceId,
+      currentPlan,
+      newPlan
+    });
 
     if (isUpgrade) {
       console.info(`Processing UPGRADE from ${currentPlan} to ${newPlan} for user ${user.id}`);
+      console.log(`Updating subscription ${subscription.id} with new price ${newPriceId}`);
 
-      const updatedSubscription = await stripe.subscriptions.update(subscription.id, {
-        items: [{
-          id: subscriptionItemId,
-          price: newPriceId,
-        }],
-        proration_behavior: 'create_prorations',
-      });
+      let updatedSubscription;
+      try {
+        updatedSubscription = await stripe.subscriptions.update(subscription.id, {
+          items: [{
+            id: subscriptionItemId,
+            price: newPriceId,
+          }],
+          proration_behavior: 'create_prorations',
+        });
 
-      console.info(`Updated subscription ${updatedSubscription.id}, syncing to database...`);
+        console.info(`✓ Successfully updated subscription ${updatedSubscription.id}`);
+        console.log(`New price in Stripe: ${updatedSubscription.items.data[0].price.id}`);
+        console.log(`Proration behavior: create_prorations`);
+      } catch (stripeError: any) {
+        console.error(`✗ Stripe API error:`, stripeError);
+        throw new Error(`Failed to update Stripe subscription: ${stripeError.message}`);
+      }
+
+      console.info(`Syncing to database...`);
 
       const billingCycleStart = new Date(updatedSubscription.current_period_start * 1000).toISOString();
       const billingCycleEnd = new Date(updatedSubscription.current_period_end * 1000).toISOString();
