@@ -1345,12 +1345,12 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
                   value={editedNotes}
                   onChange={(e) => setEditedNotes(e.target.value)}
                   placeholder="Ajoutez vos notes ici..."
-                  className="w-full min-h-[200px] p-4 border-2 border-amber-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-cocoa-800 leading-relaxed bg-gradient-to-br from-amber-50 to-orange-50 resize-y"
+                  className="w-full min-h-[150px] p-4 border-2 border-amber-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-cocoa-800 leading-relaxed bg-gradient-to-br from-amber-50 to-orange-50 resize-y"
                 />
               </div>
 
               {/* Résumé IA */}
-              <div>
+              <div className="flex-1">
                 <label className="block text-sm font-bold text-cocoa-800 mb-2">
                   Résumé IA
                 </label>
@@ -1358,20 +1358,7 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
                   value={editedSummary}
                   onChange={(e) => setEditedSummary(e.target.value)}
                   placeholder="Le résumé généré par l'IA apparaîtra ici..."
-                  className="w-full min-h-[400px] p-6 border-2 border-orange-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-coral-500 focus:border-coral-500 text-cocoa-800 text-base leading-relaxed resize-y"
-                />
-              </div>
-
-              {/* Transcription */}
-              <div>
-                <label className="block text-sm font-bold text-cocoa-800 mb-2">
-                  Transcription complète
-                </label>
-                <textarea
-                  value={editedTranscript}
-                  onChange={(e) => setEditedTranscript(e.target.value)}
-                  placeholder="La transcription complète apparaîtra ici..."
-                  className="w-full min-h-[400px] p-6 border-2 border-blue-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-cocoa-800 text-base leading-relaxed bg-gradient-to-br from-blue-50 to-indigo-50 resize-y"
+                  className="w-full min-h-[500px] p-6 border-2 border-orange-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-coral-500 focus:border-coral-500 text-cocoa-800 text-lg leading-relaxed resize-y"
                 />
               </div>
             </div>
