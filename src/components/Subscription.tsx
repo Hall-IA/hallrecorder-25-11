@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Crown, Calendar, CreditCard, Download, AlertCircle, CheckCircle, XCircle, Loader, ExternalLink, Zap, FileText } from 'lucide-react';
+import { Crown, Calendar, CreditCard, Download, AlertCircle, CheckCircle, XCircle, Loader, ExternalLink, Zap, FileText, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface SubscriptionProps {
@@ -192,6 +192,14 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
       setChangeType(data.type);
 
       await loadSubscription();
+
+      if (data.type === 'upgrade') {
+        setTimeout(async () => {
+          await loadInvoices();
+        }, 3000);
+      } else {
+        await loadInvoices();
+      }
     } catch (err: any) {
       console.error('Error:', err);
       setError(err.message || 'Une erreur est survenue. Veuillez réessayer.');
@@ -340,17 +348,24 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
       )}
 
       {changeMessage && (
-        <div className={`border rounded-xl p-4 flex items-start gap-3 ${
+        <div className={`border rounded-xl p-4 ${
           changeType === 'upgrade'
             ? 'bg-green-50 border-green-200'
             : 'bg-blue-50 border-blue-200'
         }`}>
-          <CheckCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
-            changeType === 'upgrade' ? 'text-green-500' : 'text-blue-500'
-          }`} />
-          <p className={changeType === 'upgrade' ? 'text-green-700' : 'text-blue-700'}>
-            {changeMessage}
-          </p>
+          <div className="flex items-start gap-3 mb-2">
+            <CheckCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
+              changeType === 'upgrade' ? 'text-green-500' : 'text-blue-500'
+            }`} />
+            <p className={`font-semibold ${changeType === 'upgrade' ? 'text-green-700' : 'text-blue-700'}`}>
+              {changeMessage}
+            </p>
+          </div>
+          {changeType === 'upgrade' && (
+            <p className="text-sm text-green-600 ml-8">
+              La facture d'ajustement de prorata sera générée par Stripe dans quelques instants et apparaîtra dans votre liste de factures ci-dessous.
+            </p>
+          )}
         </div>
       )}
 
@@ -625,14 +640,24 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
 
       {/* Section Factures */}
       <div className="bg-white border-2 border-coral-200 rounded-2xl p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-            <FileText className="w-6 h-6 text-white" />
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+              <FileText className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h3 className="font-bold text-cocoa-800">Mes factures</h3>
+              <p className="text-sm text-cocoa-600">Téléchargez vos factures</p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-bold text-cocoa-800">Mes factures</h3>
-            <p className="text-sm text-cocoa-600">Téléchargez vos factures</p>
-          </div>
+          <button
+            onClick={loadInvoices}
+            disabled={isLoadingInvoices}
+            className="flex items-center gap-2 px-3 py-2 text-sm bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:shadow-lg transition-all disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoadingInvoices ? 'animate-spin' : ''}`} />
+            Actualiser
+          </button>
         </div>
 
         {isLoadingInvoices ? (

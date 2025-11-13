@@ -127,13 +127,42 @@ Deno.serve(async (req) => {
     if (isUpgrade) {
       console.info(`Processing UPGRADE from ${currentPlan} to ${newPlan} for user ${user.id}`);
 
-      await stripe.subscriptions.update(subscription.id, {
+      const updatedSubscription = await stripe.subscriptions.update(subscription.id, {
         items: [{
           id: subscriptionItemId,
           price: newPriceId,
         }],
         proration_behavior: 'create_prorations',
       });
+
+      console.info(`Updated subscription ${updatedSubscription.id}, syncing to database...`);
+
+      const billingCycleStart = new Date(updatedSubscription.current_period_start * 1000).toISOString();
+      const billingCycleEnd = new Date(updatedSubscription.current_period_end * 1000).toISOString();
+
+      const { error: updateSubError } = await supabase.from('user_subscriptions').update({
+        plan_type: newPlan,
+        minutes_quota: newPlan === 'starter' ? 600 : null,
+        stripe_price_id: newPriceId,
+        billing_cycle_start: billingCycleStart,
+        billing_cycle_end: billingCycleEnd,
+        updated_at: new Date().toISOString(),
+      }).eq('user_id', user.id);
+
+      if (updateSubError) {
+        console.error('Error updating user subscription:', updateSubError);
+      }
+
+      const { error: updateStripeSubError } = await supabase.from('stripe_subscriptions').update({
+        price_id: newPriceId,
+        current_period_start: updatedSubscription.current_period_start,
+        current_period_end: updatedSubscription.current_period_end,
+        updated_at: new Date().toISOString(),
+      }).eq('customer_id', userSub.stripe_customer_id);
+
+      if (updateStripeSubError) {
+        console.error('Error updating stripe subscription:', updateStripeSubError);
+      }
 
       return new Response(JSON.stringify({
         success: true,

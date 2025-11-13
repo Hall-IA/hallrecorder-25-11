@@ -69,19 +69,32 @@ Deno.serve(async (req) => {
     });
 
     // Formater les factures pour le frontend
-    const formattedInvoices = invoices.data.map((invoice) => ({
-      id: invoice.id,
-      number: invoice.number || invoice.id,
-      amount: invoice.total / 100, // Convertir de centimes en euros
-      currency: invoice.currency.toUpperCase(),
-      status: invoice.status,
-      created: invoice.created,
-      invoice_pdf: invoice.invoice_pdf,
-      hosted_invoice_url: invoice.hosted_invoice_url,
-      description: invoice.lines.data[0]?.description || 'Abonnement',
-      period_start: invoice.period_start,
-      period_end: invoice.period_end,
-    }));
+    const formattedInvoices = invoices.data.map((invoice) => {
+      let description = 'Abonnement';
+
+      if (invoice.lines.data.length > 0) {
+        const line = invoice.lines.data[0];
+        description = line.description || 'Abonnement';
+
+        if (invoice.lines.data.some(l => l.proration === true)) {
+          description = 'Ajustement de prorata - Changement de plan';
+        }
+      }
+
+      return {
+        id: invoice.id,
+        number: invoice.number || invoice.id,
+        amount: invoice.total / 100,
+        currency: invoice.currency.toUpperCase(),
+        status: invoice.status,
+        created: invoice.created,
+        invoice_pdf: invoice.invoice_pdf,
+        hosted_invoice_url: invoice.hosted_invoice_url,
+        description,
+        period_start: invoice.period_start,
+        period_end: invoice.period_end,
+      };
+    });
 
     return new Response(
       JSON.stringify({ invoices: formattedInvoices }),
