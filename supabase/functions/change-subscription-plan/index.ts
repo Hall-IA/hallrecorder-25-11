@@ -196,6 +196,24 @@ Deno.serve(async (req) => {
         console.info(`✓ Successfully updated subscription ${updatedSubscription.id}`);
         console.log(`New price in Stripe: ${updatedSubscription.items.data[0].price.id}`);
         console.log(`Proration behavior: create_prorations`);
+
+        const upcomingInvoice = await stripe.invoices.retrieveUpcoming({
+          customer: userSub.stripe_customer_id,
+        });
+
+        console.log('Upcoming invoice details:');
+        console.log(`- Total: ${upcomingInvoice.total / 100} ${upcomingInvoice.currency}`);
+        console.log(`- Subtotal: ${upcomingInvoice.subtotal / 100}`);
+        console.log(`- Amount due: ${upcomingInvoice.amount_due / 100}`);
+        console.log(`- Lines count: ${upcomingInvoice.lines.data.length}`);
+
+        upcomingInvoice.lines.data.forEach((line, index) => {
+          console.log(`  Line ${index + 1}:`);
+          console.log(`    - Description: ${line.description}`);
+          console.log(`    - Amount: ${line.amount / 100} ${upcomingInvoice.currency}`);
+          console.log(`    - Proration: ${line.proration}`);
+          console.log(`    - Period: ${new Date(line.period.start * 1000).toISOString()} to ${new Date(line.period.end * 1000).toISOString()}`);
+        });
       } catch (stripeError: any) {
         console.error(`✗ Stripe API error:`, stripeError);
         throw new Error(`Failed to update Stripe subscription: ${stripeError.message}`);

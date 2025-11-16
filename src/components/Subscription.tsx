@@ -38,6 +38,7 @@ interface Invoice {
   description: string;
   period_start: number;
   period_end: number;
+  is_proration?: boolean;
 }
 
 export const Subscription = ({ userId }: SubscriptionProps) => {
@@ -780,6 +781,11 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <p className="font-semibold text-cocoa-900">Facture {invoice.number}</p>
+                    {invoice.is_proration && (
+                      <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">
+                        📊 Prorata
+                      </span>
+                    )}
                     {invoice.status === 'paid' && (
                       <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium">
                         Payée
