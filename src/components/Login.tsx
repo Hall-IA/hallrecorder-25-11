@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Mail, Lock, LogIn, UserPlus } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { ForgotPasswordModal } from './ForgotPasswordModal';
+import { PasswordResetModal } from './PasswordResetModal';
 
 interface LoginProps {
   onSuccess: () => void;
@@ -14,7 +14,7 @@ export const Login = ({ onSuccess }: LoginProps) => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,7 +115,7 @@ export const Login = ({ onSuccess }: LoginProps) => {
                 <div className="mt-2 text-right">
                   <button
                     type="button"
-                    onClick={() => setShowForgotPassword(true)}
+                    onClick={() => setShowPasswordReset(true)}
                     className="text-sm text-coral-600 hover:text-coral-700 font-medium transition-colors"
                   >
                     Mot de passe oublié ?
@@ -167,8 +167,8 @@ export const Login = ({ onSuccess }: LoginProps) => {
         </div>
       </div>
 
-      {showForgotPassword && (
-        <ForgotPasswordModal onClose={() => setShowForgotPassword(false)} />
+      {showPasswordReset && (
+        <PasswordResetModal onClose={() => setShowPasswordReset(false)} />
       )}
     </div>
   );

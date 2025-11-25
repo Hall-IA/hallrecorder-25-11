@@ -32,7 +32,6 @@ import { LongRecordingReminderModal } from './components/LongRecordingReminderMo
 import { RecordingLimitModal } from './components/RecordingLimitModal';
 import { ShortRecordingWarningModal } from './components/ShortRecordingWarningModal';
 import { SummaryPreferenceModal } from './components/SummaryPreferenceModal';
-import { UpdatePasswordModal } from './components/UpdatePasswordModal';
 import { ContactSupport } from './components/ContactSupport';
 import { SubscriptionSelection } from './components/SubscriptionSelection';
 import { supabase, Meeting } from './lib/supabase';
@@ -183,7 +182,6 @@ function App() {
   const [defaultSummaryModeSetting, setDefaultSummaryModeSetting] = useState<SummaryMode | null>(null);
   const [isDefaultSummaryModeLoaded, setIsDefaultSummaryModeLoaded] = useState(false);
   const [showDefaultModeReminder, setShowDefaultModeReminder] = useState(false);
-  const [showUpdatePasswordModal, setShowUpdatePasswordModal] = useState(false);
   const [recordingReminderToast, setRecordingReminderToast] = useState<{ message: string } | null>(null);
   const categoryColorSupportedRef = useRef<boolean | null>(null);
   const [subscription, setSubscription] = useState<{ plan_type: 'starter' | 'unlimited'; is_active: boolean } | null>(null);
@@ -434,30 +432,22 @@ function App() {
     // Restaurer la vue depuis l'URL (hash) au chargement
     let hash = window.location.hash.replace('#', '');
 
-    // IMPORTANT: Si le hash contient type=recovery, NE PAS LE MODIFIER
-    // Supabase a besoin des tokens pour déclencher l'événement PASSWORD_RECOVERY
-    if (hash.includes('type=recovery')) {
-      console.log('🔐 Hash contient type=recovery, ne pas modifier l\'URL');
-      // Ne rien faire, laisser Supabase gérer les tokens
-      // L'événement PASSWORD_RECOVERY sera déclenché par onAuthStateChange
-    } else {
-      // Extraire juste la vue (avant # ou ? ou &)
-      const hashView = hash.split(/[#?&]/)[0];
+    // Extraire juste la vue (avant # ou ? ou &)
+    const hashView = hash.split(/[#?&]/)[0];
 
-      if (hashView && ['record', 'history', 'upload', 'settings', 'dashboard', 'contact', 'subscription'].includes(hashView)) {
-        console.log('🔄 Restauration de la vue depuis l\'URL:', hashView);
-        setView(hashView as any);
-      } else if (hashView === 'detail') {
-        // Si on est sur detail sans réunion, rediriger vers history
-        console.log('⚠️ Vue detail sans réunion, redirection vers history');
-        setView('history');
-        window.history.replaceState({ view: 'history' }, '', '#history');
-      } else if (hash && hash !== '') {
-        // Hash invalide, rediriger vers record
-        console.log('⚠️ Hash invalide:', hash, 'redirection vers record');
-        setView('record');
-        window.history.replaceState({ view: 'record' }, '', '#record');
-      }
+    if (hashView && ['record', 'history', 'upload', 'settings', 'dashboard', 'contact', 'subscription'].includes(hashView)) {
+      console.log('🔄 Restauration de la vue depuis l\'URL:', hashView);
+      setView(hashView as any);
+    } else if (hashView === 'detail') {
+      // Si on est sur detail sans réunion, rediriger vers history
+      console.log('⚠️ Vue detail sans réunion, redirection vers history');
+      setView('history');
+      window.history.replaceState({ view: 'history' }, '', '#history');
+    } else if (hash && hash !== '') {
+      // Hash invalide, rediriger vers record
+      console.log('⚠️ Hash invalide:', hash, 'redirection vers record');
+      setView('record');
+      window.history.replaceState({ view: 'record' }, '', '#record');
     }
 
     // Vérifier la session initiale
@@ -485,13 +475,6 @@ function App() {
 
       // Arrêter le chargement si ce n'est pas déjà fait
       setIsAuthLoading(false);
-
-      // Gérer l'événement PASSWORD_RECOVERY (reset password)
-      if (event === 'PASSWORD_RECOVERY') {
-        console.log('🔐 PASSWORD_RECOVERY event detected - showing password update modal');
-        setShowUpdatePasswordModal(true);
-        return;
-      }
 
       // Ne changer la vue que lors de la connexion initiale, pas à chaque changement d'état
       if (session?.user && event === 'SIGNED_IN') {
@@ -545,12 +528,6 @@ function App() {
         // Essayer de lire depuis le hash si pas d'état
         let hash = window.location.hash.replace('#', '');
 
-        // IMPORTANT: Si le hash contient type=recovery, ne rien faire
-        if (hash.includes('type=recovery')) {
-          console.log('🔐 Hash contient type=recovery, ne pas modifier');
-          return;
-        }
-
         // Extraire juste la vue (avant # ou ? ou &)
         const hashView = hash.split(/[#?&]/)[0];
 
@@ -583,12 +560,6 @@ function App() {
     const handleHashChange = () => {
       const path = window.location.pathname;
       let hash = window.location.hash.replace('#', '');
-
-      // IMPORTANT: Si le hash contient type=recovery, ne rien faire
-      if (hash.includes('type=recovery')) {
-        console.log('🔐 Hash contient type=recovery, ne pas modifier');
-        return;
-      }
 
       // Gérer la redirection depuis /auth
       if (path === '/auth' || path.startsWith('/auth/')) {
@@ -1835,57 +1806,15 @@ function App() {
   }
 
   if (view === 'gmail-callback') {
-    return (
-      <>
-        <GmailCallback />
-        {showUpdatePasswordModal && (
-          <UpdatePasswordModal
-            onSuccess={async () => {
-              setShowUpdatePasswordModal(false);
-              await showAlert({
-                title: 'Succès',
-                message: 'Votre mot de passe a été réinitialisé avec succès ! Veuillez vous reconnecter avec votre nouveau mot de passe.',
-                variant: 'success',
-              });
-              // Déconnecter l'utilisateur pour qu'il se reconnecte avec le nouveau mot de passe
-              await supabase.auth.signOut();
-              setView('landing');
-              window.history.replaceState({}, '', '#');
-            }}
-          />
-        )}
-      </>
-    );
+    return <GmailCallback />;
   }
 
   if (view === 'landing') {
-    return (
-      <>
-        <LandingPage onGetStarted={() => setView('auth')} />
-        {showUpdatePasswordModal && (
-          <UpdatePasswordModal
-            onSuccess={async () => {
-              setShowUpdatePasswordModal(false);
-              await showAlert({
-                title: 'Succès',
-                message: 'Votre mot de passe a été réinitialisé avec succès ! Veuillez vous reconnecter avec votre nouveau mot de passe.',
-                variant: 'success',
-              });
-              // Déconnecter l'utilisateur pour qu'il se reconnecte avec le nouveau mot de passe
-              await supabase.auth.signOut();
-              setView('landing');
-              window.history.replaceState({}, '', '#');
-            }}
-          />
-        )}
-      </>
-    );
+    return <LandingPage onGetStarted={() => setView('auth')} />;
   }
 
   if (!user) {
-    return (
-      <>
-        <Login onSuccess={async () => {
+    return <Login onSuccess={async () => {
       console.log('✅ Login réussi, initialisation...');
       try {
         setIsAuthLoading(false);
@@ -1908,25 +1837,7 @@ function App() {
           variant: 'danger',
         });
       }
-    }} />
-        {showUpdatePasswordModal && (
-          <UpdatePasswordModal
-            onSuccess={async () => {
-              setShowUpdatePasswordModal(false);
-              await showAlert({
-                title: 'Succès',
-                message: 'Votre mot de passe a été réinitialisé avec succès ! Veuillez vous reconnecter avec votre nouveau mot de passe.',
-                variant: 'success',
-              });
-              // Déconnecter l'utilisateur pour qu'il se reconnecte avec le nouveau mot de passe
-              await supabase.auth.signOut();
-              setView('landing');
-              window.history.replaceState({}, '', '#');
-            }}
-          />
-        )}
-      </>
-    );
+    }} />;
   }
 
   // Guard contre les erreurs de rendu
@@ -3043,24 +2954,6 @@ function App() {
           currentPlan={subscription?.plan_type}
           upgradeOnly={subscriptionUpgradeOnly}
           canClose={!!(subscription && subscription.is_active)}
-        />
-      )}
-
-      {/* Modal de mise à jour du mot de passe (PASSWORD_RECOVERY) */}
-      {showUpdatePasswordModal && (
-        <UpdatePasswordModal
-          onClose={() => setShowUpdatePasswordModal(false)}
-          onSuccess={async () => {
-            setShowUpdatePasswordModal(false);
-            await showAlert({
-              title: 'Succès',
-              message: 'Votre mot de passe a été réinitialisé avec succès !',
-              variant: 'success',
-            });
-            // Rediriger vers record après succès
-            setView('record');
-            window.history.replaceState({ view: 'record' }, '', '#record');
-          }}
         />
       )}
     </div>
