@@ -3,7 +3,46 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        roboto: ['Roboto', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        inter: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        thunder: ['Thunder', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        azeret: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
       colors: {
+        background: 'var(--color-background)',
+        foreground: 'var(--color-foreground)',
+        border: 'var(--color-border)',
+        input: 'var(--color-input)',
+        ring: 'var(--color-ring)',
+        primary: {
+          DEFAULT: 'var(--color-primary)',
+          foreground: 'var(--color-primary-foreground)',
+        },
+        secondary: {
+          DEFAULT: 'var(--color-secondary)',
+          foreground: 'var(--color-secondary-foreground)',
+        },
+        muted: {
+          DEFAULT: 'var(--color-muted)',
+          foreground: 'var(--color-muted-foreground)',
+        },
+        accent: {
+          DEFAULT: 'var(--color-accent)',
+          foreground: 'var(--color-accent-foreground)',
+        },
+        silverchalice: {
+          50: 'var(--color-silverchalice-50)',
+          100: 'var(--color-silverchalice-100)',
+          200: 'var(--color-silverchalice-200)',
+          300: 'var(--color-silverchalice-300)',
+          400: 'var(--color-silverchalice-400)',
+          500: 'var(--color-silverchalice-500)',
+          600: 'var(--color-silverchalice-600)',
+          700: 'var(--color-silverchalice-700)',
+          800: 'var(--color-silverchalice-800)',
+          900: 'var(--color-silverchalice-900)',
+        },
         coral: {
           50: '#fff5f3',
           100: '#ffe8e3',
@@ -62,6 +101,8 @@ export default {
         'fadeInLeft': 'fadeInLeft 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
         'fadeInRight': 'fadeInRight 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
         'zoomIn': 'zoomIn 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+        'marquee': 'marquee var(--duration) linear infinite',
+        'marquee-vertical': 'marquee-vertical var(--duration) linear infinite',
       },
       keyframes: {
         shimmer: {
@@ -88,6 +129,14 @@ export default {
           '0%': { opacity: '0', transform: 'scale(0.9)' },
           '100%': { opacity: '1', transform: 'scale(1)' },
         },
+        marquee: {
+          'from': { transform: 'translateX(0)' },
+          'to': { transform: 'translateX(calc(-100% - var(--gap)))' },
+        },
+        'marquee-vertical': {
+          'from': { transform: 'translateY(0)' },
+          'to': { transform: 'translateY(calc(-100% - var(--gap)))' },
+        },
       },
       animationDelay: {
         '75': '75ms',
@@ -102,6 +151,14 @@ export default {
         '800': '800ms',
         '900': '900ms',
         '1000': '1000ms',
+      },
+      spacing: {
+        '15': '3.75rem', // 60px
+        '30': '7.5rem', // 120px
+        '50': '12.5rem', // 200px
+        '60': '15rem', // 240px
+        '70': '17.5rem', // 280px
+        '90': '22.5rem', // 360px
       },
     },
   },

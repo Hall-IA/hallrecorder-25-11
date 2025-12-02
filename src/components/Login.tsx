@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Mail, Lock, LogIn, UserPlus } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { PasswordResetModal } from './PasswordResetModal';
@@ -15,6 +15,16 @@ export const Login = ({ onSuccess }: LoginProps) => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [showPasswordReset, setShowPasswordReset] = useState(false);
+
+  // Récupérer l'email depuis le localStorage au montage du composant
+  useEffect(() => {
+    const initialEmail = localStorage.getItem('initialEmail');
+    if (initialEmail) {
+      setEmail(initialEmail);
+      // Nettoyer le localStorage après récupération
+      localStorage.removeItem('initialEmail');
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

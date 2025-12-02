@@ -110,6 +110,14 @@ function App() {
       return 'record' as const;
     }
 
+    // Liste des ancres de navigation (sections de la landing page)
+    const navigationAnchors = ['avantages', 'etapes', 'prix'];
+    
+    // Si c'est une ancre de navigation, rester sur la landing page
+    if (navigationAnchors.includes(hash)) {
+      return 'landing' as const;
+    }
+
     // Si un hash valide existe, l'utiliser
     if (hash && ['record', 'history', 'detail', 'settings', 'upload', 'dashboard', 'contact', 'subscription'].includes(hash)) {
       return hash as any;
@@ -569,6 +577,25 @@ function App() {
         return;
       }
 
+      // Liste des ancres de navigation (sections de la landing page) à ignorer
+      const navigationAnchors = ['avantages', 'etapes', 'prix'];
+      
+      // Si c'est une ancre de navigation, ne rien faire et laisser le navigateur gérer le scroll
+      if (navigationAnchors.includes(hash)) {
+        console.log('📍 Ancre de navigation détectée:', hash, '- scroll automatique');
+        // S'assurer qu'on reste sur la landing page
+        if (view !== 'landing') {
+          setView('landing');
+        }
+        return;
+      }
+
+      // Si on est sur la landing page et que le hash n'est pas une vue valide, ne rien faire
+      if (view === 'landing' && hash && !['record', 'history', 'upload', 'settings', 'dashboard', 'contact', 'subscription', 'detail'].includes(hash)) {
+        console.log('📍 Sur landing page avec hash non-vue:', hash, '- on ignore');
+        return;
+      }
+
       // Extraire juste la vue (avant # ou ? ou &)
       const hashView = hash.split(/[#?&]/)[0];
 
@@ -578,8 +605,8 @@ function App() {
       } else if (hashView === 'detail') {
         // Ne rien faire - laisser le useEffect gérer la redirection si nécessaire
         console.log('🔄 Hash detail détecté, conservation de la vue actuelle');
-      } else if (hash && hash !== '') {
-        // Hash invalide
+      } else if (hash && hash !== '' && view !== 'landing') {
+        // Hash invalide - seulement si on n'est pas sur la landing page
         console.log('⚠️ Hash invalide:', hash, 'redirection vers record');
         setView('record');
         window.history.replaceState({ view: 'record' }, '', '#record');

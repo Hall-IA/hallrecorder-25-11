@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Police Thunder</title>
+    <style>
+        @font-face {
+            font-family: 'Thunder';
+            src: url('/fonts/thunder-lc.ttf') format('truetype');
+            font-weight: 400;
+        }
+        
+        @font-face {
+            font-family: 'Thunder';
+            src: url('/fonts/thunder-mediumlc.ttf') format('truetype');
+            font-weight: 500;
+        }
+
+        body {
+            padding: 40px;
+            background: #f0f0f0;
+        }
+
+        .test-thunder {
+            font-family: 'Thunder', sans-serif;
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .test-thunder.weight-400 {
+            font-weight: 400;
+        }
+
+        .test-thunder.weight-500 {
+            font-weight: 500;
+        }
+
+        .test-normal {
+            font-family: Arial, sans-serif;
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .info {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <h1>Test de la police Thunder</h1>
+        <p><strong>Instructions :</strong></p>
+        <ol>
+            <li>Ouvrez le DevTools (F12)</li>
+            <li>Allez dans Network → Filter: Font</li>
+            <li>Rechargez cette page (Ctrl+Shift+R)</li>
+            <li>Vérifiez que thunder-lc.ttf et thunder-mediumlc.ttf se chargent en 200 OK</li>
+        </ol>
+    </div>
+
+    <div class="info">
+        <h2>Avec Thunder Regular (400):</h2>
+        <div class="test-thunder weight-400">
+            Hallia - Test Thunder Regular 400
+        </div>
+        <div class="test-thunder weight-400">
+            ABCDEFGHIJKLMNOPQRSTUVWXYZ
+        </div>
+        <div class="test-thunder weight-400">
+            abcdefghijklmnopqrstuvwxyz
+        </div>
+    </div>
+
+    <div class="info">
+        <h2>Avec Thunder Medium (500):</h2>
+        <div class="test-thunder weight-500">
+            Hallia - Test Thunder Medium 500
+        </div>
+        <div class="test-thunder weight-500">
+            ABCDEFGHIJKLMNOPQRSTUVWXYZ
+        </div>
+        <div class="test-thunder weight-500">
+            abcdefghijklmnopqrstuvwxyz
+        </div>
+    </div>
+
+    <div class="info">
+        <h2>Avec Arial (comparaison):</h2>
+        <div class="test-normal">
+            Hallia - Test Arial
+        </div>
+        <div class="test-normal">
+            ABCDEFGHIJKLMNOPQRSTUVWXYZ
+        </div>
+        <div class="test-normal">
+            abcdefghijklmnopqrstuvwxyz
+        </div>
+    </div>
+</body>
+</html>
+
