@@ -172,9 +172,9 @@ export function ProductivityCard() {
                     </g>
                   </svg>
                   {/* Contenu de la carte */}
-                  <div className="absolute inset-0 flex flex-col justify-start gap-4 px-5 pr-6 py-2 sm:px-12 md:px-16 lg:px-20 mt-1">
+                  <div className="absolute inset-0 flex flex-col justify-center lg:justify-start gap-4 px-5 pr-6 py-2 sm:px-12 md:px-16 lg:px-20 mt-1 lg:mt-1">
                     <div className="hidden sm:flex bg-orange-200/50 rounded-xl p-2 w-fit">{step.icon}</div>
-                    <h4 className="font-roboto text-sm font-semibold text-orange-500 px-2 sm:px-0 md:text-sm lg:text-sm xl:text-lg">
+                    <h4 className="font-roboto text-sm font-semibold text-orange-500  sm:px-0 md:text-sm  lg:text-sm xl:text-lg">
                       {step.title}
                     </h4>
                     <p className="font-roboto text-xs text-gray-600 px-2 sm:px-0 md:text-sm lg:text-xs xl:text-base">

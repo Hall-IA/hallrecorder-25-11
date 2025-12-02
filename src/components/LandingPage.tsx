@@ -93,7 +93,7 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
       <section id="avantages">
         <ArgumentsSection />
         </section>
-      <section id="etapes" className="lg:mb-90">
+      <section id="etapes" className="hidden lg:block lg:mb-90">
         <ProductivitySection />
       </section>
       <section>

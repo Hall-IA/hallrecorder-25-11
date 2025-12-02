@@ -114,7 +114,7 @@ export default function ArgumentsSection() {
                 <img
                   src={argument.image}
                   alt={argument.title}
-                  className="h-full w-full object-cover object-[center_top] min-[1100px]:object-center"
+                  className="h-full w-full object-cover object-[center_top]"
                   loading="lazy"
                 />
               </div>
