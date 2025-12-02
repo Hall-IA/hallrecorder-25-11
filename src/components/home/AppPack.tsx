@@ -22,7 +22,7 @@ export default function AppPack() {
   };
 
   return (
-    <section className="relative flex w-full flex-col items-center overflow-hidden px-4 py-16">
+    <section className="py-0 relative flex w-full flex-col items-center overflow-hidden px-4 md:py-16">
       <img
         src="/assets/img/shape-yellow.png"
         alt=""

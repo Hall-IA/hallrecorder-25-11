@@ -113,7 +113,7 @@ export default function CardPack({
 
       {/* Section titre et features */}
       <div className="relative z-20 space-y-5 px-10 pt-30 pb-0">
-        <h3 className="font-thunder mb-5 text-5xl font-medium text-black">{title}</h3>
+        <h3 className="font-thunder mb-5 lg:text-5xl text-4xl font-medium text-black">{title}</h3>
 
         {subtitle && <p>{subtitle}</p>}
 
