@@ -19,10 +19,9 @@ export default function Hero() {
   return (
     <section>
       <div
-        className="relative mx-8 mt-4 rounded-3xl bg-cover bg-center bg-no-repeat"
+        className="relative mx-0 md:mx-8 mt-4 w-full md:w-[calc(100%-4rem)] rounded-3xl bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: 'url(/assets/img/hero-meeting.png)',
-          width: 'calc(100% - 4rem)',
         }}
       >
         {/* Overlay pour améliorer la lisibilité du texte */}

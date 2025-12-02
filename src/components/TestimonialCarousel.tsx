@@ -4,42 +4,42 @@ import { Marquee } from './ui/marquee';
 const testimonials = [
   {
     name: 'StratéNova Consulting',
-    role: 'Cabinet de Conseil (Paris, FR)',
+    role: 'Cabinet de Conseil ',
     image: '/assets/img/profil-julie.png',
     title: 'Transformation digitale & performance des organisations - 45 consultants',
     text: `StratéNova accompagne des entreprises dans leurs projets de modernisation. Ils utilisent Hall-IA Réunion pour standardiser leurs comptes rendus et fluidifier la transmission d'information entre consultants et directeurs de mission.`,
   },
   {
     name: 'Construxia',
-    role: 'Construction & Ingénierie (Lyon, FR)',
+    role: 'Construction & Ingénierie ',
     image: '/assets/img/profil-benjamin.png',
     title:"Gestion de chantiers, ingénierie civile et rénovation - 120 collaborateurs",
     text: "Construxia s’appuie sur Hall-IA Réunion pour fiabiliser les réunions de chantier, assurer le suivi des décisions et réduire les risques liés aux erreurs de communication entre équipes terrain et bureau d’études.",
   },
   {
     name: 'E-Shopia Market',
-    role: 'E-commerce & Retail (Lille, FR)',
+    role: 'E-commerce & Retail ',
     image: '/assets/img/profil-andrée.webp',
     title:'Vente en ligne & marketing multicanal - 30 collaborateurs',
     text:"E-Shopia utilise Hall-IA Réunion pour structurer ses réunions marketing, suivre plus efficacement ses projets et centraliser tout l’historique des décisions concernant les campagnes.  "
   },
   {
     name: 'RemoteFlow Digital',
-    role: ' Entreprise 100 % Télétravail (Europe)',
+    role: ' Entreprise 100 % Télétravail ',
     image: '/assets/img/person1.png',
     title:'Solutions digitales & gestion de projets à distance - 28 collaborateurs répartis sur 6 pays',
     text: "RemoteFlow fait confiance à Hall-IA Réunion pour synchroniser des équipes distribuées, créer des comptes rendus automatiques et réduire drastiquement les réunions redondantes.",
   },
   {
     name: 'Mediaspark Studio.',
-    role: "Agence Créative (Montréal, CA)",
+    role: "Agence Créative ",
     image: '/assets/img/person2.webp',
     title:'Design, production digitale & storytelling de marque - 18 créatifs',
     text: "Mediaspark utilise Hall-IA pour capturer les réunions créatives, conserver toutes les idées, et partager rapidement des synthèses structurées avec les équipes clients."
   },
   {
     name: 'JurisLine Associés',
-    role: 'Cabinet d’Avocats (Bruxelles, BE)',
+    role: 'Cabinet d’Avocats',
     image: '/assets/img/person3.jpg',
     title:'Droit des affaires & contrats internationaux - 22 avocats',
     text: "Ils s’appuient sur Hall-IA Réunion pour générer des comptes rendus fidèles, sécurisés et conformes, facilitant la préparation des dossiers et la coordination interne entre avocats.",
@@ -83,7 +83,7 @@ function Testimonial({
       </div>
 
       <figure
-        className="mb-10 flex flex-col items-center justify-center gap-6 rounded-xl border bg-white p-8 shadow-lg hover:cursor-pointer lg:p-10"
+        className="mb-10 flex w-full flex-col items-center justify-center gap-6 rounded-xl border bg-white p-8 shadow-lg hover:cursor-pointer lg:p-10"
         onClick={toggleExpanded}
         aria-expanded={isExpanded}
         aria-label={
@@ -100,9 +100,9 @@ function Testimonial({
           <p className="text-[#191918] text-center">{role}</p>
         </figcaption>
 
-        <blockquote className="relative overflow-hidden text-[#858381]">
+        <blockquote className="relative w-full overflow-hidden text-[#858381]">
           <div
-            className={`transition-all duration-500 ease-in-out ${
+            className={`w-full transition-all duration-500 ease-in-out ${
               isExpanded ? 'max-h-[500px]' : 'max-h-24'
             }`}
           >

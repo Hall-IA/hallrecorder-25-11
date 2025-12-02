@@ -312,7 +312,7 @@ export default function NavBar() {
                   // Rediriger vers la page de connexion
                   window.location.href = window.location.origin + '/#record';
                 }}
-                className="w-fit cursor-pointer rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-nowrap transition-colors hover:bg-white hover:text-gray-600 md:text-base"
+                className="px-1 w-fit cursor-pointer rounded-full bg-white/10 md:px-4 py-1.5 text-sm font-medium text-nowrap transition-colors hover:bg-white hover:text-gray-600 md:text-base"
               >
                 Se connecter
               </button>
