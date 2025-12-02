@@ -44,7 +44,7 @@ export default function Hero() {
                 avec l’IA
               </span></h1>
             </div>
-            <ul className="list-disc list-inside ml-4 space-y-2">
+            <ul className="list-none md:list-disc md:list-inside ml-4 space-y-2">
               <li className="font-roboto max-w-[80%] text-base font-semibold text-base md:text-lg">
               Concentrez-vous sur vos échanges.
               </li>

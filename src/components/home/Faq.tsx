@@ -74,7 +74,7 @@ export function Faq({
                 <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
                 <path d="M12 17h.01" />
               </svg>
-              <span className="flex-1 text-left font-medium text-black">
+              <span className="flex-1 text-left font-medium text-black font-roboto">
                 {question}
               </span>
               <svg
@@ -105,7 +105,7 @@ export function Faq({
             )}
           >
             <div className="space-y-2 bg-white p-6">
-              <p className="leading-relaxed text-gray-700 whitespace-pre-wrap">{answer}</p>
+              <p className="leading-relaxed text-gray-700 whitespace-pre-wrap font-roboto ">{answer}</p>
               {list && list.length > 0 && (
                 <ul className="list-inside list-disc space-y-2 text-gray-700">
                   {list.map((item, id) => (
