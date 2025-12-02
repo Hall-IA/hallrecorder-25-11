@@ -21,14 +21,18 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
 };
 
+// Price IDs from environment variables
+const STRIPE_PRICE_STARTER = Deno.env.get('STRIPE_PRICE_STARTER')!;
+const STRIPE_PRICE_UNLIMITED = Deno.env.get('STRIPE_PRICE_UNLIMITED')!;
+
 const PRICE_ID_MAP: Record<string, 'starter' | 'unlimited'> = {
-  'price_1SSyMI14zZqoQtSCb1gqGhke': 'starter',
-  'price_1SSyNh14zZqoQtSCqPL9VwTj': 'unlimited',
+  [STRIPE_PRICE_STARTER]: 'starter',
+  [STRIPE_PRICE_UNLIMITED]: 'unlimited',
 };
 
 const PLAN_TO_PRICE_ID: Record<'starter' | 'unlimited', string> = {
-  starter: 'price_1SSyMI14zZqoQtSCb1gqGhke',
-  unlimited: 'price_1SSyNh14zZqoQtSCqPL9VwTj',
+  starter: STRIPE_PRICE_STARTER,
+  unlimited: STRIPE_PRICE_UNLIMITED,
 };
 
 Deno.serve(async (req) => {

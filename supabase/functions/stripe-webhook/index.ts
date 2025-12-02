@@ -159,10 +159,13 @@ async function syncCustomerFromStripe(customerId: string) {
     const subscription = subscriptions.data[0];
     const priceId = subscription.items.data[0].price.id;
 
-    // Map price IDs to plan types
+    // Map price IDs to plan types (using environment variables)
+    const STRIPE_PRICE_STARTER = Deno.env.get('STRIPE_PRICE_STARTER')!;
+    const STRIPE_PRICE_UNLIMITED = Deno.env.get('STRIPE_PRICE_UNLIMITED')!;
+    
     const PRICE_ID_MAP: Record<string, 'starter' | 'unlimited'> = {
-      'price_1SSyMI14zZqoQtSCb1gqGhke': 'starter',
-      'price_1SSyNh14zZqoQtSCqPL9VwTj': 'unlimited',
+      [STRIPE_PRICE_STARTER]: 'starter',
+      [STRIPE_PRICE_UNLIMITED]: 'unlimited',
     };
 
     const planType = PRICE_ID_MAP[priceId];

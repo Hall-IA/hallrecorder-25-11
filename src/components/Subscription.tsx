@@ -162,8 +162,8 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
 
       if (!subscription) {
         const priceIds = {
-          starter: 'price_1SSyMI14zZqoQtSCb1gqGhke',
-          unlimited: 'price_1SSyNh14zZqoQtSCqPL9VwTj'
+          starter: import.meta.env.VITE_STRIPE_PRICE_STARTER,
+          unlimited: import.meta.env.VITE_STRIPE_PRICE_UNLIMITED
         };
 
         const response = await fetch(

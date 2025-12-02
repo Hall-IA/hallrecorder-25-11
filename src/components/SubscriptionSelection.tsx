@@ -32,8 +32,8 @@ export const SubscriptionSelection = ({
 
       // TODO: Remplacer par vos vrais Price IDs Stripe
       const priceIds = {
-        starter: 'price_1SSyMI14zZqoQtSCb1gqGhke', // À remplacer par votre Price ID
-        unlimited: 'price_1SSyNh14zZqoQtSCqPL9VwTj' // À remplacer par votre Price ID
+        starter: import.meta.env.VITE_STRIPE_PRICE_STARTER,
+        unlimited: import.meta.env.VITE_STRIPE_PRICE_UNLIMITED
       };
 
       const response = await fetch(
