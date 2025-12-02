@@ -34,7 +34,7 @@ export default function AppPack() {
       />
 
       <h2 className="font-thunder mb-16 text-center text-5xl font-medium md:text-7xl lg:mt-10">
-        Essayer, et commencez aujourd'hui
+        Essayez, et commencez aujourd'hui
       </h2>
 
       <section className="flex w-full max-w-7xl flex-col justify-center gap-8 lg:flex-row">
@@ -99,7 +99,7 @@ export default function AppPack() {
         )}
 
         <CardPack
-          title=" Formule Business"
+          title="Formule Business"
           features={[
             { title: '600 minutes d\'enregistrements / mois' },
             {

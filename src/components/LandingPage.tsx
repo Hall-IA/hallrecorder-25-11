@@ -88,12 +88,12 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
   return (
     <>
     <NavBar />
-    <section className="space-y-30 overflow-x-hidden">
+    <section className="space-y-20 lg:space-y-30 overflow-x-hidden">
       <Hero />
       <section id="avantages">
         <ArgumentsSection />
         </section>
-      <section id="etapes" className="lg:mb-90">
+      <section id="etapes" className="hidden lg:block lg:mb-90">
         <ProductivitySection />
       </section>
       <section>

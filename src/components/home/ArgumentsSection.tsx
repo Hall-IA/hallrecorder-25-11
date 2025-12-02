@@ -9,7 +9,7 @@ interface ArgumentItem {
 
 const argumentsData: ArgumentItem[] = [
   {
-    title: 'Fonctionne en présentielle ou en Visio : ',
+    title: 'Fonctionne en présentiel ou en Visio : ',
     description: [
       "Notre technologie avancée permet d'enregistrer vos réunions aussi bien en présentiel qu'en visioconférence. En salle, le module capte l'ensemble des échanges autour de lui ; en visio, il analyse automatiquement les voix et interventions de tous les participants. Compatible avec Google Meet, Zoom, Teams, Discord et bien d'autres, l'outil s'intègre facilement à votre environnement de travail.",
     ],
@@ -63,7 +63,7 @@ export default function ArgumentsSection() {
     <section className="font-roboto w-full lg:pt-10 lg:pb-20 overflow-hidden">
       {/* Titre dans le container */}
       <div className="mx-auto max-w-7xl px-4">
-        <h2 className="text-center text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-thunder font-medium mb-0 lg:mb-20">
+        <h2 className="text-center text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-thunder font-medium mb-10 lg:mb-20">
           Découvrez les fonctionnalités avancées
         </h2>
       </div>
@@ -114,7 +114,7 @@ export default function ArgumentsSection() {
                 <img
                   src={argument.image}
                   alt={argument.title}
-                  className="h-full w-full object-cover object-[center_top] min-[1100px]:object-center"
+                  className="h-full w-full object-cover object-[center_top]"
                   loading="lazy"
                 />
               </div>
