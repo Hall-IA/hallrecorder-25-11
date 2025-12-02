@@ -46,8 +46,8 @@ export const SubscriptionSelection = ({
           },
           body: JSON.stringify({
             price_id: priceIds[plan],
-            success_url: `${window.location.origin}/?payment=success`,
-            cancel_url: `${window.location.origin}/?payment=cancelled`,
+            success_url: `${window.location.origin}/#record?payment=success`,
+            cancel_url: `${window.location.origin}/#subscription`,
             mode: 'subscription'
           }),
         }

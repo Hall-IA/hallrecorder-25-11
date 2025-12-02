@@ -72,6 +72,23 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
   useEffect(() => {
     loadSubscription();
     loadInvoices();
+    
+    // Check for upgrade success/cancelled from checkout return
+    const hash = window.location.hash;
+    if (hash.includes('upgrade=success')) {
+      setChangeMessage('Upgrade réussi ! Votre abonnement a été mis à jour vers le plan Illimité.');
+      setChangeType('upgrade');
+      // Clean the URL
+      window.history.replaceState(null, '', window.location.pathname + '#subscription');
+      // Reload data after a short delay to get updated subscription
+      setTimeout(() => {
+        loadSubscription();
+        loadInvoices();
+      }, 2000);
+    } else if (hash.includes('upgrade=cancelled')) {
+      setError('Upgrade annulé. Votre abonnement n\'a pas été modifié.');
+      window.history.replaceState(null, '', window.location.pathname + '#subscription');
+    }
   }, [userId]);
 
   const loadSubscription = async () => {
@@ -222,6 +239,13 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
         throw new Error(data.error || 'Erreur lors du changement de plan');
       }
 
+      // Handle upgrade checkout redirect
+      if (data.type === 'upgrade_checkout' && data.checkout_url) {
+        console.log('Redirecting to upgrade checkout:', data.checkout_url);
+        window.location.href = data.checkout_url;
+        return;
+      }
+
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       await loadSubscription();
@@ -250,7 +274,7 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
           setIsWaitingForInvoice(false);
         };
         reloadInvoicesWithRetry();
-      } else {
+      } else if (data.type === 'downgrade' || data.type === 'cancel') {
         setLastInvoiceCount(invoices.length);
         setIsWaitingForInvoice(true);
         const reloadInvoicesWithRetry = async () => {

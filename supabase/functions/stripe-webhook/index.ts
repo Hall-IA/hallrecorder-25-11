@@ -91,16 +91,24 @@ async function handleEvent(event: Stripe.Event) {
       await syncCustomerFromStripe(customerId);
     } else if (mode === 'payment' && payment_status === 'paid') {
       try {
-        // Extract the necessary information from the session
+        const session = stripeData as Stripe.Checkout.Session;
         const {
           id: checkout_session_id,
           payment_intent,
           amount_subtotal,
           amount_total,
           currency,
-        } = stripeData as Stripe.Checkout.Session;
+          metadata,
+        } = session;
 
-        // Insert the order into the stripe_orders table
+        // Check if this is a plan upgrade payment
+        if (metadata?.type === 'plan_upgrade') {
+          console.info(`Processing plan upgrade payment for session: ${checkout_session_id}`);
+          await handlePlanUpgradePayment(session);
+          return;
+        }
+
+        // Insert the order into the stripe_orders table (for other one-time payments)
         const { error: orderError } = await supabase.from('stripe_orders').insert({
           checkout_session_id,
           payment_intent_id: payment_intent,
@@ -109,7 +117,7 @@ async function handleEvent(event: Stripe.Event) {
           amount_total,
           currency,
           payment_status,
-          status: 'completed', // assuming we want to mark it as completed since payment is successful
+          status: 'completed',
         });
 
         if (orderError) {
@@ -121,6 +129,83 @@ async function handleEvent(event: Stripe.Event) {
         console.error('Error processing one-time payment:', error);
       }
     }
+  }
+}
+
+// Handle plan upgrade payment after successful checkout
+async function handlePlanUpgradePayment(session: Stripe.Checkout.Session) {
+  const { metadata, customer: customerId, amount_total } = session;
+  
+  if (!metadata || !customerId || typeof customerId !== 'string') {
+    console.error('Missing metadata or customer for upgrade payment');
+    return;
+  }
+
+  const {
+    user_id: userId,
+    new_plan: newPlan,
+    subscription_id: subscriptionId,
+    subscription_item_id: subscriptionItemId,
+    new_price_id: newPriceId,
+  } = metadata;
+
+  console.log(`Processing upgrade for user ${userId}: upgrading to ${newPlan}`);
+  console.log(`Subscription: ${subscriptionId}, Item: ${subscriptionItemId}, New Price: ${newPriceId}`);
+  console.log(`Amount paid (with tax): ${(amount_total || 0) / 100} EUR`);
+
+  try {
+    // Step 1: Update the subscription in Stripe
+    console.log('Step 1: Updating subscription in Stripe...');
+    
+    const updatedSubscription = await stripe.subscriptions.update(subscriptionId, {
+      items: [{
+        id: subscriptionItemId,
+        price: newPriceId,
+      }],
+      proration_behavior: 'none', // No proration - already paid via checkout
+    });
+
+    console.log(`✓ Updated subscription ${updatedSubscription.id} to price ${newPriceId}`);
+
+    // Step 2: Update user_subscriptions in database
+    console.log('Step 2: Updating database...');
+    
+    const billingCycleStart = new Date(updatedSubscription.current_period_start * 1000).toISOString();
+    const billingCycleEnd = new Date(updatedSubscription.current_period_end * 1000).toISOString();
+
+    const { error: updateSubError } = await supabase.from('user_subscriptions').update({
+      plan_type: newPlan,
+      minutes_quota: newPlan === 'starter' ? 600 : null,
+      stripe_price_id: newPriceId,
+      billing_cycle_start: billingCycleStart,
+      billing_cycle_end: billingCycleEnd,
+      pending_downgrade_plan: null, // Clear any pending downgrade
+      updated_at: new Date().toISOString(),
+    }).eq('user_id', userId);
+
+    if (updateSubError) {
+      console.error('Error updating user_subscriptions:', updateSubError);
+      throw new Error('Failed to update user_subscriptions');
+    }
+
+    // Step 3: Update stripe_subscriptions in database
+    const { error: updateStripeSubError } = await supabase.from('stripe_subscriptions').update({
+      price_id: newPriceId,
+      current_period_start: updatedSubscription.current_period_start,
+      current_period_end: updatedSubscription.current_period_end,
+      updated_at: new Date().toISOString(),
+    }).eq('customer_id', customerId);
+
+    if (updateStripeSubError) {
+      console.error('Error updating stripe_subscriptions:', updateStripeSubError);
+    }
+
+    console.info(`✓ Successfully processed upgrade for user ${userId} to plan ${newPlan}`);
+    console.info(`Amount paid: ${(amount_total || 0) / 100} EUR (includes tax)`);
+
+  } catch (error) {
+    console.error('Error processing upgrade payment:', error);
+    throw error;
   }
 }
 

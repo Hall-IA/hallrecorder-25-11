@@ -185,81 +185,139 @@ Deno.serve(async (req) => {
 
     if (isUpgrade) {
       console.info(`Processing UPGRADE from ${currentPlan} to ${newPlan} for user ${user.id}`);
-      console.log(`Updating subscription ${subscription.id} with new price ${newPriceId}`);
-
-      let updatedSubscription;
+      
       try {
-        updatedSubscription = await stripe.subscriptions.update(subscription.id, {
-          items: [{
-            id: subscriptionItemId,
-            price: newPriceId,
-          }],
-          proration_behavior: 'create_prorations',
+        // Step 1: Get the prices to calculate the difference dynamically
+        console.log('Step 1: Getting price details from Stripe...');
+        
+        const currentPrice = await stripe.prices.retrieve(currentPriceId);
+        const newPrice = await stripe.prices.retrieve(newPriceId);
+        
+        // Default prices in cents (fallback if Stripe returns null)
+        const DEFAULT_PRICES: Record<string, number> = {
+          'starter': 3900,   // 39€
+          'unlimited': 4900, // 49€
+        };
+        
+        // Get prices from Stripe, with fallback to defaults
+        let currentPriceAmount = currentPrice.unit_amount;
+        let newPriceAmount = newPrice.unit_amount;
+        
+        if (!currentPriceAmount || currentPriceAmount === 0) {
+          currentPriceAmount = DEFAULT_PRICES[currentPlan];
+        }
+        if (!newPriceAmount || newPriceAmount === 0) {
+          newPriceAmount = DEFAULT_PRICES[newPlan];
+        }
+        
+        const priceDifference = newPriceAmount - currentPriceAmount; // difference in cents (HT)
+        
+        console.log(`Current price (${currentPlan}): ${currentPriceAmount / 100} EUR HT`);
+        console.log(`New price (${newPlan}): ${newPriceAmount / 100} EUR HT`);
+        console.log(`Price difference: ${priceDifference / 100} EUR HT`);
+
+        if (priceDifference <= 0) {
+          return new Response(JSON.stringify({
+            error: 'No price difference to charge for this upgrade',
+          }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        // Step 2: Create a Checkout Session for the upgrade payment
+        console.log('Step 2: Creating Checkout Session for upgrade...');
+        
+        // Get the success/cancel URLs from request or use defaults
+        const origin = req.headers.get('origin') || 'https://hallrecorder.com';
+        const successUrl = `${origin}/#subscription?upgrade=success`;
+        const cancelUrl = `${origin}/#subscription?upgrade=cancelled`;
+        
+        // Get customer's default payment method if available
+        const customer = await stripe.customers.retrieve(userSub.stripe_customer_id);
+        const defaultPaymentMethod = (customer as Stripe.Customer).invoice_settings?.default_payment_method;
+        
+        console.log(`Customer default payment method: ${defaultPaymentMethod || 'none'}`);
+
+        const checkoutSession = await stripe.checkout.sessions.create({
+          customer: userSub.stripe_customer_id, // Pre-fill with existing customer
+          mode: 'payment', // One-time payment for the difference
+          line_items: [
+            {
+              price_data: {
+                currency: 'eur',
+                unit_amount: priceDifference, // Dynamic difference in cents (HT)
+                tax_behavior: 'exclusive', // TVA added ON TOP of this amount
+                product_data: {
+                  name: `Upgrade vers le plan ${newPlan === 'unlimited' ? 'Illimité' : 'Starter'}`,
+                  description: `Différence de prix entre le plan ${currentPlan === 'starter' ? 'Starter' : 'Illimité'} et le plan ${newPlan === 'unlimited' ? 'Illimité' : 'Starter'}`,
+                },
+              },
+              quantity: 1,
+            },
+          ],
+          // Use saved payment method if available, otherwise collect new one
+          payment_method_collection: defaultPaymentMethod ? 'if_required' : 'always',
+          // Show saved payment methods
+          saved_payment_method_options: {
+            payment_method_save: 'enabled',
+            allow_redisplay_filters: ['always'],
+          },
+          // Generate invoice automatically for this payment
+          invoice_creation: {
+            enabled: true,
+            invoice_data: {
+              description: `Upgrade - Passage au plan ${newPlan === 'unlimited' ? 'Illimité' : 'Starter'}`,
+              metadata: {
+                type: 'plan_upgrade',
+                user_id: user.id,
+                current_plan: currentPlan,
+                new_plan: newPlan,
+              },
+            },
+          },
+          // Automatic tax calculation (TVA)
+          automatic_tax: {
+            enabled: true,
+          },
+          // Collect billing address for tax (only if needed)
+          customer_update: {
+            address: 'auto',
+          },
+          // Metadata to identify this as an upgrade payment
+          metadata: {
+            type: 'plan_upgrade',
+            user_id: user.id,
+            current_plan: currentPlan,
+            new_plan: newPlan,
+            subscription_id: subscription.id,
+            subscription_item_id: subscriptionItemId,
+            new_price_id: newPriceId,
+          },
+          success_url: successUrl,
+          cancel_url: cancelUrl,
         });
 
-        console.info(`✓ Successfully updated subscription ${updatedSubscription.id}`);
-        console.log(`New price in Stripe: ${updatedSubscription.items.data[0].price.id}`);
-        console.log(`Proration behavior: create_prorations`);
+        console.log(`✓ Created checkout session ${checkoutSession.id}`);
+        console.log(`Checkout URL: ${checkoutSession.url}`);
 
-        const upcomingInvoice = await stripe.invoices.retrieveUpcoming({
-          customer: userSub.stripe_customer_id,
+        // Return the checkout URL - frontend will redirect to it
+        return new Response(JSON.stringify({
+          success: true,
+          type: 'upgrade_checkout',
+          checkout_url: checkoutSession.url,
+          checkout_session_id: checkoutSession.id,
+          message: `Vous allez être redirigé vers la page de paiement pour ${priceDifference / 100}€ HT (+ TVA).`,
+          price_difference_ht: priceDifference / 100,
+        }), {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
-
-        console.log('Upcoming invoice details:');
-        console.log(`- Total: ${upcomingInvoice.total / 100} ${upcomingInvoice.currency}`);
-        console.log(`- Subtotal: ${upcomingInvoice.subtotal / 100}`);
-        console.log(`- Amount due: ${upcomingInvoice.amount_due / 100}`);
-        console.log(`- Lines count: ${upcomingInvoice.lines.data.length}`);
-
-        upcomingInvoice.lines.data.forEach((line, index) => {
-          console.log(`  Line ${index + 1}:`);
-          console.log(`    - Description: ${line.description}`);
-          console.log(`    - Amount: ${line.amount / 100} ${upcomingInvoice.currency}`);
-          console.log(`    - Proration: ${line.proration}`);
-          console.log(`    - Period: ${new Date(line.period.start * 1000).toISOString()} to ${new Date(line.period.end * 1000).toISOString()}`);
-        });
+        
       } catch (stripeError: any) {
         console.error(`✗ Stripe API error:`, stripeError);
-        throw new Error(`Failed to update Stripe subscription: ${stripeError.message}`);
+        throw new Error(`Failed to create upgrade checkout: ${stripeError.message}`);
       }
-
-      console.info(`Syncing to database...`);
-
-      const billingCycleStart = new Date(updatedSubscription.current_period_start * 1000).toISOString();
-      const billingCycleEnd = new Date(updatedSubscription.current_period_end * 1000).toISOString();
-
-      const { error: updateSubError } = await supabase.from('user_subscriptions').update({
-        plan_type: newPlan,
-        minutes_quota: newPlan === 'starter' ? 600 : null,
-        stripe_price_id: newPriceId,
-        billing_cycle_start: billingCycleStart,
-        billing_cycle_end: billingCycleEnd,
-        updated_at: new Date().toISOString(),
-      }).eq('user_id', user.id);
-
-      if (updateSubError) {
-        console.error('Error updating user subscription:', updateSubError);
-      }
-
-      const { error: updateStripeSubError } = await supabase.from('stripe_subscriptions').update({
-        price_id: newPriceId,
-        current_period_start: updatedSubscription.current_period_start,
-        current_period_end: updatedSubscription.current_period_end,
-        updated_at: new Date().toISOString(),
-      }).eq('customer_id', userSub.stripe_customer_id);
-
-      if (updateStripeSubError) {
-        console.error('Error updating stripe subscription:', updateStripeSubError);
-      }
-
-      return new Response(JSON.stringify({
-        success: true,
-        type: 'upgrade',
-        message: `Passage immédiat au plan ${newPlan === 'unlimited' ? 'Illimité' : 'Starter'}. Un prorata a été appliqué automatiquement par Stripe.`,
-      }), {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
 
     } else if (isDowngrade) {
       console.info(`Processing DOWNGRADE from ${currentPlan} to ${newPlan} for user ${user.id}`);
