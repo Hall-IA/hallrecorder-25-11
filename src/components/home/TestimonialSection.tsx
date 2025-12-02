@@ -19,7 +19,7 @@ export default function TestimonialSection() {
     },
   };
   return (
-    <section className="flex flex-col items-center justify-center gap-28 bg-[#F9F7F5] py-32">
+    <section className=" py-20 flex flex-col items-center justify-center gap-28 bg-[#F9F7F5] lg:py-32">
       <div className="space-y-2 text-center max-w-3xl mx-auto">
       <motion.h2
         className="font-thunder text-5xl font-medium"
@@ -37,7 +37,7 @@ export default function TestimonialSection() {
         Ils nous font confiance
       </motion.h2>
 
-      <p className="text-center text-xl font-normal font-roboto text-gray-800">
+      <p className="text-center text-lg md:text-xl font-normal font-roboto text-gray-800">
       Des entreprises de secteurs variés utilisent déjà Hall-IA Réunion pour structurer leurs échanges, améliorer leur coordination et gagner du temps chaque semaine.
       </p>
 
