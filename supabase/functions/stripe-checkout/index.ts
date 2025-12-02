@@ -202,6 +202,14 @@ Deno.serve(async (req) => {
       },
     };
 
+    // Add 7-day free trial for subscription mode
+    if (mode === 'subscription') {
+      sessionConfig.subscription_data = {
+        trial_period_days: 7,
+      };
+      console.log('Adding 7-day free trial to subscription');
+    }
+
     // Enable tax ID collection for businesses if requested
     if (tax_id_collection) {
       sessionConfig.tax_id_collection = {
