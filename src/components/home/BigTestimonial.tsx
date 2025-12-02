@@ -100,14 +100,14 @@ export default function BigTestimonial() {
                     <img src="/assets/img/quote.png" alt="" className="mb-6 h-10 w-10" />
                     
                     <div className="mb-6">
-                      <p className="text-sm ">{testimonial.activity}</p>
+                      <p className="lg:text-sm xl:text-base ">{testimonial.activity}</p>
                     </div>
 
                     <div className="rounded-lg bg-gray-500/30 p-4 backdrop-blur-md">
                       <h3 className="mb-2 text-sm font-extralight italic">
                         Ce que Hall-IA leur a apporté :
                       </h3>
-                      <p className="whitespace-pre-line text-sm">
+                      <p className="whitespace-pre-line lg:text-sm xl:text-base">
                         {testimonial.improvement}
                       </p>
                     </div>
