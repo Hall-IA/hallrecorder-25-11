@@ -53,7 +53,7 @@ export default function Hero() {
               </li>
 
               <li className="font-roboto max-w-[80%] text-base font-semibold text-base md:text-lg">
-              Planifie vos tâches à venir
+              Planifiez vos tâches à venir
               </li>
             </ul>
           
