@@ -14,7 +14,7 @@ const argumentsData: ArgumentItem[] = [
       "Notre technologie avancée permet d'enregistrer vos réunions aussi bien en présentiel qu'en visioconférence. En salle, le module capte l'ensemble des échanges autour de lui ; en visio, il analyse automatiquement les voix et interventions de tous les participants. Compatible avec Google Meet, Zoom, Teams, Discord et bien d'autres, l'outil s'intègre facilement à votre environnement de travail.",
     ],
     image: '/assets/img/presentiel-visio.png',
-    imagePosition: 'right',
+    imagePosition: 'left',
   },
   {
     title: 'Faites votre choix ! Résumé court ou résumé approfondi ? ',
@@ -22,7 +22,7 @@ const argumentsData: ArgumentItem[] = [
       "Personnalisez votre compte rendu selon vos besoins. Choisissez un résumé court et synthétique pour aller à l'essentiel – idées clés, décisions et actions à mener – ou optez pour un rapport approfondi qui détaille l'ensemble des points discutés. Chaque format s'adapte parfaitement à vos attentes et peut être exporté en PDF pour un partage simple avec votre équipe.",
     ],
     image: '/assets/img/resume-court-long.png',
-    imagePosition: 'left',
+    imagePosition: 'right',
   },
   {
     title: 'Transformez un simple enregistrement audio en un résumé parfait : ',
@@ -30,7 +30,7 @@ const argumentsData: ArgumentItem[] = [
       "Vous disposez d'un enregistrement audio ou d'une réunion captée hors ligne ? Glissez simplement votre fichier pour obtenir une retranscription fiable ainsi qu'un résumé précis de l'ensemble des échanges. Notre technologie convertit tout type d'audio en un compte rendu clair et exhaustif, prêt à être partagé ou archivé.",
     ],
     image: '/assets/img/transformation-note.png',
-    imagePosition: 'right',
+    imagePosition: 'left',
   },
   {
     title: 'Classez vos comptes rendus pour un accès plus rapide : ',
@@ -38,7 +38,7 @@ const argumentsData: ArgumentItem[] = [
       "Organisez vos réunions en toute simplicité. Classez vos enregistrements et comptes rendus dans des dossiers ou catégories personnalisés pour retrouver rapidement chaque échange. Grâce à l'outil de recherche intégré, accédez instantanément à une réunion par son titre, sa date ou même un mot-clé. Une gestion claire et structurée pour garder vos contenus toujours à portée de main.",
     ],
     image: '/assets/img/classification.png',
-    imagePosition: 'left',
+    imagePosition: 'right',
   },
   {
     title: "Cliquez c'est envoyé ! ",
@@ -46,7 +46,7 @@ const argumentsData: ArgumentItem[] = [
       "Envoyez vos comptes rendus en un clic. Plus besoin de copier-coller ou de rédiger de longs e-mails : l'outil intègre un système d'envoi automatique qui transmet directement la réunion, le compte rendu détaillé en pièce jointe, un résumé des points clés dans le corps du message et la liste des actions personnalisée. Créez vos propres listes de diffusion et partagez instantanément chaque réunion aux personnes concernées.",
     ],
     image: '/assets/img/envoie-email.png',
-    imagePosition: 'right',
+    imagePosition: 'left',
   },
   {
     title: 'Prompteur intelligent pendant votre réunion : ',
@@ -54,7 +54,7 @@ const argumentsData: ArgumentItem[] = [
       "Activez votre véritable coach de réunion. Plus qu'un simple observateur, l'Assistant Actif agit comme un prompteur intelligent qui suggère en temps réel des précisions, des questions pertinentes ou des axes à approfondir. Vos équipes peuvent ainsi répondre instantanément à une objection, apporter un argument clé ou enrichir l'échange au bon moment. Une aide dynamique qui transforme chaque réunion en opportunité de performance.",
     ],
     image: '/assets/img/prompteur.png',
-    imagePosition: 'left',
+    imagePosition: 'right',
   },
 ];
 
@@ -103,12 +103,12 @@ export default function ArgumentsSection() {
             </div>
 
             {/* Image - visible sur tous les écrans, en dessous du texte sur mobile */}
-            <div className="w-full max-w-3xl mx-auto min-[1100px]:max-w-none min-[1100px]:mx-0 min-[1100px]:w-1/2 shrink-0 order-2 min-[1100px]:order-none px-6 min-[1100px]:px-0">
+            <div className="w-full max-w-3xl mx-auto px-6 min-[1100px]:max-w-none min-[1100px]:mx-0 min-[1100px]:w-1/2 min-[1100px]:px-0 shrink-0 order-2 min-[1100px]:order-none">
               <div
                 className={`relative overflow-hidden h-[250px] sm:h-[350px] md:h-[450px] min-[1100px]:h-full ${
                   argument.imagePosition === 'left'
-                    ? 'rounded-2xl min-[1100px]:rounded-tr-[250px] min-[1100px]:rounded-br-[250px] xl:rounded-tr-[300px] xl:rounded-br-[300px]'
-                    : 'rounded-2xl min-[1100px]:rounded-tl-[250px] min-[1100px]:rounded-bl-[250px] xl:rounded-tl-[300px] xl:rounded-bl-[300px]'
+                    ? 'rounded-2xl min-[1100px]:rounded-tl-[250px] min-[1100px]:rounded-bl-[250px] xl:rounded-tl-[300px] xl:rounded-bl-[300px]'
+                    : 'rounded-2xl min-[1100px]:rounded-tr-[250px] min-[1100px]:rounded-br-[250px] xl:rounded-tr-[300px] xl:rounded-br-[300px]'
                 }`}
               >
                 <img
