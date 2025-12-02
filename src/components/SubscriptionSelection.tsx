@@ -127,10 +127,10 @@ export const SubscriptionSelection = ({
               </h2>
               <p className="text-sm sm:text-base text-white/90">
                 {!canClose
-                  ? 'Sélectionnez la formule qui vous convient'
+                  ? '7 jours d\'essai gratuit, sans engagement'
                   : upgradeOnly
                   ? 'Continuez sans limites'
-                  : 'Commencez dès maintenant'
+                  : '7 jours d\'essai gratuit, sans engagement'
                 }
               </p>
             </div>
@@ -218,7 +218,7 @@ export const SubscriptionSelection = ({
                   ) : (
                     <>
                       <Crown className="w-4 h-4 sm:w-5 sm:h-5" />
-                      <span>S'abonner</span>
+                      <span>Essayer 7 jours gratuits</span>
                     </>
                   )}
                 </button>
@@ -241,13 +241,26 @@ export const SubscriptionSelection = ({
                 <span className="font-semibold">Google Pay</span>
               </div>
             </div>
+            <div className="bg-green-50 border border-green-200 rounded-xl p-3 sm:p-4">
+              <div className="flex items-start gap-2 sm:gap-3">
+                <div className="text-lg sm:text-2xl flex-shrink-0">🎁</div>
+                <div className="flex-1 text-xs sm:text-sm text-cocoa-700">
+                  <p className="font-semibold mb-1 text-green-700">7 jours d'essai gratuit !</p>
+                  <ul className="space-y-1 text-xs text-cocoa-600">
+                    <li>• <strong>Aucun prélèvement</strong> pendant la période d'essai</li>
+                    <li>• Annulez à tout moment avant la fin des 7 jours</li>
+                    <li>• Accès complet à toutes les fonctionnalités</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 sm:p-4">
               <div className="flex items-start gap-2 sm:gap-3">
                 <div className="text-lg sm:text-2xl flex-shrink-0">ℹ️</div>
                 <div className="flex-1 text-xs sm:text-sm text-cocoa-700">
-                  <p className="font-semibold mb-1">Informations importantes :</p>
+                  <p className="font-semibold mb-1">Informations de facturation :</p>
                   <ul className="space-y-1 text-xs text-cocoa-600">
-                    <li>• TVA 20% incluse</li>
+                    <li>• TVA 20% incluse dans les prix</li>
                     <li>• Factures disponibles immédiatement</li>
                     <li>• Résiliation sans frais à tout moment</li>
                   </ul>
