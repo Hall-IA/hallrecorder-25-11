@@ -78,8 +78,8 @@ export const SubscriptionSelection = ({
     {
       id: 'starter' as const,
       name: 'Starter',
-      price: '39€',
-      priceHT: '32.50€',
+      priceHT: '39€',
+      priceTTC: '46.80€',
       period: '/mois',
       description: 'Parfait pour démarrer',
       features: [
@@ -91,13 +91,14 @@ export const SubscriptionSelection = ({
         'Export PDF'
       ],
       color: 'from-coral-500 to-sunset-500',
+      buttonColor: 'bg-gradient-to-r from-coral-500 to-sunset-500 hover:from-coral-600 hover:to-sunset-600',
       disabled: upgradeOnly && currentPlan === 'starter'
     },
     {
       id: 'unlimited' as const,
       name: 'Illimité',
-      price: '49€',
-      priceHT: '40.83€',
+      priceHT: '49€',
+      priceTTC: '58.80€',
       period: '/mois',
       description: 'Pour une utilisation intensive',
       features: [
@@ -109,7 +110,8 @@ export const SubscriptionSelection = ({
         'Export PDF',
         'Support prioritaire'
       ],
-      color: 'from-amber-500 to-orange-500',
+      color: 'from-purple-500 to-indigo-500',
+      buttonColor: 'bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600',
       recommended: true,
       disabled: false
     }
@@ -158,14 +160,14 @@ export const SubscriptionSelection = ({
                   plan.disabled
                     ? 'opacity-50 cursor-not-allowed border-gray-200'
                     : plan.recommended
-                    ? 'border-amber-400 shadow-xl md:scale-105'
+                    ? 'border-purple-400 shadow-xl md:scale-105 bg-gradient-to-br from-purple-50/50 to-indigo-50/50'
                     : 'border-coral-200 hover:border-coral-400 hover:shadow-lg'
                 }`}
               >
                 {plan.recommended && (
                   <div className="absolute -top-2 sm:-top-3 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 sm:px-4 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-semibold">
-                      Recommandé
+                    <span className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-3 sm:px-4 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-semibold shadow-lg">
+                      ⭐ Recommandé
                     </span>
                   </div>
                 )}
@@ -176,12 +178,12 @@ export const SubscriptionSelection = ({
                   <div className="flex flex-col items-center gap-1">
                     <div className="flex items-end justify-center gap-1">
                       <span className={`text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r ${plan.color} bg-clip-text text-transparent`}>
-                        {plan.price}
+                        {plan.priceHT}
                       </span>
                       <span className="text-cocoa-600 mb-1 sm:mb-2 text-sm sm:text-base">{plan.period}</span>
                     </div>
                     <div className="text-xs sm:text-sm text-cocoa-500">
-                      TTC <span className="ml-1 sm:ml-2 text-xs text-cocoa-400">(TVA 20%)</span>
+                      HT <span className="mx-1">•</span> <span className="font-semibold text-cocoa-700">{plan.priceTTC} TTC</span>
                     </div>
                   </div>
                 </div>
@@ -198,14 +200,12 @@ export const SubscriptionSelection = ({
                 <button
                   onClick={() => handleSubscribe(plan.id)}
                   disabled={plan.disabled || isProcessing}
-                  className={`w-full py-2.5 sm:py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 text-sm sm:text-base ${
+                  className={`w-full py-3 sm:py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-sm sm:text-base shadow-lg ${
                     plan.disabled
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
                       : isProcessing && selectedPlan === plan.id
-                      ? 'bg-gray-300 text-gray-600'
-                      : plan.recommended
-                      ? `bg-gradient-to-r ${plan.color} text-white hover:shadow-xl hover:scale-105`
-                      : 'bg-coral-100 text-coral-700 hover:bg-coral-200'
+                      ? 'bg-gray-300 text-gray-600 shadow-none'
+                      : `${plan.buttonColor} text-white hover:shadow-xl hover:scale-105 active:scale-100`
                   }`}
                 >
                   {isProcessing && selectedPlan === plan.id ? (
@@ -260,7 +260,7 @@ export const SubscriptionSelection = ({
                 <div className="flex-1 text-xs sm:text-sm text-cocoa-700">
                   <p className="font-semibold mb-1">Informations de facturation :</p>
                   <ul className="space-y-1 text-xs text-cocoa-600">
-                    <li>• TVA 20% incluse dans les prix</li>
+                    <li>• Prix affichés HT, TVA 20% ajoutée au paiement</li>
                     <li>• Factures disponibles immédiatement</li>
                     <li>• Résiliation sans frais à tout moment</li>
                   </ul>
