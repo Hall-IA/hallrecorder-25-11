@@ -1,6 +1,5 @@
 
 import { useState, useMemo } from 'react';
-import { LoginModal } from '../LoginModal';
 import { BadgeCheck, HelpCircle, XCircle } from 'lucide-react';
 import CustomButton from '../CustomButton';
 import CardPack from '../CardPack';
@@ -12,18 +11,14 @@ export default function AppPack() {
     return params.get('promo') === 'true';
   }, []);
   
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
   
   const handleStartClick = (planType: string) => {
     setSelectedPlan(planType);
     localStorage.setItem('selected_plan', planType);
-    setShowLoginModal(true);
-  };
-
-  const handleSignupSuccess = (userId: string) => {
-    setShowLoginModal(false);
+    // Rediriger vers la page de connexion
+    window.location.href = window.location.origin + '/#record';
   };
 
   return (
@@ -59,7 +54,7 @@ export default function AppPack() {
             }}
           >
             <div className="space-y-5 px-10 pt-30 pb-10">
-              <h3 className="font-thunder mb-5 text-5xl font-medium text-white">Essai Gratuit</h3>
+              <h3 className="font-thunder mb-5 text-5xl font-medium text-white">Essai Gratuit  </h3> <h3 className="font-thunder mb-5 text-5xl font-medium text-white"> 7 jours</h3>
               <p className="font-roboto text-white">
                 Testez notre solution gratuitement, c'est{' '}
                 <span
@@ -73,9 +68,9 @@ export default function AppPack() {
                 <li className="flex gap-2">
                   <BadgeCheck className="shrink-0" />
                   <span>
-                    <p className="font-semibold">1 compte email</p>
+                    <p className="font-semibold">Choisissez votre formule</p>
                     <p className="text-sm font-normal">
-                      Accès à l'ensemble des fonctionnalités de la solution Business
+                      Accès à l'ensemble des fonctionnalités de la solution Business ou Illimitée
                     </p>
                   </span>
                 </li>
@@ -86,7 +81,7 @@ export default function AppPack() {
               </ul>
               <CustomButton
                 onClick={() => handleStartClick('free_trial')}
-                className="animate-fade-in-left-long w-full rounded-full! bg-white px-6 py-3 text-base font-medium text-orange-500! shadow-lg transition-colors hover:bg-white/20 hover:text-white! sm:w-auto sm:px-7 sm:py-3.5 sm:text-lg md:px-8 md:py-4 md:text-xl"
+                className="animate-fade-in-left-long w-full rounded-full bg-white px-6 py-3 text-base font-medium !text-orange-500 shadow-lg transition-colors hover:bg-white/20 hover:!text-white sm:w-auto sm:px-7 sm:py-3.5 sm:text-lg md:px-8 md:py-4 md:text-xl"
               >
                 Commencer
               </CustomButton>
@@ -96,7 +91,7 @@ export default function AppPack() {
                 className="rounded-2xl"
                 width={600}
                 height={400}
-                src="/img/femme-pack.png"
+                src="assets/img/femme-pack.png"
                 alt=""
               />
             </div>
@@ -104,31 +99,32 @@ export default function AppPack() {
         )}
 
         <CardPack
-          title="Business"
-          subtitle="L'automatisation de votre boîte mail, sans engagement"
+          title=" Formule Business"
           features={[
-            { title: '1 compte mail inclus' },
+            { title: '600 minutes d\'enregistrements / mois' },
             {
-              title: 'Classification intelligente de vos emails',
+              title: 'Transcription IA',
             },
             {
               title:
-                "Réponses générées automatiquement par l'IA dans vos brouillons, prêtes à être envoyées",
+                "Téléchargement et Export",
             },
             {
-              title: 'Base de connaissances personnalisable incluse',
-              text: "Une fois connecté à l'application, vous ajoutez les liens vers votre site internet, vos réseaux sociaux et importez vos documents PDF pour enrichir l'IA.",
+              title: 'Résumés automatiques',
             },
             { title: 'Statistiques détaillées sur vos échanges et performances' },
+            { title: 'Envoi d\'emails' },
+            { title: 'Statistiques et analytics' },
+            { title: 'Choix des préférences de résumé ' },
+            
           ]}
-          price="20€"
-          priceUnit="/par mois"
+          priceUnit="HT / par mois"
           buttonText="Commencer"
-          enableCounter={true}
-          basePrice={49}
-          additionalPrice={39}
-          localStorageKey="business_pass_email_counter"
-          onButtonClick={() => handleStartClick('business_pass')}
+          onButtonClick={() => {
+            window.location.href = window.location.origin + '/#record';
+          }}
+          price="39"
+          basePrice={39}
           className={!showFreeTrial ? 'lg:flex-1 lg:w-1/2' : 'lg:w-96'}
         />
 
@@ -140,39 +136,34 @@ export default function AppPack() {
               #D1AAFF 50%,
               transparent 80%
           )`}
-          title="Solution sur mesure"
-          subtitle="Entièrement dédiée à votre entreprise"
+          title="Formule Illimitée"
           features={[
             {
-              title: "Développement d'une solution personnalisée",
-              text: 'Parfaitement adaptée à votre structure',
+              title: "Enregistrements illimités",
             },
             {
-              title: 'Conception sur mesure selon votre cahier des charges',
-              text: 'Avec création de fonctionnalités spécifiques',
+              title: 'Transcription IA',
             },
             {
-              title: 'Définition ensemble du tri intelligent des emails',
-              text: 'Selon vos priorités et vos processus internes',
+              title: 'Téléchargement et Export',
             },
             {
               title:
-                'Automatisation avancée des traitements pour optimiser vos flux et réduire les tâches répétitives',
+                'Résumés automatiques',
             },
+            { title: 'Statistiques détaillées sur vos échanges et performances' },
+
             {
-              title: "Réponses générées par l'IA",
-              text: "Envoi automatique ou ajout dans vos brouillons selon le type d'email",
+              title: "Envoi d'emails",
             },
-            { title: 'Intégration complète avec vos outils CRM / ERP' },
-            { title: 'Support dédié', text: 'Avec un accompagnement continu' },
-            {
-              title: 'API complète',
-              text: 'Pour connecter ou étendre la solution à vos systèmes existants',
-            },
+            { title: 'Statistiques et analytics' },
+            { title: 'Choix des préférences de résumé ' },
           ]}
           buttonText="Nous contacter"
           buttonHref="https://hallia.ai/contact"
-          hidePrice
+          price="49"
+          basePrice={49}
+          priceUnit="HT / par mois"
           classNameButton="mt-10 xl:mt-0"
           className={!showFreeTrial ? 'lg:flex-1 lg:w-1/2' : 'lg:w-96'}
         />
@@ -182,16 +173,10 @@ export default function AppPack() {
         onClick={() => setShowSubscriptionModal(true)}
         className="mt-8 mb-16 flex cursor-pointer items-center gap-2 text-gray-600 transition-colors hover:text-gray-800"
       >
-        <span className="text-sm">Aucun engagement – Abonnement mensuel</span>
+        <span className="text-sm">Sans engagement | Activation en 2 minutes | Paiement sécurisé </span>
         <HelpCircle className="h-4 w-5" />
       </button>
 
-      {/* Modal de connexion/inscription */}
-      <LoginModal
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-        onSignupSuccess={handleSignupSuccess}
-      />
 
       {/* Modal Conditions d'abonnement */}
       {showSubscriptionModal && (

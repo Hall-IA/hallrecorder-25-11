@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { MessageSquare, Upload, Brain, GitForkIcon, File } from 'lucide-react';
+import { MessageSquare, Upload, Brain, GitForkIcon, File, Play, BookOpen } from 'lucide-react';
 
 interface StepProps {
   icon: React.ReactNode;
@@ -15,19 +15,19 @@ interface ResultProps {
 
 const steps: StepProps[] = [
   {
-    icon: <GitForkIcon size={30} className="text-orange-400" />,
-    title: 'Connectez votre WhatsApp Business',
-    description: 'Un scan QR suffit. Aucune configuration technique.',
+    icon: <Play size={30} className="text-orange-400" />,
+    title: 'Lancez l’enregistrement',
+    description: 'Ouvrez l’application et démarrez l’enregistrement en un clic. Rien à configurer.',
   },
   {
-    icon: <File size={30} className="text-orange-400" />,
-    title: 'Importez vos documents',
-    description: 'PDF, procédures, notices, articles d\'aide, tout le contexte que vous avez.',
+    icon: <MessageSquare size={30} className="text-orange-400" />,
+    title: 'Conduisez votre réunion normalement',
+    description: 'Échangez, présentez, discutez : l’outil capture tout en arrière-plan, sans perturber votre réunion.',
   },
   {
-    icon: <Brain size={30} className="text-orange-400" />,
-    title: 'Activez les réponses automatiques',
-    description: 'L\'IA répond désormais à votre place, en respectant vos règles et votre ton.',
+    icon: <BookOpen size={30} className="text-orange-400" />,
+    title: '3. Clôturez et choisissez votre résumé',
+    description: 'Terminez l’enregistrement, sélectionnez un résumé court ou exhaustif… et téléchargez automatiquement votre compte-rendu.',
   },
 ];
 
@@ -75,7 +75,7 @@ export function ProductivityCard() {
   return (
     <section
       ref={cardRef}
-      className={`w-full pt-20 transition-all duration-700 ${
+      className={`relative w-full pt-10 sm:pt-16 md:pt-20 transition-all duration-700 ${
         isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
       }`}
       style={{
@@ -93,25 +93,23 @@ export function ProductivityCard() {
       aria-label="Comment ça fonctionne et résultats immédiats"
       id="avantages"
     >
-      <div className="mx-auto max-w-7xl px-6">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 py-3 md:py-0">
         {/* Section "Comment ça fonctionne ?" */}
-        <div className="mb-20">
+        <div className="mb-12 sm:mb-16 md:mb-20">
           <h3
-            className="mb-12 text-center text-4xl font-thunder font-medium text-white md:text-5xl lg:text-6xl"
+            className="mb-8 text-center text-2xl font-thunder font-medium text-white sm:text-3xl md:text-4xl md:mb-12 lg:text-5xl xl:text-6xl"
             itemProp="headline"
           >
             Comment ça fonctionne ?
           </h3>
 
           {/* Conteneur avec les 3 étapes */}
-          <div className="relative flex flex-col items-center gap-8 md:flex-row md:justify-center md:gap-0">
+          <div className="relative flex flex-col items-center gap-2 sm:gap-3 md:gap-4 lg:flex-row lg:justify-center lg:gap-0">
             {steps.map((step, index) => (
               <div
                 key={index}
-                className="relative flex items-center"
+                className={`relative flex items-center ${index > 0 ? 'lg:-ml-[106px]' : ''}`}
                 style={{
-                  // Chevauchement : les cartes 2 et 3 se décalent vers la gauche
-                  marginLeft: index > 0 ? '-106px' : '0',
                   // Z-index décroissant : carte 1 = 3, carte 2 = 2, carte 3 = 1
                   // Ainsi la première carte est AU-DESSUS de la deuxième
                   zIndex: steps.length - index,
@@ -125,25 +123,9 @@ export function ProductivityCard() {
                     height="224"
                     viewBox="0 0 495 224"
                     fill="none"
-                    className="h-auto w-full max-w-[400px] md:max-w-[500px]"
+                    className="h-auto w-full max-w-[300px] sm:max-w-[400px] md:max-w-[450px] lg:max-w-[500px]"
                   >
                     <defs>
-                      {/* Pattern de quadrillage */}
-                      <pattern
-                        id={`grid-pattern-${index}`}
-                        x="0"
-                        y="0"
-                        width="20"
-                        height="20"
-                        patternUnits="userSpaceOnUse"
-                      >
-                        <path
-                          d="M 20 0 L 0 0 0 20"
-                          fill="none"
-                          stroke="rgba(0, 0, 0, 0.05)"
-                          strokeWidth="0.5"
-                        />
-                      </pattern>
                       <filter
                         id={`filter0_d_4525_11964_${index}`}
                         x="0"
@@ -187,22 +169,15 @@ export function ProductivityCard() {
                         d="M409.359 0L454.667 112L409.359 224H24.4746L24 0H409.359Z"
                         fill="#FEFDFD"
                       />
-                      {/* Quadrillage par-dessus */}
-                      <path
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M409.359 0L454.667 112L409.359 224H24.4746L24 0H409.359Z"
-                        fill={`url(#grid-pattern-${index})`}
-                      />
                     </g>
                   </svg>
                   {/* Contenu de la carte */}
-                  <div className="absolute inset-0 flex flex-col justify-center gap-4 px-20 py-6 ">
+                  <div className="absolute inset-0 flex flex-col justify-start gap-4 px-6 py-2 sm:px-12 md:px-16 lg:px-20 mt-1">
                     <div className="flex bg-orange-200/50 rounded-xl p-2 w-fit">{step.icon}</div>
-                    <h4 className="font-roboto text-lg font-semibold text-orange-500 md:text-lg">
+                    <h4 className="font-roboto text-sm font-semibold text-orange-500 md:text-sm lg:text-sm xl:text-lg">
                       {step.title}
                     </h4>
-                    <p className="font-roboto text-sm text-gray-600 md:text-base">
+                    <p className="font-roboto text-xs text-gray-600 md:text-sm lg:text-xs xl:text-base">
                       {step.description}
                     </p>
                   </div>
@@ -213,7 +188,7 @@ export function ProductivityCard() {
         </div>
 
         {/* Section "Résultats immédiats" */}
-        <div>
+        {/* <div>
           <h3
             className="mb-12  text-4xl font-thunder font-medium text-white md:text-5xl lg:text-6xl"
             itemProp="headline"
@@ -221,11 +196,9 @@ export function ProductivityCard() {
             Résultats immédiats
           </h3>
 
-          {/* Graphique en barres */}
           <div className="flex flex-col items-start justify-end gap-6 md:flex-row md:items-end md:justify-center md:gap-8">
             {results.map((result, index) => (
               <div key={index} className="flex flex-col items-start gap-6">
-                {/* Texte au-dessus de la barre */}
                 <div className="space-y-3">
                   <p className="font-roboto text-base font-semibold text-white md:text-lg border-l-2 border-red-500 pl-2">
                     {result.metric}
@@ -235,7 +208,6 @@ export function ProductivityCard() {
                   </p>
                 </div>
 
-                {/* Barre */}
                 <div
                   className="rounded-t-md bg-white transition-all duration-700"
                   style={{
@@ -247,8 +219,8 @@ export function ProductivityCard() {
                 />
               </div>
             ))}
-          </div>
-        </div>
+          </div> 
+        </div>*/}
       </div>
     </section>
   );

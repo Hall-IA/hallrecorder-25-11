@@ -3,40 +3,46 @@ import { Marquee } from './ui/marquee';
 
 const testimonials = [
   {
-    name: 'Julie P.',
-    role: 'Banque',
+    name: 'StratéNova Consulting',
+    role: 'Cabinet de Conseil (Paris, FR)',
     image: '/assets/img/profil-julie.png',
-    text: 'La société HALL-IA a réalisé un CRM sur mesure, avec un déploiement extrêmement rapide. L’outil, connecté à l’intelligence artificielle, est ergonomique, performant et a transformé ma gestion de la relation client. Une équipe professionnelle et réactive que je recommande vivement !',
+    title: 'Transformation digitale & performance des organisations - 45 consultants',
+    text: `StratéNova accompagne des entreprises dans leurs projets de modernisation. Ils utilisent Hall-IA Réunion pour standardiser leurs comptes rendus et fluidifier la transmission d'information entre consultants et directeurs de mission.`,
   },
   {
-    name: 'Benjamin G.',
-    role: 'Opticien chez Optical center',
+    name: 'Construxia',
+    role: 'Construction & Ingénierie (Lyon, FR)',
     image: '/assets/img/profil-benjamin.png',
-    text: 'Je recommande vivement la solution mail développée par HALL-IA. Grâce à cette technologie d’intelligence artificielle, mes mails sont désormais triés et mes réponses automatisées, ce qui a transformé ma gestion quotidienne et m’a fait gagner un temps considérable. Une solution performante et intelligente, soutenue par une équipe professionnelle et réactive.',
+    title:"Gestion de chantiers, ingénierie civile et rénovation - 120 collaborateurs",
+    text: "Construxia s’appuie sur Hall-IA Réunion pour fiabiliser les réunions de chantier, assurer le suivi des décisions et réduire les risques liés aux erreurs de communication entre équipes terrain et bureau d’études.",
   },
   {
-    name: 'André S.',
-    role: 'Plombier',
+    name: 'E-Shopia Market',
+    role: 'E-commerce & Retail (Lille, FR)',
     image: '/assets/img/profil-andrée.webp',
-    text: 'Le chatbot intelligent déployé sur mon site est connecté à une base de connaissances évolutive et offre des réponses précises et efficaces à mes prospects et clients. Un outil performant qui améliore nettement la relation client !',
+    title:'Vente en ligne & marketing multicanal - 30 collaborateurs',
+    text:"E-Shopia utilise Hall-IA Réunion pour structurer ses réunions marketing, suivre plus efficacement ses projets et centraliser tout l’historique des décisions concernant les campagnes.  "
   },
   {
-    name: 'Alexandre H.',
-    role: 'Expert comptable',
+    name: 'RemoteFlow Digital',
+    role: ' Entreprise 100 % Télétravail (Europe)',
     image: '/assets/img/person1.png',
-    text: 'J’utilise désormais l’agent Réunion développé par HALL-IA, et c’est bluffant ! Il enregistre automatiquement mes réunions clients, rédige un compte rendu clair, structuré et précis, et génère les tâches à effectuer avec une pertinence incroyable.',
+    title:'Solutions digitales & gestion de projets à distance - 28 collaborateurs répartis sur 6 pays',
+    text: "RemoteFlow fait confiance à Hall-IA Réunion pour synchroniser des équipes distribuées, créer des comptes rendus automatiques et réduire drastiquement les réunions redondantes.",
   },
   {
-    name: 'Sophie M.',
-    role: "Gérante d'agence immobilière",
+    name: 'Mediaspark Studio.',
+    role: "Agence Créative (Montréal, CA)",
     image: '/assets/img/person2.webp',
-    text: "L'agent développé par HALL-IA analyse automatiquement les demandes entrantes et les qualifie en temps réel. Fini les heures passées à trier les prospects ! La solution s'intègre parfaitement à nos outils existants et nous fait gagner une efficacité remarquable. Une vraie révolution pour notre activité.",
+    title:'Design, production digitale & storytelling de marque - 18 créatifs',
+    text: "Mediaspark utilise Hall-IA pour capturer les réunions créatives, conserver toutes les idées, et partager rapidement des synthèses structurées avec les équipes clients."
   },
   {
-    name: 'Thomas D.',
-    role: 'Avocat',
+    name: 'JurisLine Associés',
+    role: 'Cabinet d’Avocats (Bruxelles, BE)',
     image: '/assets/img/person3.jpg',
-    text: "HALL-IA a développé un assistant IA qui analyse mes documents juridiques et extrait automatiquement les informations clés. Le gain de temps est spectaculaire, et la précision de l'analyse est impressionnante. L'équipe a su comprendre les spécificités de mon métier et adapter la solution en conséquence. Je recommande sans hésitation !",
+    title:'Droit des affaires & contrats internationaux - 22 avocats',
+    text: "Ils s’appuient sur Hall-IA Réunion pour générer des comptes rendus fidèles, sécurisés et conformes, facilitant la préparation des dossiers et la coordination interne entre avocats.",
   },
 ];
 
@@ -44,11 +50,13 @@ function Testimonial({
   name,
   role,
   image,
+  title,
   text,
 }: Readonly<{
   name: string;
   role: string;
   image: string;
+  title?: string;
   text: string;
 }>) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -59,7 +67,7 @@ function Testimonial({
 
   return (
     <article
-      className="group flex w-[350px] flex-shrink-0 flex-col items-center text-center transition-all hover:scale-105 lg:w-[470px]"
+      className="group flex w-[350px] flex-shrink-0 flex-col items-center  transition-all hover:scale-105 lg:w-[470px]"
       aria-labelledby={`testimonial-${name.replace(/\s+/g, '-').toLowerCase()}`}
     >
       <div
@@ -85,21 +93,24 @@ function Testimonial({
         <figcaption className="text-lg">
           <h3
             id={`testimonial-${name.replace(/\s+/g, '-').toLowerCase()}`}
-            className="font-semibold text-[#FF9A34]"
+            className="font-semibold text-[#FF9A34] text-center"
           >
             {name}
           </h3>
-          <p className="text-[#191918]">{role}</p>
+          <p className="text-[#191918] text-center">{role}</p>
         </figcaption>
 
         <blockquote className="relative overflow-hidden text-[#858381]">
-          <p
+          <div
             className={`transition-all duration-500 ease-in-out ${
               isExpanded ? 'max-h-[500px]' : 'max-h-24'
             }`}
           >
-            {text}
-          </p>
+            {title && (
+              <p className="mb-2 font-medium ">{title}</p>
+            )}
+            <p className="font-normal">{text}</p>
+          </div>
           <div
             className={`pointer-events-none absolute right-0 bottom-0 left-0 h-8 bg-gradient-to-t from-white to-transparent transition-opacity duration-500 ${
               isExpanded ? 'opacity-0' : 'opacity-100'

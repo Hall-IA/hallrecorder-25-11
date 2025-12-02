@@ -105,7 +105,7 @@ export function Faq({
             )}
           >
             <div className="space-y-2 bg-white p-6">
-              <p className="leading-relaxed text-gray-700">{answer}</p>
+              <p className="leading-relaxed text-gray-700 whitespace-pre-wrap">{answer}</p>
               {list && list.length > 0 && (
                 <ul className="list-inside list-disc space-y-2 text-gray-700">
                   {list.map((item, id) => (

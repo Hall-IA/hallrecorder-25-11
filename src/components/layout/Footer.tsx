@@ -325,7 +325,7 @@ export default function Footer() {
               <ul className="space-y-2 font-light">
                 <li>
                   <a
-                    href={'/#etapes'}
+                    href={'#etapes'}
                     className="rounded underline underline-offset-[6px] transition-colors hover:text-[#FF9A34] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A34] focus-visible:ring-offset-2 active:text-[#FFBE7D]"
                   >
                     Étapes
@@ -333,7 +333,7 @@ export default function Footer() {
                 </li>
                 <li>
                   <a
-                    href={'/#avantages'}
+                    href={'#avantages'}
                     className="rounded underline underline-offset-[6px] transition-colors hover:text-[#FF9A34] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A34] focus-visible:ring-offset-2 active:text-[#FFBE7D]"
                   >
                     Avantages
@@ -341,7 +341,7 @@ export default function Footer() {
                 </li>
                 <li>
                   <a
-                    href={'/#prix'}
+                    href={'#prix'}
                     className="rounded underline underline-offset-[6px] transition-colors hover:text-[#FF9A34] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A34] focus-visible:ring-offset-2 active:text-[#FFBE7D]"
                   >
                     Prix

@@ -1,46 +1,64 @@
 import { useState } from 'react';
-import { LoginModal } from '../LoginModal';
 import { HelpCircle, User, XCircle } from 'lucide-react';
 import FeatureCards from './FeatureCards';
 
 export default function Hero() {
   const [email, setEmail] = useState('');
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoginModalOpen(true);
+    // Sauvegarder l'email dans le localStorage pour le récupérer sur la page de connexion
+    if (email) {
+      localStorage.setItem('initialEmail', email);
+    }
+    // Rediriger vers la page de connexion
+    window.location.href = window.location.origin + '/#record';
   };
 
   return (
     <section>
       <div
-        className="mx-8 mt-4 rounded-3xl bg-cover bg-center bg-no-repeat"
+        className="relative mx-8 mt-4 rounded-3xl bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: 'url(/assets/img/hero-background.png)',
+          backgroundImage: 'url(/assets/img/hero-meeting.png)',
           width: 'calc(100% - 4rem)',
         }}
       >
-<section className="m-auto max-w-7xl overflow-x-hidden">
+        {/* Overlay pour améliorer la lisibilité du texte */}
+        <div className="absolute inset-0 rounded-3xl bg-black/40" />
+        
+<section className="relative m-auto max-w-7xl overflow-x-hidden">
 
       {/* Conteneur avec l'image en background */}
         <section className="flex min-h-screen items-center gap-12 px-6 pt-32 pb-10 sm:px-4 xl:flex-row xl:justify-between">
-        <div className="w-[70%] space-y-12 xl:w-auto">
+        <div className="space-y-12 w-full  xl:w-auto">
           <div className="font-roboto flex items-center gap-2 font-medium">
-            <img src="assets/svg/hallia-orange-logo.svg" height={48} width={48} alt="" />
-            <p className='text-3xl font-thunder font-medium -mb-3 text-white'>HALL RECORDER</p>
+            {/* <img src="assets/svg/hallia-orange-logo.svg" height={48} width={48} alt="" /> */}
+            <p className='text-lg font-thunder font-medium -mb-3 text-white pt-2 pb-1 px-4 bg-gray-800/70 rounded-full '>HALL RECORDER</p>
           </div>
-          <div className="font-thunder space-y-6 text-7xl font-medium text-white">
+          <div className="font-thunder space-y-6 text-4xl md:text-5xl lg:text-6xl xl:text-7xl lg:w-[70%] font-medium text-white">
             <div className="space-y-2">
-              <h1>Résumez vos réunions</h1>
-              <span className="bg-gradient-to-b from-[#F35F4F] to-[#FD9A00] bg-clip-text text-transparent">
+              <h1>Votre agent de réunion : <br />
+              Enregistre vos réunions et résume les échanges
+              <span className="ml-3 bg-gradient-to-b from-[#F35F4F] to-[#FD9A00] bg-clip-text text-transparent">
                 avec l’IA
-              </span>
+              </span></h1>
             </div>
-            <p className="font-roboto max-w-[80%] text-base font-normal">
-            Captez, comprenez et diffusez vos décisions plus vite.
-            </p>
+            <ul className="list-disc list-inside ml-4 space-y-2">
+              <li className="font-roboto max-w-[80%] text-base font-semibold text-base md:text-lg">
+              Concentrez-vous sur vos échanges.
+              </li>
+              <li className="font-roboto max-w-[80%] text-base font-semibold text-base md:text-lg">
+              Résume parfaitement vos interactions.
+              </li>
+
+              <li className="font-roboto max-w-[80%] text-base font-semibold text-base md:text-lg">
+              Planifie vos tâches à venir
+              </li>
+            </ul>
+          
+          
             <button
               onClick={() => setShowSubscriptionModal(true)}
               className="mt-8 mb-16 flex cursor-pointer items-center gap-2 text-gray-600 transition-colors hover:text-gray-800"
@@ -49,9 +67,10 @@ export default function Hero() {
               <HelpCircle className="h-4 w-5 text-white" />
             </button>
           </div>
-          <form
+          <section className="flex flex-col xl:flex-row gap-4 mx-auto">
+                      <form
             onSubmit={handleSubmit}
-            className="flex w-full flex-col items-center justify-between gap-4 rounded-2xl bg-white p-6 md:flex-row"
+            className="flex w-full flex-col lg:w-1/2 items-center justify-between gap-4 rounded-2xl bg-white p-6 sm:flex-row"
           >
             <div className="flex w-full items-center gap-2 rounded-xl border border-[#F4F1EE] px-3 py-2.5 md:w-2/3">
               <User
@@ -81,12 +100,12 @@ export default function Hero() {
             </div>
             <button
               type="submit"
-              className="w-full cursor-pointer rounded-full bg-gradient-to-br from-[#F35F4F] to-[#FFAD5A] px-6 py-2.5 font-semibold whitespace-nowrap text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl md:w-auto"
+              className="w-full sm:w-fit cursor-pointer rounded-full bg-gradient-to-br from-[#F35F4F] to-[#FFAD5A] px-6 py-2.5 font-semibold whitespace-nowrap text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl md:w-auto"
             >
               Démarrez maintenant
             </button>
           </form>
-          <div className="font-roboto flex flex-col items-center gap-6 sm:flex-row text-white">
+          <div className="font-roboto pb-10 flex-col md:flex-row xl:pb-0 flex w-full xl:w-1/2  items-center gap-6 text-white">
             <div className="flex items-center gap-6">
               <p className="font-bold">Excellent</p>
               <div className="flex justify-center gap-2">
@@ -109,6 +128,7 @@ export default function Hero() {
               </div>
             </div>
           </div>
+          </section>
         </div>
 
         <div className="relative hidden xl:block">
@@ -133,12 +153,6 @@ export default function Hero() {
       {/* Vidéo */}
       {/* <MacbookScrollSection /> */}
 
-      {/* Modal de connexion/inscription */}
-      <LoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-        initialEmail={email}
-      />
 
       {/* Modal Conditions d'abonnement */}
       {showSubscriptionModal && (

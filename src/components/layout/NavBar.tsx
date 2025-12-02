@@ -1,7 +1,6 @@
 import { cn } from '@/lib/utils';
 import { ChevronDown, Menu, X } from 'lucide-react';
 import { ComponentPropsWithoutRef, useEffect, useState } from 'react';
-import { LoginModal } from '../LoginModal';
 import { supabase } from '@/lib/supabase';
 
 type ButtonLinkProps = {
@@ -26,10 +25,25 @@ function ButtonLink({
 }: ButtonLinkProps) {
   if (!asDropdown) {
     // Link normal
+    const handleClick = () => {
+      // Si c'est une ancre de navigation (commence par #), s'assurer qu'on reste sur la landing page
+      if (href?.startsWith('#')) {
+        // Laisser le navigateur gérer le scroll normalement
+        if (onClick) {
+          onClick();
+        }
+        return; // Ne pas empêcher le comportement par défaut
+      }
+      if (onClick) {
+        onClick();
+      }
+    };
+
     return (
       <a
         href={href!}
         className={cn('group flex items-center gap-0.5 px-3 py-2', className)}
+        onClick={handleClick}
         {...props}
       >
         <img
@@ -108,7 +122,6 @@ function ButtonLink({
 
 export default function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
 
@@ -139,19 +152,6 @@ export default function NavBar() {
     window.location.href = '/';
   };
 
-  // Écouter l'événement personnalisé pour ouvrir la popup de connexion
-  useEffect(() => {
-    const handleOpenLoginModal = () => {
-      console.log('[NavBar] Événement openLoginModal reçu');
-      setIsLoginModalOpen(true);
-    };
-
-    window.addEventListener('openLoginModal', handleOpenLoginModal);
-
-    return () => {
-      window.removeEventListener('openLoginModal', handleOpenLoginModal);
-    };
-  }, []);
 
   const getInitial = () => {
     if (!user?.email) return '?';
@@ -217,15 +217,15 @@ export default function NavBar() {
           <div className="hidden justify-center md:flex">
             <ul className="flex gap-2">
               <li>
-                <ButtonLink href="/#etapes" text="Étapes" onClick={() => setIsOpen(false)} />
+                <ButtonLink href="#avantages" text="Avantages" onClick={() => setIsOpen(false)} />
+              </li>
+              <li>
+                <ButtonLink href="#etapes" text="Étapes" onClick={() => setIsOpen(false)} />
               </li>
 
-              <li>
-                <ButtonLink href="/#avantages" text="Avantages" onClick={() => setIsOpen(false)} />
-              </li>
 
               <li>
-                <ButtonLink href="/#prix" text="Prix" onClick={() => setIsOpen(false)} />
+                <ButtonLink href="#prix" text="Prix" onClick={() => setIsOpen(false)} />
               </li>
             </ul>
           </div>
@@ -308,7 +308,10 @@ export default function NavBar() {
               </div>
             ) : (
               <button
-                onClick={() => setIsLoginModalOpen(true)}
+                onClick={() => {
+                  // Rediriger vers la page de connexion
+                  window.location.href = window.location.origin + '/#record';
+                }}
                 className="w-fit cursor-pointer rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-nowrap transition-colors hover:bg-white hover:text-gray-600 md:text-base"
               >
                 Se connecter
@@ -331,7 +334,7 @@ export default function NavBar() {
                 Étapes
               </h3>
               <a
-                href="/#etapes"
+                href="#etapes"
                 className="group flex items-center gap-3"
                 onClick={() => setIsOpen(false)}
               >
@@ -347,7 +350,7 @@ export default function NavBar() {
                 Avantages
               </h3>
               <a
-                href="/#avantages"
+                href="#avantages"
                 className="group flex items-center gap-3"
                 onClick={() => setIsOpen(false)}
               >
@@ -361,7 +364,7 @@ export default function NavBar() {
             <div className="space-y-3 px-3 pb-3 md:hidden">
               <h3 className="text-sm font-semibold tracking-wide text-gray-300 uppercase">Prix</h3>
               <a
-                href="/#prix"
+                href="#prix"
                 className="group flex items-center gap-3"
                 onClick={() => setIsOpen(false)}
               >
@@ -427,7 +430,8 @@ export default function NavBar() {
                 <button
                   onClick={() => {
                     setIsOpen(false);
-                    setIsLoginModalOpen(true);
+                    // Rediriger vers la page de connexion
+                    window.location.href = window.location.origin + '/#record';
                   }}
                   className="w-full rounded-full bg-gradient-to-br from-[#F35F4F] to-[#FFAD5A] px-4 py-2.5 text-sm font-medium text-white transition-all hover:scale-105"
                 >
@@ -439,8 +443,6 @@ export default function NavBar() {
         </div>
       </nav>
 
-      {/* Modal de connexion - rendu en dehors de la nav */}
-      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
     </>
   );
 }

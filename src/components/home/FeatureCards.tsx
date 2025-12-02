@@ -11,7 +11,7 @@ interface FeatureCardProps {
 function FeatureCard({ icon, iconMobile, title, text }: FeatureCardProps) {
   return (
     <div
-      className="relative flex items-center rounded-lg border overflow-hidden w-full max-w-[282px] h-[100px] sm:h-[110px] md:h-[123px] sm:max-w-[240px] md:max-w-[282px]"
+      className="flex items-center gap-4 rounded-lg border overflow-hidden w-full max-w-[282px] h-[180px]"
       style={{
         padding: '16px 8px',
         border: '1px solid #FEFDFD',
@@ -21,13 +21,7 @@ function FeatureCard({ icon, iconMobile, title, text }: FeatureCardProps) {
       }}
     >
       {/* Icône avec effet de fondu sur la gauche */}
-      <div
-        className="absolute flex items-center justify-center hidden sm:flex"
-        style={{
-          left: '-20px',
-          top: '16.5px',
-        }}
-      >
+      <div className="hidden sm:flex items-center justify-center flex-shrink-0">
         <div
           className="relative"
           style={{
@@ -41,14 +35,14 @@ function FeatureCard({ icon, iconMobile, title, text }: FeatureCardProps) {
 
       {/* Icône mobile centrée */}
       {iconMobile && (
-        <div className="flex items-center justify-center sm:hidden mr-2">
+        <div className="flex items-center justify-center sm:hidden flex-shrink-0">
           {iconMobile}
         </div>
       )}
 
       {/* Contenu à droite */}
       <div
-        className="flex flex-col items-center justify-center text-center w-full sm:ml-20 sm:w-[50%]"
+        className="flex flex-col items-center justify-center text-center flex-1"
       >
         <h3
           className="font-roboto font-semibold"
@@ -85,26 +79,26 @@ export default function FeatureCards() {
     {
       icon: <Hourglass size={80} className="text-white hidden sm:block md:block" />,
       iconMobile: <Hourglass size={40} className="text-white sm:hidden" />,
-      title: '<2s',
-      text: 'Temps de réponse moyen',
+      title: '100%',
+      text: "Collecte toutes les informations clés de vos réunions.",
     },
     {
       icon: <ThumbsUp size={80} className="text-white hidden sm:block md:block" />,
       iconMobile: <ThumbsUp size={40} className="text-white sm:hidden" />,
-      title: '100%',
-      text: 'Messages traités automatiquement',
+      title: '15s',
+      text: 'Génère un compte rendu PDF en quelques secondes.',
     },
     {
       icon: <Clock size={80} className="text-white hidden sm:block md:block" />,
       iconMobile: <Clock size={40} className="text-white sm:hidden" />,
       title: '24/7',
-      text: 'Support en continu',
+      text: 'Tourne en continu sans intervention humaine.',
     },
     {
       icon: <GitFork size={80} className="text-white hidden sm:block md:block" />,
       iconMobile: <GitFork size={40} className="text-white sm:hidden" />,
-      title: '0 employés',
-      text: 'nécessaire la nuit & le week-end',
+      title: '0 réunion',
+      text: 'Laissée sans compte rendu exhaustif et exploitable.',
     },
   ];
 

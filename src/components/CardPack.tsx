@@ -120,8 +120,8 @@ export default function CardPack({
         <ul className="space-y-4">
           {features.map((feature, index) => (
             <li key={index} className="flex gap-2 font-medium">
-              <BadgeCheck className="shrink-0" />
-              <span>
+              <BadgeCheck className={`shrink-0 ${index === 0 ? '' : ''}`} style={index === 0 ? { color: '#00A63E' } : {}} />
+              <span style={index === 0 ? { color: '#00A63E' } : {}}>
                 {feature.title}
                 {feature.text && (
                   <p className="text-sm font-normal text-gray-600">{feature.text}</p>
@@ -170,19 +170,21 @@ export default function CardPack({
         )}
       </div>
 
-      {/* Ligne de séparation */}
-      {!hidePrice && (
-        <div
-          className="relative z-20 my-10"
-          style={{
-            height: '1px',
-            backgroundImage:
-              'linear-gradient(to right, #d1d5db 0%, #d1d5db 50%, transparent 50%, transparent 100%)',
-            backgroundSize: '20px 1px',
-            backgroundRepeat: 'repeat-x',
-          }}
-        />
-      )}
+      {/* Section prix et bouton */}
+      <div className="relative z-20  pb-10">
+        {/* Ligne de séparation */}
+        {!hidePrice && (
+          <div
+            className="relative z-20 my-5"
+            style={{
+              height: '1px',
+              backgroundImage:
+                'linear-gradient(to right, #d1d5db 0%, #d1d5db 50%, transparent 50%, transparent 100%)',
+              backgroundSize: '20px 1px',
+              backgroundRepeat: 'repeat-x',
+            }}
+          />
+        )}
 
       {/* Section prix et bouton */}
       <div className="relative z-20 space-y-5 px-10 pb-10">
@@ -215,13 +217,14 @@ export default function CardPack({
           style={{
             background: buttonGradient,
           }}
-          className={cn('w-full rounded-full!', classNameButton)}
+          className={cn('w-full !rounded-full', classNameButton)}
           onClick={onButtonClick}
           href={buttonHref}
           target={buttonHref && buttonHref.startsWith('http') ? '_blank' : undefined}
         >
           {buttonText}
         </CustomButton>
+        </div>
       </div>
 
       {/* Modal Conditions d'abonnement */}

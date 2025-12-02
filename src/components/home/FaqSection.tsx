@@ -6,97 +6,55 @@ import { FaqList } from './FaqList';
 
 const faq: FaqProps[] = [
   {
-    question: ' Qu’est-ce que HALL-IA ?',
+    question: 'Comment fonctionne HALL-RECORDER ?',
     answer:
-      'HALL-IA est une plateforme d’agents d’intelligence artificielle métiers, conçue pour aider les entreprises à gagner du temps, réduire les erreurs et automatiser les tâches répétitives Chaque agent est spécialisé (juridique, marketing, RH, finance, commercial, etc.) et s’appuie sur des modèles d’IA avancés pour analyser, rédiger, classer, calculer ou décider intelligemment à votre place. Vous choisissez les agents dont vous avez besoin, les activez, et ils s’intègrent à votre quotidien sans effort.',
+      'HALL-RECORDER enregistre vos réunions (en présentiel ou en visioconférence), transcrit automatiquement les échanges grâce à l\'IA, puis génère un résumé clair comprenant les décisions, les actions et les points importants. L\'outil classe et archive ensuite chaque réunion dans un espace sécurisé, accessible à tout moment.'
+  },
+  {
+    question: 'HALL-RECORDER peut-il être utilisé avec Zoom, Microsoft Teams, Google Meet ?',
+    answer:
+      'Oui. HALL-RECORDER se connecte facilement à vos outils de visioconférence habituels (Zoom, Microsoft Teams, Google Meet...).',
     
   },
   {
-    question: 'À qui s’adresse HALL-IA ?',
+    question: 'Est-ce que les transcriptions et comptes rendus sont fiables ?',
     answer:
-      'HALL-IA s’adresse à toutes les entreprises, quelle que soit leur taille ou leur secteur. Nos solutions sont pensées pour les PME, TPE et indépendants qui veulent tirer parti de l’IA sans passer par des développements complexes ni recruter des data scientists. Que vous gériez une agence, un cabinet, un commerce ou une structure industrielle, HALL-IA vous aide à automatiser les opérations qui consomment le plus de temps et à transformer vos processus internes.',
+      'Absolument. HALL-RECORDER utilise une technologie avancée de reconnaissance vocale et d\'analyse sémantique, capable de détecter les intervenants, réduire le bruit et comprendre le contexte. Le résultat : une transcription précise et une synthèse fidèle même lors de discussions rapides ou complexes.',
     
   },
   {
-    question: 'Faut-il être expert en IA pour utiliser HALL-IA ?',
+    question: 'Mes données sont-elles protégées et conformes au RGPD ?',
     answer:
-      'Pas du tout — c’est justement l’objectif inverse. HALL-IA a été pensée pour être accessible à tous, avec une interface intuitive, des exemples concrets et un accompagnement étape par étape. Nos formations internes s’adaptent à votre niveau — du débutant complet à l’utilisateur expert — afin de garantir une montée en compétence progressive et concrète pour toutes vos équipes.',
+      'Oui. La sécurité des données est une priorité. \n Les enregistrements, transcriptions et comptes rendus sont chiffrés, stockés sur des serveurs sécurisés entièrement conformes au RGPD.',
+  },
+  {
+    question: 'Peut-on utiliser HALL-RECORDER en plusieurs langues ?',
+    answer:
+      'Oui. L\'IA détecte automatiquement la langue parlée par chaque intervenant et peut transcrire ou traduire la réunion dans différentes langues. \n Idéal pour les équipes internationales, les échanges bilingues ou les entreprises multi-sites.',
     
   },
   {
-    question: 'Quels types de tâches les agents IA peuvent-ils automatiser ?',
+    question: 'Quel type d\'entreprise peut utiliser HALL-RECORDER ?',
     answer:
-      'Les agents HALL-IA peuvent prendre en charge aussi bien des tâches simples et répétitives que des processus complexes et multi-étapes. Quelques exemples : ',
-    
-    list: [
-      'Génération et analyse de documents juridiques, contrats, devis, factures, courriers, etc.',
-      'Gestion de campagnes marketing (emails, réseaux sociaux, reporting).',
-      'Rédaction de contenus professionnels, appels d’offres, notes internes.',
-      'Tri, catégorisation et synthèse automatique de données clients ou RH.',
-      'Automatisation des relances, suivis, ou réponses à des messages clients.',
-      'Pré-analyse de dossiers complexes ou de données comptables',
-    ],
-    anotherAnswer:
-      'En résumé : si la tâche est récurrente, chronophage ou basée sur des règles, HALL-IA peut la gérer pour vous.',
-  },
-  {
-    question: 'Combien de temps faut-il pour mettre HALL-IA en place ?',
-    answer:
-      'Quelques minutes seulement. La plateforme est entièrement en ligne et ne nécessite aucune installation technique. Après inscription, vous choisissez les agents qui correspondent à vos besoins, les configurez en quelques clics, et vos automatisations sont prêtes. Nos équipes peuvent également vous accompagner pour cartographier vos processus et optimiser le déploiement.',
+      'HALL-RECORDER est conçu pour les PME, mais il convient aussi aux indépendants, aux start-up, aux équipes commerciales, RH, direction ou projet. \n Toute organisation qui souhaite gagner du temps, améliorer le suivi des décisions et structurer ses réunions peut tirer un bénéfice immédiat de l\'outil.',
     
   },
   {
-    question: 'HALL-IA respecte-t-il la confidentialité de mes données ?',
+    question: 'Que se passe-t-il si, pendant la réunion, vous abordez des sujets futiles ?',
     answer:
-      'Absolument. La sécurité et la confidentialité sont au cœur de notre démarche. Vos données sont hébergées en Europe, dans des environnements conformes au RGPD, et aucune donnée client n’est utilisée pour entraîner nos modèles. Vous restez seul propriétaire de vos données et de vos documents. HALL-IA offre également des options de confidentialité renforcée pour les secteurs sensibles (juridique, médical, comptable…).',
+      'L\'IA se concentre uniquement sur les échanges liés au business. Elle filtre automatiquement les digressions et les sujets sans importance. Par exemple, si un participant commence à raconter ses vacances ou une anecdote personnelle, ces informations seront ignorées pour produire un résumé clair, pertinent et centré sur votre activité.',
     
   },
   {
-    question: 'Peut-on personnaliser les agents IA selon son entreprise ?',
+    question: 'Peut-on mettre l’enregistrement en pause pendant une réunion ?',
     answer:
-      'Oui. Chaque agent peut être entraîné ou ajusté à vos usages internes : vocabulaire, documents, ton, procédures, etc. Vous pouvez connecter vos propres outils (CRM, messagerie, Google Workspace, Notion, etc.) pour créer une expérience totalement intégrée et cohérente. Notre équipe peut aussi concevoir des agents sur mesure, adaptés à vos workflows métiers spécifiques.',
+      'Oui, absolument. L\'outil dispose d\'une fonctionnalité "Pause" qui vous permet d\'interrompre l\'enregistrement à tout moment — idéal lors d\'une pause café, d\'un aparté ou d\'un moment hors sujet. Une fois la réunion reprise, il suffit de relancer l\'enregistrement pour continuer la capture là où vous l\'aviez arrêtée, sans créer plusieurs fichiers ni perdre le fil de votre compte rendu.',
     
   },
+ 
   {
-    question: 'Quel est le modèle tarifaire ?',
-    answer:
-      'HALL-IA fonctionne en abonnement mensuel flexible et sans engagement. Vous ne payez que pour les agents activés, avec un coût adapté à la taille de votre entreprise. Chaque plan inclut :',
-    list: [
-      'l’accès complet à la plateforme,',
-      'les mises à jour automatiques,',
-      'un support utilisateur dédié,',
-      'et un suivi de performance mensuel.',
-    ],
-    anotherAnswer:
-      'Une période d’essai gratuite vous permet de tester les agents avant de vous engager.',
-    
-  },
-  {
-    question: 'Proposez-vous un accompagnement ou une formation ?',
-    answer:
-      'Oui, c’est une partie essentielle de notre offre. Nous accompagnons chaque entreprise dans :',
-    list: [
-      'l’audit de ses processus existants,',
-      'le déploiement des agents les plus pertinents,',
-      'la formation des collaborateurs selon leur niveau,',
-      'et le suivi de la performance et du ROI dans le temps.',
-    ],
-    anotherAnswer:
-      'Notre objectif : que vous puissiez maîtriser vos outils IA en interne, sans dépendre d’un prestataire.',
-    
-  },
-  {
-    question: 'Quels résultats concrets peut-on attendre avec HALL-IA ?',
-    answer: 'Nos clients constatent dès les premières semaines :',
-    list: [
-      'jusqu’à 20 heures de temps libéré par collaborateur et par semaine,',
-      'une réduction de 85 % des erreurs manuelles,',
-      'un gain annuel moyen de 250 000 € pour une PME de 50 personnes,',
-      'et une hausse de la satisfaction des collaborateurs de +60 %.',
-    ],
-    anotherAnswer:
-      'En clair : moins de tâches répétitives, plus de performance, et une entreprise qui avance plus vite — sans alourdir les équipes.',
-    
+    question: 'Que faire si je n’ai pas de connexion Internet pendant la réunion ?',
+    answer: 'L\'outil fonctionne avec l\'intelligence artificielle et nécessite une connexion Internet pour analyser votre réunion en direct. Toutefois, si vous êtes hors ligne, vous pouvez simplement utiliser la fonction d\'enregistrement audio de votre mobile. Une fois la connexion rétablie, importez votre enregistrement dans l\'application : l\'IA générera automatiquement un résumé clair et complet à partir de cet audio.',
   },
 ];
 

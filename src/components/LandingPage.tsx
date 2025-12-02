@@ -1,6 +1,7 @@
 import HowItWorkSection, { ListItem } from './HowItWorkSection';
 import AppPack from './home/AppPack';
 import ArgumentsSection from './home/ArgumentsSection';
+import BigTestimonial from './home/BigTestimonial';
 import CTASection from './home/CTASection';
 import { FaqSection } from './home/FaqSection';
 import Hero from './home/Hero';
@@ -89,15 +90,17 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
     <NavBar />
     <section className="space-y-30 overflow-x-hidden">
       <Hero />
+      <section id="avantages">
         <ArgumentsSection />
+        </section>
       <section id="etapes" className="lg:mb-90">
-        {/* <HowItWorkSection items={sampleVideoItems} brandColor="#F27732" /> */}
+        <ProductivitySection />
       </section>
       <section>
-        <ProductivitySection />
         <section id="prix">
           <AppPack />
         </section>
+        <BigTestimonial />
         <TestimonialSection />
         <FaqSection />
         <CTASection />
