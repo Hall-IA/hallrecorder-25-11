@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { ArrowRight } from 'lucide-react';
 
 interface ArgumentItem {
@@ -9,7 +10,7 @@ interface ArgumentItem {
 
 const argumentsData: ArgumentItem[] = [
   {
-    title: 'Fonctionne en présentiel ou en Visio : ',
+    title: 'Fonctionne en présentiel ou en Visio: ',
     description: [
       "Notre technologie avancée permet d'enregistrer vos réunions aussi bien en présentiel qu'en visioconférence. En salle, le module capte l'ensemble des échanges autour de lui ; en visio, il analyse automatiquement les voix et interventions de tous les participants. Compatible avec Google Meet, Zoom, Teams, Discord et bien d'autres, l'outil s'intègre facilement à votre environnement de travail.",
     ],
@@ -59,6 +60,12 @@ const argumentsData: ArgumentItem[] = [
 ];
 
 export default function ArgumentsSection() {
+  // Vérifier si le paramètre promo=true est présent dans l'URL
+  const showPromo = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('promo') === 'true';
+  }, []);
+
   return (
     <section className="font-roboto w-full lg:pt-10 lg:pb-20 overflow-hidden">
       {/* Titre dans le container */}
@@ -95,8 +102,13 @@ export default function ArgumentsSection() {
                     </p>
                   ))}
                 </div>
-                <button className="flex w-fit items-center gap-2 rounded-full bg-gradient-to-br from-[#F35F4F] to-[#FFAD5A] px-8 py-3 text-sm sm:text-base md:text-lg font-semibold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl">
-                  Essayer gratuitement
+                <button 
+                  onClick={() => {
+                    window.location.href = window.location.origin + '/#record';
+                  }}
+                  className="flex w-fit items-center gap-2 rounded-full bg-gradient-to-br from-[#F35F4F] to-[#FFAD5A] px-8 py-3 text-sm sm:text-base md:text-lg font-semibold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl"
+                >
+                  {showPromo ? 'Essayer gratuitement' : 'Essayez maintenant'}
                   <ArrowRight size={20} className="text-white" />
                 </button>
               </div>
