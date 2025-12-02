@@ -99,7 +99,7 @@ export default function AppPack() {
         )}
 
         <CardPack
-          title=" Formule Business"
+          title="Formule Business"
           features={[
             { title: '600 minutes d\'enregistrements / mois' },
             {
