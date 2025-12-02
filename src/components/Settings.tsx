@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Save, Upload, X, Mail, BookOpen, Plus, Trash2, Sparkles } from 'lucide-react';
+import { Save, Upload, X, Mail, BookOpen, Plus, Trash2, Sparkles, Eye, Search } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { SummaryMode } from '../services/transcription';
+import { invalidateDictionaryCache } from '../services/dictionaryCorrection';
 import { useDialog } from '../context/DialogContext';
 
 interface SettingsProps {
@@ -26,6 +27,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
   const [smtpPort, setSmtpPort] = useState(587);
   const [smtpUser, setSmtpUser] = useState('');
   const [smtpPassword, setSmtpPassword] = useState('');
+  const [senderName, setSenderName] = useState('');
   const [smtpSecure, setSmtpSecure] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [isPasswordModified, setIsPasswordModified] = useState(false);
@@ -38,6 +40,8 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
   const [customDictionary, setCustomDictionary] = useState<Array<{ id: string; incorrect_word: string; correct_word: string }>>([]);
   const [newIncorrectWord, setNewIncorrectWord] = useState('');
   const [newCorrectWord, setNewCorrectWord] = useState('');
+  const [showDictionaryModal, setShowDictionaryModal] = useState(false);
+  const [dictionarySearch, setDictionarySearch] = useState('');
 
   const [defaultSummaryMode, setDefaultSummaryMode] = useState<SummaryMode | ''>('');
   // Contact Groups
@@ -83,7 +87,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
   const loadSettings = async () => {
     const { data, error } = await supabase
       .from('user_settings')
-      .select('signature_text, signature_logo_url, email_method, smtp_host, smtp_port, smtp_user, smtp_password_encrypted, smtp_secure, gmail_connected, gmail_email, default_summary_mode')
+      .select('signature_text, signature_logo_url, email_method, smtp_host, smtp_port, smtp_user, smtp_password_encrypted, smtp_secure, gmail_connected, gmail_email, default_summary_mode, sender_name')
       .eq('user_id', userId)
       .maybeSingle();
 
@@ -95,6 +99,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
       setSmtpHost(data.smtp_host || '');
       setSmtpPort(data.smtp_port || 587);
       setSmtpUser(data.smtp_user || '');
+      setSenderName(data.sender_name || '');
       
       // Si un mot de passe chiffré existe, afficher un placeholder
       if (data.smtp_password_encrypted) {
@@ -160,6 +165,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
 
     setNewIncorrectWord('');
     setNewCorrectWord('');
+    invalidateDictionaryCache(); // Invalider le cache pour que les nouvelles corrections soient appliquées
     await loadCustomDictionary();
   };
 
@@ -179,6 +185,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
       return;
     }
 
+    invalidateDictionaryCache(); // Invalider le cache pour refléter la suppression
     await loadCustomDictionary();
   };
 
@@ -650,6 +657,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
           smtp_host: smtpHost || null,
           smtp_port: smtpPort || null,
           smtp_user: smtpUser || null,
+          sender_name: senderName.trim() || null,
           ...passwordUpdate,
           smtp_secure: smtpSecure,
           updated_at: new Date().toISOString(),
@@ -1154,6 +1162,23 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                 </div>
               </div>
 
+              {/* Nom de l'expéditeur */}
+              <div className="mt-4 p-4 bg-white rounded-xl border-2 border-blue-200">
+                <label className="block text-sm font-semibold text-cocoa-700 mb-2">
+                  Nom de l'expéditeur (optionnel)
+                </label>
+                <input
+                  type="text"
+                  value={senderName}
+                  onChange={(e) => setSenderName(e.target.value)}
+                  placeholder="Ex: Mon Entreprise, Support Client..."
+                  className="w-full px-4 py-2 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-cocoa-800"
+                />
+                <p className="text-xs text-cocoa-500 mt-2">
+                  📧 Ce nom sera affiché aux destinataires. Si vide, seule votre adresse email sera visible.
+                </p>
+              </div>
+
               <div className="flex items-center gap-2 p-3 bg-gradient-to-br from-peach-50 to-coral-50 rounded-lg border border-coral-200">
                 <input
                   type="checkbox"
@@ -1378,40 +1403,21 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
               </button>
             </div>
 
-            {customDictionary.length > 0 ? (
-              <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
-                {customDictionary.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="flex items-center justify-between p-4 bg-gradient-to-br from-peach-50 to-coral-50 rounded-xl border-2 border-coral-200 hover:border-coral-300 transition-all"
-                  >
-                    <div className="flex-1 grid grid-cols-2 gap-4">
-                      <div>
-                        <span className="text-xs font-semibold text-cocoa-600 uppercase">Incorrect</span>
-                        <p className="text-cocoa-900 font-medium">{entry.incorrect_word}</p>
-                      </div>
-                      <div>
-                        <span className="text-xs font-semibold text-cocoa-600 uppercase">Correction</span>
-                        <p className="text-green-700 font-semibold">{entry.correct_word}</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleDeleteWord(entry.id)}
-                      className="p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors ml-4"
-                      title="Supprimer"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-cocoa-500">
-                <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p className="text-sm">Aucun mot dans le dictionnaire</p>
-                <p className="text-xs mt-1">Ajoutez des termes spécifiques comme des noms d'entreprise</p>
-              </div>
-            )}
+            {/* Bouton pour voir les mots */}
+            <button
+              onClick={() => setShowDictionaryModal(true)}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all group"
+            >
+              <Eye className="w-5 h-5 text-blue-600" />
+              <span className="font-semibold text-blue-700">
+                Voir le dictionnaire
+              </span>
+              {customDictionary.length > 0 && (
+                <span className="px-2.5 py-0.5 bg-blue-500 text-white text-sm font-bold rounded-full">
+                  {customDictionary.length}
+                </span>
+              )}
+            </button>
           </div>
         </div>
 
@@ -1591,6 +1597,125 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
         </div>
       </div>
       </div>
+
+      {/* Modal du dictionnaire */}
+      {showDictionaryModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] flex flex-col overflow-hidden animate-scaleIn">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white/20 rounded-xl">
+                    <BookOpen className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold">Dictionnaire personnalisé</h2>
+                    <p className="text-blue-100 text-sm">
+                      {customDictionary.length} mot{customDictionary.length > 1 ? 's' : ''} enregistré{customDictionary.length > 1 ? 's' : ''}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowDictionaryModal(false);
+                    setDictionarySearch('');
+                  }}
+                  className="p-2 hover:bg-white/20 rounded-xl transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              
+              {/* Barre de recherche */}
+              {customDictionary.length > 5 && (
+                <div className="mt-4 relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-300" />
+                  <input
+                    type="text"
+                    value={dictionarySearch}
+                    onChange={(e) => setDictionarySearch(e.target.value)}
+                    placeholder="Rechercher un mot..."
+                    className="w-full pl-10 pr-4 py-2 bg-white/20 border border-white/30 rounded-xl text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white/50"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Liste des mots */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {customDictionary.length > 0 ? (
+                <div className="space-y-2">
+                  {customDictionary
+                    .filter(entry => 
+                      !dictionarySearch || 
+                      entry.incorrect_word.toLowerCase().includes(dictionarySearch.toLowerCase()) ||
+                      entry.correct_word.toLowerCase().includes(dictionarySearch.toLowerCase())
+                    )
+                    .map((entry, index) => (
+                      <div
+                        key={entry.id}
+                        className="flex items-center justify-between p-4 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all group"
+                        style={{ animationDelay: `${index * 30}ms` }}
+                      >
+                        <div className="flex-1 grid grid-cols-2 gap-6 min-w-0">
+                          <div className="min-w-0">
+                            <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Incorrect</span>
+                            <p className="text-gray-800 font-medium">{entry.incorrect_word}</p>
+                          </div>
+                          <div className="min-w-0 flex items-center gap-2">
+                            <div className="flex-1">
+                              <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Correction</span>
+                              <p className="text-green-700 font-semibold">{entry.correct_word}</p>
+                            </div>
+                            <span className="text-green-500">→</span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteWord(entry.id)}
+                          className="p-2 bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 rounded-lg transition-all ml-4 opacity-50 group-hover:opacity-100"
+                          title="Supprimer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  
+                  {/* Message si recherche sans résultat */}
+                  {dictionarySearch && customDictionary.filter(entry => 
+                    entry.incorrect_word.toLowerCase().includes(dictionarySearch.toLowerCase()) ||
+                    entry.correct_word.toLowerCase().includes(dictionarySearch.toLowerCase())
+                  ).length === 0 && (
+                    <div className="text-center py-12 text-gray-500">
+                      <Search className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                      <p className="font-medium">Aucun résultat pour "{dictionarySearch}"</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-16 text-gray-500">
+                  <BookOpen className="w-16 h-16 mx-auto mb-4 opacity-20" />
+                  <p className="text-lg font-medium text-gray-600">Dictionnaire vide</p>
+                  <p className="text-sm mt-1">Ajoutez des mots via le formulaire ci-dessus</p>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-gray-200 p-4 bg-gray-50">
+              <button
+                onClick={() => {
+                  setShowDictionaryModal(false);
+                  setDictionarySearch('');
+                }}
+                className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

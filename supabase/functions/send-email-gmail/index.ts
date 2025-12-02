@@ -38,7 +38,7 @@ function makeMessageId(domainHint = 'localhost') {
   return `<${rand}.${ts}@${domainHint}>`;
 }
 function createMimeMessage(opts) {
-  const { from, to, subject, html, attachments, messageIdDomainHint } = opts;
+  const { from, to, cc, bcc, subject, html, attachments, messageIdDomainHint } = opts;
   const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   const altBoundary = boundary + '_ALT';
   const lines = [];
@@ -48,6 +48,14 @@ function createMimeMessage(opts) {
   // En-têtes
   lines.push(`From: ${from ?? 'me'}`); // "me" accepté par Gmail API
   lines.push(`To: ${to}`);
+  // Ajouter CC si présent
+  if (cc && cc.trim()) {
+    lines.push(`Cc: ${cc}`);
+  }
+  // Ajouter BCC si présent
+  if (bcc && bcc.trim()) {
+    lines.push(`Bcc: ${bcc}`);
+  }
   lines.push(`Subject: ${subj}`);
   lines.push(`Date: ${date}`);
   lines.push(`Message-ID: ${msgId}`);
@@ -147,7 +155,11 @@ async function sendGmailMessage(accessToken, message) {
     if (userError || !user) throw new Error('Unauthorized');
     // Payload
     const body = await req.json();
-    const { to, subject, html, attachments, from } = body;
+    const { to, cc, bcc, subject, html, attachments, from } = body;
+    
+    console.log('📧 Gmail - To:', to);
+    if (cc) console.log('📧 Gmail - Cc:', cc);
+    if (bcc) console.log('📧 Gmail - Bcc:', bcc);
     // Limites côté Edge Function (10 MB cumul PJ)
     if (attachments?.length) {
       if (attachments.length > 10) {
@@ -188,6 +200,8 @@ async function sendGmailMessage(accessToken, message) {
     const mimeMessage = createMimeMessage({
       from: from ?? user.email,
       to,
+      cc,
+      bcc,
       subject,
       html,
       attachments,

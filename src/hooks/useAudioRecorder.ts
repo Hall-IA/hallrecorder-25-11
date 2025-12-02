@@ -241,8 +241,13 @@ export const useAudioRecorder = () => {
       const options: MediaRecorderOptions = selectedType ? { mimeType: selectedType, audioBitsPerSecond: 128000 } : { audioBitsPerSecond: 128000 };
       const mediaRecorder = new MediaRecorder(combinedStream, options);
       mediaRecorderRef.current = mediaRecorder;
+      
+      // IMPORTANT: Réinitialiser TOUS les buffers au démarrage pour éviter les mélanges avec d'anciens enregistrements
       chunksRef.current = [];
       partialChunksRef.current = [];
+      segmentQueueRef.current = [];
+      lastPartialIndexRef.current = 0;
+      ringBuffersRef.current = [];
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {

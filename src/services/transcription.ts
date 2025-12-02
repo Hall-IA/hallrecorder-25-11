@@ -1,3 +1,5 @@
+import { applyDictionaryCorrections } from './dictionaryCorrection';
+
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const TRANSCRIBE_URL = import.meta.env.VITE_TRANSCRIBE_URL;
@@ -113,6 +115,20 @@ export const generateSummary = async (
   console.log('🔄 generateSummary appelé - Transcript length:', transcript.length, 'Retry:', retryCount, 'Mode:', summaryMode);
 
   try {
+    // Appliquer les corrections du dictionnaire à la transcription AVANT de générer le résumé
+    let correctedTranscript = transcript;
+    if (userId) {
+      try {
+        correctedTranscript = await applyDictionaryCorrections(transcript, userId);
+        if (correctedTranscript !== transcript) {
+          console.log('📚 Dictionnaire appliqué à la transcription');
+        }
+      } catch (dictError) {
+        console.warn('⚠️ Erreur dictionnaire (transcription):', dictError);
+        // Continuer avec la transcription originale
+      }
+    }
+
     const response = await fetch(
       `${SUPABASE_URL}/functions/v1/generate-summary`,
       {
@@ -121,7 +137,7 @@ export const generateSummary = async (
           'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ transcript, userId, summaryMode }),
+        body: JSON.stringify({ transcript: correctedTranscript, userId, summaryMode }),
       }
     );
 
@@ -144,8 +160,32 @@ export const generateSummary = async (
     }
 
     const data = await response.json();
-    console.log('✅ generateSummary success:', { title: data.title, summaryLength: data.summary?.length });
-    return { title: data.title, summary: data.summary };
+    
+    // Appliquer les corrections du dictionnaire au résumé ET au titre générés
+    let correctedTitle = data.title || '';
+    let correctedSummary = data.summary || '';
+    
+    if (userId) {
+      try {
+        const [titleCorrected, summaryCorrected] = await Promise.all([
+          applyDictionaryCorrections(correctedTitle, userId),
+          applyDictionaryCorrections(correctedSummary, userId)
+        ]);
+        
+        if (titleCorrected !== correctedTitle || summaryCorrected !== correctedSummary) {
+          console.log('📚 Dictionnaire appliqué au résumé généré');
+        }
+        
+        correctedTitle = titleCorrected;
+        correctedSummary = summaryCorrected;
+      } catch (dictError) {
+        console.warn('⚠️ Erreur dictionnaire (résumé):', dictError);
+        // Continuer avec le résumé original
+      }
+    }
+    
+    console.log('✅ generateSummary success:', { title: correctedTitle, summaryLength: correctedSummary?.length });
+    return { title: correctedTitle, summary: correctedSummary };
   } catch (error) {
     console.error('❌ generateSummary exception:', error);
     if (retryCount < 3 && error instanceof Error && error.message.includes('429')) {

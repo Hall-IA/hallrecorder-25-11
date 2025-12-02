@@ -798,6 +798,14 @@ function App() {
   useEffect(() => {
     
     if (isRecording) {
+      // IMPORTANT: Réinitialiser les transcriptions partielles au démarrage d'un nouvel enregistrement
+      // pour éviter que des segments d'anciens enregistrements ne se mélangent avec les nouveaux
+      console.log('🧹 Nettoyage des transcriptions partielles pour nouvel enregistrement');
+      liveTranscriptRef.current = '';
+      setPartialTranscripts([]);
+      recentChunksRef.current = [];
+      lastProcessedSizeRef.current = 0;
+      
       setSummaryPreference(null);
       setShowSummaryPreferenceModal(false);
       setSummaryWordEstimate(0);
@@ -1693,21 +1701,27 @@ function App() {
     setShowDefaultModeReminder(false);
   }, []);
 
-  const handleSummaryPreferenceCancel = useCallback(() => {
-    console.log('❌ Annulation du traitement et suppression de l\'audio courant');
-    setShowSummaryPreferenceModal(false);
-    setSummaryPreference(null);
-    setSummaryWordEstimate(0);
-    skipProcessingRef.current = true;
-    setShowDefaultModeReminder(false);
-  }, []);
-
-  const handleOpenSettingsFromModal = useCallback(() => {
-    setShowSummaryPreferenceModal(false);
-    setShowDefaultModeReminder(false);
-    setView('settings');
-    window.location.hash = 'settings';
-  }, []);
+  const handleSetDefaultModeFromModal = useCallback(async (mode: SummaryMode) => {
+    if (!user) return;
+    
+    const { error } = await supabase
+      .from('user_settings')
+      .upsert({
+        user_id: user.id,
+        default_summary_mode: mode,
+        updated_at: new Date().toISOString(),
+      }, {
+        onConflict: 'user_id'
+      });
+    
+    if (error) {
+      console.error('Erreur lors de la sauvegarde du mode par défaut:', error);
+      throw error;
+    }
+    
+    setDefaultSummaryModeSetting(mode);
+    console.log('✅ Mode par défaut sauvegardé:', mode);
+  }, [user]);
 
   const handleOpenLongRecordingReminder = () => {
     setRecordingReminderToast(null);
@@ -2285,7 +2299,7 @@ function App() {
               </div>
 
               {/* Barre latérale droite avec la liste des réunions */}
-              <aside className="hidden xl:block w-80 bg-white border-l-2 border-orange-100 p-6 overflow-y-auto">
+              <aside className="hidden xl:block w-80 bg-gradient-to-b from-white to-orange-50/30 border-l-2 border-orange-100 p-6 overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-bold bg-gradient-to-r from-coral-500 to-sunset-500 bg-clip-text text-transparent">
                     Réunions récentes
@@ -2295,11 +2309,11 @@ function App() {
                       console.log('🔄 Rechargement manuel des réunions');
                       loadMeetings(true);
                     }}
-                    className="p-2 hover:bg-coral-50 rounded-lg transition-colors group"
+                    className="p-2 hover:bg-coral-50 rounded-xl transition-all duration-300 group hover:shadow-md"
                     title="Rafraîchir"
                   >
                     <svg 
-                      className={`w-5 h-5 text-coral-600 transition-transform ${isRecentRefreshing ? 'animate-spin' : 'group-hover:rotate-180'}`}
+                      className={`w-5 h-5 text-coral-600 transition-transform duration-500 ${isRecentRefreshing ? 'animate-spin' : 'group-hover:rotate-180'}`}
                       fill="none" 
                       stroke="currentColor" 
                       viewBox="0 0 24 24"
@@ -2311,48 +2325,111 @@ function App() {
                 <div className="space-y-3">
                   {isRecentLoading && (
                     <>
-                      {[...Array(3)].map((_, idx) => (
+                      {[...Array(4)].map((_, idx) => (
                         <div
                           key={`recent-skeleton-${idx}`}
-                          className="animate-pulse bg-gradient-to-br from-peach-50 to-coral-50 rounded-xl p-4 border-2 border-orange-100"
+                          className="animate-pulse bg-white rounded-2xl p-4 border border-orange-100 shadow-sm"
                         >
-                          <div className="h-4 bg-white/60 rounded w-3/4 mb-3" />
-                          <div className="h-3 bg-white/40 rounded w-1/2" />
+                          <div className="flex items-start gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200" />
+                            <div className="flex-1">
+                              <div className="h-4 bg-gray-100 rounded-lg w-3/4 mb-2" />
+                              <div className="h-3 bg-gray-100 rounded-lg w-1/2" />
+                            </div>
+                          </div>
                         </div>
                       ))}
                     </>
                   )}
 
-                  {!isRecentLoading && (console.log('📋 Sidebar: meetings:', meetings.length, 'first:', meetings[0]?.title, 'created_at:', meetings[0]?.created_at), meetings.slice(0, 10).map((meeting) => (
-                    <div
-                      key={meeting.id}
-                      onClick={() => {
-                        handleViewMeeting(meeting);
-                      }}
-                      className="relative bg-gradient-to-br from-peach-50 to-coral-50 rounded-xl p-4 border-2 border-orange-100 hover:border-coral-300 hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden hover:scale-105"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-coral-100/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                      <h4 className="relative font-bold text-cocoa-800 text-sm truncate mb-2 group-hover:text-coral-600 transition-colors duration-300">
-                        {meeting.title}
-                      </h4>
-                      <div className="flex items-center gap-2 text-xs text-cocoa-600">
-                        <span className="truncate">
-                          {new Date(meeting.created_at).toLocaleDateString('fr-FR', {
-                            day: 'numeric',
-                            month: 'short'
-                          })}
-                        </span>
-                        <span>•</span>
-                        <span>
-                          {Math.floor(meeting.duration / 60)}:{(meeting.duration % 60).toString().padStart(2, '0')}
-                        </span>
+                  {!isRecentLoading && (console.log('📋 Sidebar: meetings:', meetings.length, 'first:', meetings[0]?.title, 'created_at:', meetings[0]?.created_at), meetings.slice(0, 10).map((meeting, index) => {
+                    // Couleurs différentes basées sur l'index ou la durée
+                    const colorSchemes = [
+                      { bg: 'from-coral-50 to-orange-50', border: 'border-coral-100 hover:border-coral-300', icon: 'from-coral-500 to-orange-500', text: 'text-coral-600' },
+                      { bg: 'from-blue-50 to-indigo-50', border: 'border-blue-100 hover:border-blue-300', icon: 'from-blue-500 to-indigo-500', text: 'text-blue-600' },
+                      { bg: 'from-purple-50 to-fuchsia-50', border: 'border-purple-100 hover:border-purple-300', icon: 'from-purple-500 to-fuchsia-500', text: 'text-purple-600' },
+                      { bg: 'from-emerald-50 to-teal-50', border: 'border-emerald-100 hover:border-emerald-300', icon: 'from-emerald-500 to-teal-500', text: 'text-emerald-600' },
+                      { bg: 'from-amber-50 to-yellow-50', border: 'border-amber-100 hover:border-amber-300', icon: 'from-amber-500 to-yellow-500', text: 'text-amber-600' },
+                    ];
+                    const colors = colorSchemes[index % colorSchemes.length];
+                    const durationMins = Math.floor(meeting.duration / 60);
+                    
+                    // Badge de durée
+                    const getDurationBadge = () => {
+                      if (durationMins >= 60) return { label: 'Long', color: 'bg-purple-100 text-purple-700' };
+                      if (durationMins >= 30) return { label: 'Moyen', color: 'bg-blue-100 text-blue-700' };
+                      return { label: 'Court', color: 'bg-emerald-100 text-emerald-700' };
+                    };
+                    const badge = getDurationBadge();
+                    
+                    return (
+                      <div
+                        key={meeting.id}
+                        onClick={() => {
+                          handleViewMeeting(meeting);
+                        }}
+                        className={`
+                          relative bg-gradient-to-br ${colors.bg} rounded-2xl p-4 
+                          border ${colors.border} 
+                          hover:shadow-lg transition-all duration-300 cursor-pointer group 
+                          overflow-hidden hover:-translate-y-0.5
+                        `}
+                        style={{ animationDelay: `${index * 50}ms` }}
+                      >
+                        {/* Effet de survol */}
+                        <div className="absolute inset-0 bg-white/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                        
+                        <div className="relative flex items-start gap-3">
+                          {/* Icône colorée */}
+                          <div className={`
+                            w-10 h-10 rounded-xl bg-gradient-to-br ${colors.icon} 
+                            flex items-center justify-center flex-shrink-0
+                            shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-300
+                          `}>
+                            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          </div>
+                          
+                          <div className="flex-1 min-w-0">
+                            <h4 className={`font-semibold text-cocoa-800 text-sm truncate mb-1.5 group-hover:${colors.text} transition-colors duration-300`}>
+                              {meeting.title}
+                            </h4>
+                            <div className="flex items-center gap-2 text-xs text-cocoa-500">
+                              <span className="truncate">
+                                {new Date(meeting.created_at).toLocaleDateString('fr-FR', {
+                                  day: 'numeric',
+                                  month: 'short'
+                                })}
+                              </span>
+                              <span className="w-1 h-1 rounded-full bg-cocoa-300" />
+                              <span className="font-medium">
+                                {durationMins}:{(meeting.duration % 60).toString().padStart(2, '0')}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          {/* Badge de durée */}
+                          <span className={`
+                            text-[10px] font-semibold px-2 py-0.5 rounded-full ${badge.color}
+                            opacity-0 group-hover:opacity-100 transition-opacity duration-300
+                          `}>
+                            {badge.label}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  )))}
+                    );
+                  }))}
 
                   {!isRecentLoading && meetings.length === 0 && (
-                    <div className="text-center py-8">
-                      <p className="text-cocoa-500 text-sm">Aucune réunion enregistrée</p>
+                    <div className="text-center py-12 px-4">
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-coral-100 to-orange-100 flex items-center justify-center">
+                        <svg className="w-8 h-8 text-coral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                        </svg>
+                      </div>
+                      <p className="text-cocoa-600 font-medium">Aucune réunion</p>
+                      <p className="text-cocoa-400 text-sm mt-1">Démarrez votre premier enregistrement !</p>
                     </div>
                   )}
 
@@ -2361,9 +2438,12 @@ function App() {
                       onClick={() => {
                         setView('history');
                       }}
-                      className="w-full mt-4 px-4 py-2 text-sm font-semibold text-coral-600 hover:text-coral-700 hover:bg-coral-50 rounded-lg transition-colors"
+                      className="w-full mt-4 px-4 py-3 text-sm font-semibold text-coral-600 hover:text-white bg-coral-50 hover:bg-gradient-to-r hover:from-coral-500 hover:to-sunset-500 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group"
                     >
-                      Voir tout l'historique →
+                      <span>Voir tout l'historique</span>
+                      <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
                     </button>
                   )}
                 </div>
@@ -2890,9 +2970,8 @@ function App() {
         estimatedWordCount={summaryWordEstimate}
         recordingDuration={recordingTime}
         showDefaultReminder={showDefaultModeReminder}
-        onOpenSettings={handleOpenSettingsFromModal}
+        onSetDefaultMode={handleSetDefaultModeFromModal}
         onSelect={handleSummaryPreferenceSelect}
-        onCancel={handleSummaryPreferenceCancel}
       />
 
       {/* Modal de quota atteint */}

@@ -7,6 +7,7 @@ import { generateEmailBody } from '../services/emailTemplates';
 import { EmailSuccessModal } from './EmailSuccessModal';
 import { WordCorrectionModal } from './WordCorrectionModal';
 import { SummaryMode, generateSummary } from '../services/transcription';
+import { invalidateDictionaryCache } from '../services/dictionaryCorrection';
 import { SummaryRegenerationModal } from './SummaryRegenerationModal';
 import { useDialog } from '../context/DialogContext';
 
@@ -57,12 +58,9 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
   const [isRegeneratingSummary, setIsRegeneratingSummary] = useState(false);
   const [regenerationError, setRegenerationError] = useState<string | null>(null);
   const [isGeneratingFailedSummary, setIsGeneratingFailedSummary] = useState(false);
+  const [isGeneratingMissingSummary, setIsGeneratingMissingSummary] = useState<SummaryMode | null>(null);
   const canRegenerateSummary = useMemo(() => !meeting.summary_regenerated && !meeting.summary_failed, [meeting.summary_regenerated, meeting.summary_failed]);
   const needsSummaryGeneration = useMemo(() => meeting.summary_failed === true, [meeting.summary_failed]);
-  const targetRegenerationMode = useMemo<SummaryMode>(() => {
-    const current = (meeting.summary_mode as SummaryMode) || 'detailed';
-    return current === 'short' ? 'detailed' : 'short';
-  }, [meeting.summary_mode]);
   const hasTranscript = useMemo(() => Boolean((meeting.transcript || '').trim().length), [meeting.transcript]);
   const summaryRef = useRef<HTMLDivElement>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
@@ -70,6 +68,35 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
   const meetingSummaries = useMemo(() => inferSummaryValues(meeting), [meeting.summary_detailed, meeting.summary_short, meeting.summary, meeting.id]);
   const displaySummaries = isEditing ? editedSummaries : meetingSummaries;
   const currentSummaryText = displaySummaries[activeSummaryMode] || '';
+  
+  // Vérifier si chaque résumé existe VRAIMENT (pas juste un fallback ou une copie)
+  const { hasDetailedSummary, hasShortSummary } = useMemo(() => {
+    const detailedContent = (meeting.summary_detailed || '').trim();
+    const shortContent = (meeting.summary_short || '').trim();
+    const mainContent = (meeting.summary || '').trim();
+    const summaryMode = meeting.summary_mode || 'detailed';
+    
+    // Si les deux résumés sont identiques, c'est probablement une copie
+    // On ne considère que celui du mode par défaut comme existant
+    const areSummariesIdentical = detailedContent && shortContent && detailedContent === shortContent;
+    
+    if (areSummariesIdentical) {
+      // Seul le résumé du mode par défaut existe vraiment
+      return {
+        hasDetailedSummary: summaryMode === 'detailed',
+        hasShortSummary: summaryMode === 'short'
+      };
+    }
+    
+    // Sinon, vérifier chaque résumé individuellement
+    const hasDetailed = Boolean(detailedContent) || (summaryMode === 'detailed' && Boolean(mainContent));
+    const hasShort = Boolean(shortContent) || (summaryMode === 'short' && Boolean(mainContent));
+    
+    return {
+      hasDetailedSummary: hasDetailed,
+      hasShortSummary: hasShort
+    };
+  }, [meeting.summary_detailed, meeting.summary_short, meeting.summary, meeting.summary_mode]);
 
   useEffect(() => {
     setEditedTitle(meeting.title);
@@ -202,6 +229,7 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
         console.error('Erreur lors de l\'enregistrement dans le dictionnaire:', error);
       } else {
         console.log('✅ Mot ajouté au dictionnaire personnalisé');
+        invalidateDictionaryCache(); // Invalider le cache pour les prochains résumés
       }
     }
 
@@ -387,6 +415,72 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
       });
     } finally {
       setIsGeneratingFailedSummary(false);
+    }
+  };
+
+  // Fonction pour générer un résumé manquant (court ou détaillé)
+  const handleGenerateMissingSummary = async (mode: SummaryMode) => {
+    if (!meeting.transcript || !meeting.transcript.trim()) {
+      await showAlert({
+        title: 'Transcription introuvable',
+        message: 'La transcription complète est introuvable pour cette réunion.',
+        variant: 'danger',
+      });
+      return;
+    }
+
+    try {
+      setIsGeneratingMissingSummary(mode);
+
+      // Générer seulement le résumé manquant
+      const result = await generateSummary(meeting.transcript, meeting.user_id, 0, mode);
+      const newSummary = result.summary || '';
+
+      // Préparer les données de mise à jour
+      const updateData: Record<string, any> = {
+        summary_regenerated: true, // Marquer comme régénéré
+      };
+
+      if (mode === 'detailed') {
+        updateData.summary_detailed = newSummary;
+        // Mettre à jour le summary principal si c'était le mode par défaut
+        if (!meeting.summary || meeting.summary_mode === 'detailed') {
+          updateData.summary = newSummary;
+        }
+      } else {
+        updateData.summary_short = newSummary;
+        // Mettre à jour le summary principal si c'était le mode par défaut
+        if (!meeting.summary || meeting.summary_mode === 'short') {
+          updateData.summary = newSummary;
+        }
+      }
+
+      const { error } = await supabase
+        .from('meetings')
+        .update(updateData)
+        .eq('id', meeting.id);
+
+      if (error) {
+        throw error;
+      }
+
+      // Mettre à jour l'UI
+      setEditedSummaries(prev => ({
+        ...prev,
+        [mode]: newSummary
+      }));
+      setActiveSummaryMode(mode);
+
+      onUpdate();
+    } catch (err: any) {
+      console.error('Erreur lors de la génération du résumé:', err);
+      await showAlert({
+        title: 'Erreur',
+        message: err?.message || 'Impossible de générer le résumé. Veuillez réessayer.',
+        variant: 'danger',
+      });
+    } finally {
+      setIsGeneratingMissingSummary(null);
     }
   };
 
@@ -1410,16 +1504,6 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
               </button>
             )}
 
-            {/* Bouton pour régénérer dans un autre mode (si pas d'échec et pas déjà régénéré) */}
-            {canRegenerateSummary && !needsSummaryGeneration && (
-              <button
-                onClick={handleOpenRegeneration}
-                className="ml-auto inline-flex items-center gap-2 px-4 md:px-6 py-2.5 md:py-3 text-sm md:text-base font-semibold text-purple-600 border-2 border-purple-200 rounded-2xl bg-white hover:bg-purple-50 hover:text-purple-700 transition-colors"
-              >
-                <Sparkles className="w-4 h-4" />
-                {targetRegenerationMode === 'detailed' ? 'Regénérer en détaillé' : 'Regénérer en court'}
-              </button>
-            )}
           </div>
         </div>
 
@@ -1504,26 +1588,69 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
                 </div>
               )}
               <div className="flex flex-wrap items-center gap-3 mb-4">
-                <button
-                  onClick={() => setActiveSummaryMode('detailed')}
-                  className={`px-4 py-2 rounded-full border text-sm font-semibold transition-all ${
-                    activeSummaryMode === 'detailed'
-                      ? 'bg-coral-100 text-coral-700 border-coral-300 shadow-sm'
-                      : 'text-cocoa-500 border-cocoa-200 hover:border-coral-200 hover:text-coral-600'
-                  }`}
-                >
-                  Résumé détaillé
-                </button>
-                <button
-                  onClick={() => setActiveSummaryMode('short')}
-                  className={`px-4 py-2 rounded-full border text-sm font-semibold transition-all ${
-                    activeSummaryMode === 'short'
-                      ? 'bg-orange-100 text-orange-700 border-orange-300 shadow-sm'
-                      : 'text-cocoa-500 border-cocoa-200 hover:border-orange-200 hover:text-orange-600'
-                  }`}
-                >
-                  Résumé court
-                </button>
+                {/* Tab Résumé détaillé ou bouton pour le générer */}
+                {hasDetailedSummary ? (
+                  <button
+                    onClick={() => setActiveSummaryMode('detailed')}
+                    className={`px-4 py-2 rounded-full border text-sm font-semibold transition-all ${
+                      activeSummaryMode === 'detailed'
+                        ? 'bg-coral-100 text-coral-700 border-coral-300 shadow-sm'
+                        : 'text-cocoa-500 border-cocoa-200 hover:border-coral-200 hover:text-coral-600'
+                    }`}
+                  >
+                    Résumé détaillé
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleGenerateMissingSummary('detailed')}
+                    disabled={isGeneratingMissingSummary !== null || !hasTranscript}
+                    className="px-4 py-2 rounded-full border text-sm font-semibold transition-all border-purple-200 text-purple-600 hover:bg-purple-50 hover:border-purple-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {isGeneratingMissingSummary === 'detailed' ? (
+                      <>
+                        <RotateCw className="w-4 h-4 animate-spin" />
+                        Génération...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        Générer résumé détaillé
+                      </>
+                    )}
+                  </button>
+                )}
+                
+                {/* Tab Résumé court ou bouton pour le générer */}
+                {hasShortSummary ? (
+                  <button
+                    onClick={() => setActiveSummaryMode('short')}
+                    className={`px-4 py-2 rounded-full border text-sm font-semibold transition-all ${
+                      activeSummaryMode === 'short'
+                        ? 'bg-orange-100 text-orange-700 border-orange-300 shadow-sm'
+                        : 'text-cocoa-500 border-cocoa-200 hover:border-orange-200 hover:text-orange-600'
+                    }`}
+                  >
+                    Résumé court
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleGenerateMissingSummary('short')}
+                    disabled={isGeneratingMissingSummary !== null || !hasTranscript}
+                    className="px-4 py-2 rounded-full border text-sm font-semibold transition-all border-purple-200 text-purple-600 hover:bg-purple-50 hover:border-purple-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {isGeneratingMissingSummary === 'short' ? (
+                      <>
+                        <RotateCw className="w-4 h-4 animate-spin" />
+                        Génération...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        Générer résumé court
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
               <div className="prose prose-slate max-w-none">
                 <div ref={summaryRef} className="text-cocoa-800 whitespace-pre-wrap leading-relaxed text-lg cursor-text">

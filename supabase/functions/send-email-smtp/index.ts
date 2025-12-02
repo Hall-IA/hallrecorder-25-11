@@ -294,8 +294,9 @@ Deno.serve(async (req)=>{
     // "Sender address is not allowed" - beaucoup de serveurs SMTP exigent que l'adresse
     // From corresponde exactement à l'utilisateur authentifié
     const fromAddress = settings.smtp_user;
-    const fromName = settings.sender_name || settings.smtp_user.split('@')[0];
-    const fromHeader = `"${fromName}" <${fromAddress}>`;
+    // Utiliser sender_name si défini, sinon juste l'adresse email (pas de nom par défaut)
+    const fromName = settings.sender_name || null;
+    const fromHeader = fromName ? `"${fromName}" <${fromAddress}>` : fromAddress;
 
     // Si sender_email est différent de smtp_user, l'utiliser comme Reply-To
     const replyTo = settings.sender_email && settings.sender_email !== settings.smtp_user
@@ -312,12 +313,22 @@ Deno.serve(async (req)=>{
       from: fromHeader,
       to: emailRequest.to.join(', '),
       cc: emailRequest.cc && emailRequest.cc.length > 0 ? emailRequest.cc.join(', ') : undefined,
+      bcc: emailRequest.bcc && emailRequest.bcc.length > 0 ? emailRequest.bcc.join(', ') : undefined,
       replyTo: replyTo,
       subject: emailRequest.subject,
       text: emailRequest.textBody,
       html: emailRequest.htmlBody,
       attachments: attachments.length > 0 ? attachments : undefined
     });
+    
+    // Log des destinataires pour debug
+    console.log('📧 To:', emailRequest.to);
+    if (emailRequest.cc && emailRequest.cc.length > 0) {
+      console.log('📧 Cc:', emailRequest.cc);
+    }
+    if (emailRequest.bcc && emailRequest.bcc.length > 0) {
+      console.log('📧 Bcc:', emailRequest.bcc);
+    }
     console.log('✅ Email envoyé:', info.messageId);
     return new Response(JSON.stringify({
       success: true,

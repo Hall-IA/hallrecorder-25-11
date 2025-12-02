@@ -1,5 +1,5 @@
-import { ElementType } from 'react';
-import { Sparkles, Zap, FileText, Clock, AlignLeft, Shield, X } from 'lucide-react';
+import { ElementType, useState } from 'react';
+import { Sparkles, Zap, FileText, Clock, AlignLeft, Shield, Check } from 'lucide-react';
 import { SummaryMode } from '../services/transcription';
 
 interface SummaryPreferenceModalProps {
@@ -9,8 +9,7 @@ interface SummaryPreferenceModalProps {
   recordingDuration: number;
   showDefaultReminder: boolean;
   onSelect: (mode: SummaryMode) => void;
-  onCancel: () => void;
-  onOpenSettings?: () => void;
+  onSetDefaultMode?: (mode: SummaryMode) => Promise<void>;
 }
 
 const formatDuration = (seconds: number) => {
@@ -26,10 +25,23 @@ export const SummaryPreferenceModal = ({
   recordingDuration,
   showDefaultReminder,
   onSelect,
-  onCancel,
-  onOpenSettings,
+  onSetDefaultMode,
 }: SummaryPreferenceModalProps) => {
+  const [settingDefault, setSettingDefault] = useState<SummaryMode | null>(null);
+  const [defaultSet, setDefaultSet] = useState<SummaryMode | null>(null);
+
   if (!isOpen) return null;
+
+  const handleSetDefault = async (mode: SummaryMode) => {
+    if (!onSetDefaultMode) return;
+    setSettingDefault(mode);
+    try {
+      await onSetDefaultMode(mode);
+      setDefaultSet(mode);
+    } finally {
+      setSettingDefault(null);
+    }
+  };
 
   const options: Array<{
     id: SummaryMode;
@@ -61,13 +73,6 @@ export const SummaryPreferenceModal = ({
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[1200] p-4">
       <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full overflow-hidden animate-scaleIn">
         <div className="bg-gradient-to-r from-coral-500 via-sunset-500 to-orange-500 p-6 relative text-white">
-          <button
-            onClick={onCancel}
-            className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors"
-            title="Annuler le traitement"
-          >
-            <X className="w-6 h-6" />
-          </button>
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
               <Sparkles className="w-10 h-10 text-white" />
@@ -97,21 +102,39 @@ export const SummaryPreferenceModal = ({
         </div>
 
         <div className="p-6 md:p-8 space-y-6 bg-gradient-to-br from-orange-50 via-white to-coral-50">
-          {showDefaultReminder && (
+          {showDefaultReminder && onSetDefaultMode && (
             <div className="p-4 border-2 border-orange-200 rounded-2xl bg-white/80 flex flex-col gap-2 text-sm text-cocoa-700">
-              <div className="font-semibold text-cocoa-900">Astuce</div>
-              <p>
-                Pour éviter ce choix à chaque fin d&apos;enregistrement, définissez un mode de résumé par défaut dans les Paramètres.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => onOpenSettings?.()}
-                  disabled={!onOpenSettings}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-coral-500 to-sunset-500 hover:from-coral-600 hover:to-sunset-600 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  Ouvrir les Paramètres
-                </button>
-              </div>
+              <div className="font-semibold text-cocoa-900">💡 Astuce</div>
+              {defaultSet ? (
+                <div className="flex items-center gap-2 text-green-600 font-medium">
+                  <Check className="w-4 h-4" />
+                  <span>Mode par défaut défini : {defaultSet === 'short' ? 'Résumé court' : 'Résumé détaillé'}</span>
+                </div>
+              ) : (
+                <>
+                  <p>
+                    Définir un mode par défaut pour ne plus voir cet écran :
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => handleSetDefault('short')}
+                      disabled={settingDefault !== null}
+                      className="inline-flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium border-2 border-cocoa-200 text-cocoa-700 hover:border-coral-300 hover:bg-coral-50 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      <Zap className="w-4 h-4" />
+                      {settingDefault === 'short' ? 'Enregistrement...' : 'Toujours court'}
+                    </button>
+                    <button
+                      onClick={() => handleSetDefault('detailed')}
+                      disabled={settingDefault !== null}
+                      className="inline-flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium border-2 border-cocoa-200 text-cocoa-700 hover:border-coral-300 hover:bg-coral-50 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      <FileText className="w-4 h-4" />
+                      {settingDefault === 'detailed' ? 'Enregistrement...' : 'Toujours détaillé'}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
@@ -155,12 +178,6 @@ export const SummaryPreferenceModal = ({
             })}
           </div>
 
-          <button
-            onClick={onCancel}
-            className="w-full py-3 rounded-2xl border-2 border-cocoa-200 text-cocoa-700 font-semibold hover:border-cocoa-300 hover:bg-white transition-all"
-          >
-            Annuler et recommencer l&apos;enregistrement
-          </button>
         </div>
       </div>
     </div>

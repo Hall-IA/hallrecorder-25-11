@@ -1,5 +1,5 @@
 import { ArrowLeft, Calendar, FileText, Mail, Plus, Trash2, Download, Upload, Copy, FileDown, Edit2, Save, X, AlertTriangle, Sparkles, RotateCw } from 'lucide-react';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { supabase, EmailAttachment } from '../lib/supabase';
 import { generatePDFFromHTML } from '../services/pdfGenerator';
 import { EmailComposer } from './EmailComposer';
@@ -8,6 +8,7 @@ import { SuccessModal } from './SuccessModal';
 import { WordCorrectionModal } from './WordCorrectionModal';
 import { useDialog } from '../context/DialogContext';
 import { SummaryMode, generateSummary } from '../services/transcription';
+import { invalidateDictionaryCache } from '../services/dictionaryCorrection';
 
 interface MeetingResultProps {
   title: string;
@@ -75,6 +76,31 @@ export const MeetingResult = ({
   const currentSummaryText = (isEditing ? editedSummaries : summaries)[activeSummaryMode] || '';
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [localSummaryFailed, setLocalSummaryFailed] = useState(summaryFailed);
+  const [isGeneratingMissingSummary, setIsGeneratingMissingSummary] = useState<SummaryMode | null>(null);
+  
+  // Vérifier si chaque résumé existe VRAIMENT (pas juste une copie)
+  // On utilise l'état `summaries` pour que ça se mette à jour après génération
+  const hasTranscript = Boolean((transcript || '').trim());
+  const { hasDetailedSummary, hasShortSummary } = useMemo(() => {
+    const detailedContent = (summaries.detailed || '').trim();
+    const shortContent = (summaries.short || '').trim();
+    
+    // Si les deux résumés sont identiques, c'est probablement une copie
+    // On ne considère que celui du mode par défaut comme existant
+    const areSummariesIdentical = detailedContent && shortContent && detailedContent === shortContent;
+    
+    if (areSummariesIdentical) {
+      return {
+        hasDetailedSummary: defaultSummaryMode === 'detailed',
+        hasShortSummary: defaultSummaryMode === 'short'
+      };
+    }
+    
+    return {
+      hasDetailedSummary: Boolean(detailedContent),
+      hasShortSummary: Boolean(shortContent)
+    };
+  }, [summaries.detailed, summaries.short, defaultSummaryMode]);
 
   // Fonction pour générer le résumé si la génération avait échoué
   const handleGenerateSummary = async () => {
@@ -147,6 +173,81 @@ export const MeetingResult = ({
       });
     } finally {
       setIsGeneratingSummary(false);
+    }
+  };
+
+  // Fonction pour générer un résumé manquant (court ou détaillé)
+  const handleGenerateMissingSummary = async (mode: SummaryMode) => {
+    if (!transcript || !transcript.trim()) {
+      await showAlert({
+        title: 'Transcription introuvable',
+        message: 'La transcription est introuvable pour cette réunion.',
+        variant: 'danger',
+      });
+      return;
+    }
+
+    if (!meetingId) {
+      await showAlert({
+        title: 'Erreur',
+        message: 'ID de réunion manquant.',
+        variant: 'danger',
+      });
+      return;
+    }
+
+    try {
+      setIsGeneratingMissingSummary(mode);
+
+      // Générer seulement le résumé manquant
+      const result = await generateSummary(transcript, userId, 0, mode);
+      const newSummary = result.summary || '';
+
+      // Préparer les données de mise à jour
+      const updateData: Record<string, any> = {};
+
+      if (mode === 'detailed') {
+        updateData.summary_detailed = newSummary;
+        if (defaultSummaryMode === 'detailed') {
+          updateData.summary = newSummary;
+        }
+      } else {
+        updateData.summary_short = newSummary;
+        if (defaultSummaryMode === 'short') {
+          updateData.summary = newSummary;
+        }
+      }
+
+      const { error } = await supabase
+        .from('meetings')
+        .update(updateData)
+        .eq('id', meetingId);
+
+      if (error) {
+        throw error;
+      }
+
+      // Mettre à jour l'état local
+      setSummaries(prev => ({
+        ...prev,
+        [mode]: newSummary
+      }));
+      setEditedSummaries(prev => ({
+        ...prev,
+        [mode]: newSummary
+      }));
+      setActiveSummaryMode(mode);
+
+      if (onUpdate) onUpdate();
+    } catch (err: any) {
+      console.error('Erreur lors de la génération du résumé:', err);
+      await showAlert({
+        title: 'Erreur',
+        message: err?.message || 'Impossible de générer le résumé. Veuillez réessayer.',
+        variant: 'danger',
+      });
+    } finally {
+      setIsGeneratingMissingSummary(null);
     }
   };
 
@@ -236,6 +337,7 @@ export const MeetingResult = ({
         console.error('Erreur lors de l\'enregistrement dans le dictionnaire:', error);
       } else {
         console.log('✅ Mot ajouté au dictionnaire personnalisé');
+        invalidateDictionaryCache(); // Invalider le cache pour les prochains résumés
       }
     }
 
@@ -1128,26 +1230,69 @@ export const MeetingResult = ({
               )}
 
               <div className="flex flex-wrap items-center gap-3 mb-4">
-                <button
-                  onClick={() => setActiveSummaryMode('detailed')}
-                  className={`px-4 py-2 rounded-full border text-sm font-semibold transition-all ${
-                    activeSummaryMode === 'detailed'
-                      ? 'bg-coral-100 text-coral-700 border-coral-300 shadow-sm'
-                      : 'text-cocoa-500 border-cocoa-200 hover:border-coral-200 hover:text-coral-600'
-                  }`}
-                >
-                  Résumé détaillé
-                </button>
-                <button
-                  onClick={() => setActiveSummaryMode('short')}
-                  className={`px-4 py-2 rounded-full border text-sm font-semibold transition-all ${
-                    activeSummaryMode === 'short'
-                      ? 'bg-orange-100 text-orange-700 border-orange-300 shadow-sm'
-                      : 'text-cocoa-500 border-cocoa-200 hover:border-orange-200 hover:text-orange-600'
-                  }`}
-                >
-                  Résumé court
-                </button>
+                {/* Tab Résumé détaillé ou bouton pour le générer */}
+                {hasDetailedSummary ? (
+                  <button
+                    onClick={() => setActiveSummaryMode('detailed')}
+                    className={`px-4 py-2 rounded-full border text-sm font-semibold transition-all ${
+                      activeSummaryMode === 'detailed'
+                        ? 'bg-coral-100 text-coral-700 border-coral-300 shadow-sm'
+                        : 'text-cocoa-500 border-cocoa-200 hover:border-coral-200 hover:text-coral-600'
+                    }`}
+                  >
+                    Résumé détaillé
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleGenerateMissingSummary('detailed')}
+                    disabled={isGeneratingMissingSummary !== null || !hasTranscript || !meetingId}
+                    className="px-4 py-2 rounded-full border text-sm font-semibold transition-all border-purple-200 text-purple-600 hover:bg-purple-50 hover:border-purple-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {isGeneratingMissingSummary === 'detailed' ? (
+                      <>
+                        <RotateCw className="w-4 h-4 animate-spin" />
+                        Génération...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        Générer résumé détaillé
+                      </>
+                    )}
+                  </button>
+                )}
+                
+                {/* Tab Résumé court ou bouton pour le générer */}
+                {hasShortSummary ? (
+                  <button
+                    onClick={() => setActiveSummaryMode('short')}
+                    className={`px-4 py-2 rounded-full border text-sm font-semibold transition-all ${
+                      activeSummaryMode === 'short'
+                        ? 'bg-orange-100 text-orange-700 border-orange-300 shadow-sm'
+                        : 'text-cocoa-500 border-cocoa-200 hover:border-orange-200 hover:text-orange-600'
+                    }`}
+                  >
+                    Résumé court
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleGenerateMissingSummary('short')}
+                    disabled={isGeneratingMissingSummary !== null || !hasTranscript || !meetingId}
+                    className="px-4 py-2 rounded-full border text-sm font-semibold transition-all border-purple-200 text-purple-600 hover:bg-purple-50 hover:border-purple-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {isGeneratingMissingSummary === 'short' ? (
+                      <>
+                        <RotateCw className="w-4 h-4 animate-spin" />
+                        Génération...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        Générer résumé court
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
               {isEditing ? (
                 <textarea
