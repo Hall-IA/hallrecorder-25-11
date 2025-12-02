@@ -60,7 +60,7 @@ const argumentsData: ArgumentItem[] = [
 
 export default function ArgumentsSection() {
   return (
-    <section className="font-roboto w-full pt-10 pb-20 overflow-hidden">
+    <section className="font-roboto w-full lg:pt-10 lg:pb-20 overflow-hidden">
       {/* Titre dans le container */}
       <div className="mx-auto max-w-7xl px-4">
         <h2 className="text-center text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-thunder font-medium mb-20">

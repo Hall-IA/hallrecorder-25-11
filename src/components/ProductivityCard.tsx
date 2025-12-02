@@ -26,7 +26,7 @@ const steps: StepProps[] = [
   },
   {
     icon: <BookOpen size={30} className="text-orange-400" />,
-    title: '3. Clôturez et choisissez votre résumé',
+    title: ' Clôturez et choisissez votre résumé',
     description: 'Terminez l’enregistrement, sélectionnez un résumé court ou exhaustif… et téléchargez automatiquement votre compte-rendu.',
   },
 ];
@@ -172,12 +172,12 @@ export function ProductivityCard() {
                     </g>
                   </svg>
                   {/* Contenu de la carte */}
-                  <div className="absolute inset-0 flex flex-col justify-start gap-4 px-6 py-2 sm:px-12 md:px-16 lg:px-20 mt-1">
-                    <div className="flex bg-orange-200/50 rounded-xl p-2 w-fit">{step.icon}</div>
-                    <h4 className="font-roboto text-sm font-semibold text-orange-500 md:text-sm lg:text-sm xl:text-lg">
+                  <div className="absolute inset-0 flex flex-col justify-start gap-4 px-5 pr-6 py-2 sm:px-12 md:px-16 lg:px-20 mt-1">
+                    <div className="hidden sm:flex bg-orange-200/50 rounded-xl p-2 w-fit">{step.icon}</div>
+                    <h4 className="font-roboto text-sm font-semibold text-orange-500 px-2 sm:px-0 md:text-sm lg:text-sm xl:text-lg">
                       {step.title}
                     </h4>
-                    <p className="font-roboto text-xs text-gray-600 md:text-sm lg:text-xs xl:text-base">
+                    <p className="font-roboto text-xs text-gray-600 px-2 sm:px-0 md:text-sm lg:text-xs xl:text-base">
                       {step.description}
                     </p>
                   </div>
