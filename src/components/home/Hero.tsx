@@ -12,8 +12,8 @@ export default function Hero() {
     if (email) {
       localStorage.setItem('initialEmail', email);
     }
-    // Rediriger vers la page de connexion
-    window.location.href = window.location.origin + '/#record';
+    // Rediriger vers la page de connexion en mode inscription
+    window.location.href = window.location.origin + '/#record?signup=true';
   };
 
   return (
