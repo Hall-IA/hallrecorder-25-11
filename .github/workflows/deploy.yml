@@ -1,0 +1,48 @@
+name: 🚀 Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔑 Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: 🚀 Deploy to Server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'ENDSSH'
+            cd /var/www/hallrecorder-25-11
+            
+            echo "📥 Pulling latest changes..."
+            git pull origin main
+            
+            echo "📦 Installing dependencies..."
+            npm install
+            
+            echo "🔨 Building project..."
+            npm run build
+            
+            echo "🔄 Restarting application..."
+            pm2 restart hallrecorder-25-11
+            
+            echo "💾 Saving PM2 config..."
+            pm2 save
+            
+            echo "✅ Deployment complete!"
+          ENDSSH
+
+      - name: ✅ Success
+        run: echo "🎉 Deployed to https://hallrecorder.hallia.ai"
+
