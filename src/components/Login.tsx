@@ -16,6 +16,8 @@ export const Login = ({ onSuccess }: LoginProps) => {
   const [error, setError] = useState('');
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [needsEmailConfirmation, setNeedsEmailConfirmation] = useState(false);
+  const [resendingEmail, setResendingEmail] = useState(false);
 
   // Récupérer l'email depuis le localStorage au montage du composant
   useEffect(() => {
@@ -49,6 +51,36 @@ export const Login = ({ onSuccess }: LoginProps) => {
     }
   }, []);
 
+  const handleResendConfirmation = async () => {
+    if (!email) {
+      setError('Veuillez entrer votre email');
+      return;
+    }
+
+    setResendingEmail(true);
+    setMessage('');
+    setError('');
+
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/#record`,
+        },
+      });
+
+      if (error) throw error;
+
+      setMessage('Un nouvel email de confirmation a été envoyé. Vérifiez votre boîte de réception.');
+      setNeedsEmailConfirmation(false);
+    } catch (error: any) {
+      setError(error.message || 'Erreur lors du renvoi de l\'email');
+    } finally {
+      setResendingEmail(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -73,12 +105,21 @@ export const Login = ({ onSuccess }: LoginProps) => {
           setPassword('');
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) throw error;
+
+        // Vérifier si l'email est confirmé
+        if (data.user && !data.user.email_confirmed_at) {
+          // Déconnecter l'utilisateur
+          await supabase.auth.signOut();
+          setNeedsEmailConfirmation(true);
+          setError('Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.');
+          return;
+        }
 
         onSuccess();
       }
@@ -195,6 +236,26 @@ export const Login = ({ onSuccess }: LoginProps) => {
             {error && (
               <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4">
                 <p className="text-red-700 text-sm">{error}</p>
+                {needsEmailConfirmation && (
+                  <button
+                    type="button"
+                    onClick={handleResendConfirmation}
+                    disabled={resendingEmail}
+                    className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2 bg-coral-500 text-white font-semibold rounded-lg hover:bg-coral-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  >
+                    {resendingEmail ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Envoi en cours...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="w-4 h-4" />
+                        <span>Renvoyer l'email de confirmation</span>
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             )}
 

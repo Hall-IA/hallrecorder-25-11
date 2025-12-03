@@ -34,18 +34,36 @@ serve(async (req) => {
       }
     );
 
-    // Vérifier si l'utilisateur existe
-    const { data: users, error: userError } = await supabaseAdmin.auth.admin.listUsers();
+    // Vérifier si l'utilisateur existe avec listUsers et pagination
+    let user: any = null;
+    let page = 1;
+    const perPage = 1000; // Maximum autorisé par Supabase
 
-    if (userError) {
-      console.error('❌ Erreur lors de la récupération des utilisateurs:', userError);
-      return new Response(
-        JSON.stringify({ error: 'Erreur serveur' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    while (!user) {
+      const { data: usersData, error: userError } = await supabaseAdmin.auth.admin.listUsers({
+        page: page,
+        perPage: perPage,
+      });
+
+      if (userError) {
+        console.error('❌ Erreur lors de la récupération des utilisateurs:', userError);
+        // On renvoie quand même un succès pour éviter l'énumération
+        return new Response(
+          JSON.stringify({ success: true, message: 'Si votre email existe, vous recevrez un code de réinitialisation.' }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Chercher l'utilisateur dans cette page
+      user = usersData.users.find((u: any) => u.email === email);
+
+      // Si on a trouvé l'utilisateur ou qu'il n'y a plus de pages
+      if (user || usersData.users.length < perPage) {
+        break;
+      }
+
+      page++;
     }
-
-    const user = users.users.find(u => u.email === email);
 
     if (!user) {
       // Par sécurité, on renvoie toujours un succès même si l'email n'existe pas
