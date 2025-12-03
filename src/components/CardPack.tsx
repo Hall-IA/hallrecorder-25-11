@@ -73,8 +73,8 @@ export default function CardPack({
         <ul className="space-y-4">
           {features.map((feature, index) => (
             <li key={index} className="flex gap-2 font-medium">
-              <BadgeCheck className={`shrink-0 ${index === 0 ? '' : ''}`} style={index === 0 ? { color: '#00A63E' } : {}} />
-              <span style={index === 0 ? { color: '#00A63E' } : {}}>
+              <BadgeCheck className={`shrink-0 ${index === 0 ? '' : ''}`} style={index === 0 ? { color: '#00A63E', fontSize: '30px' } : {}} />
+              <span style={index === 0 ? { color: '#00A63E', fontSize: '18px' } : {}}>
                 {feature.title}
                 {feature.text && (
                   <p className="text-sm font-normal text-gray-600">{feature.text}</p>
@@ -106,7 +106,7 @@ export default function CardPack({
         {/* Prix */}
         {!hidePrice && (
           <div className="flex flex-col w-full gap-4">
-              <p className="font-thunder text-4xl font-medium">
+              <p className="font-thunder text-5xl font-medium">
                 {price}€ <span className="text-lg font-normal">{priceUnit}</span>
               </p>
             <button

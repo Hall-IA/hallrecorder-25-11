@@ -148,11 +148,17 @@ export default function BigTestimonial() {
 
                 {/* Index de pagination en bas */}
                 <div className="mx-auto flex w-full max-w-6xl items-center justify-start pb-5 text-[#333231] gap-[24px]">
-                  <ChevronLeft className="h-10 w-10 cursor-pointer" />
+                  <ChevronLeft 
+                    className="h-10 w-10 cursor-pointer" 
+                    onClick={goToPrevious}
+                  />
                   <span className="text-sm ">
                     <span className="text-6xl font-medium">{String(currentIndex + 1).padStart(2, '0')}</span>/{String(bigTestimonials.length).padStart(2, '0')}
                   </span>
-                  <ChevronRight className="h-10 w-10 cursor-pointer" />
+                  <ChevronRight 
+                    className="h-10 w-10 cursor-pointer" 
+                    onClick={goToNext}
+                  />
                 </div>
               </div>
             </div>
