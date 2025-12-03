@@ -452,10 +452,18 @@ function App() {
       setView('history');
       window.history.replaceState({ view: 'history' }, '', '#history');
     } else if (hash && hash !== '') {
-      // Hash invalide, rediriger vers record
-      console.log('⚠️ Hash invalide:', hash, 'redirection vers record');
-      setView('record');
-      window.history.replaceState({ view: 'record' }, '', '#record');
+      // Vérifier si c'est une ancre de navigation (sections de la landing page)
+      const navigationAnchors = ['avantages', 'etapes', 'prix'];
+      if (navigationAnchors.includes(hashView)) {
+        // C'est une ancre de navigation, rester sur la landing page
+        console.log('📍 Ancre de navigation détectée:', hashView);
+        setView('landing');
+      } else {
+        // Hash invalide, rediriger vers record
+        console.log('⚠️ Hash invalide:', hash, 'redirection vers record');
+        setView('record');
+        window.history.replaceState({ view: 'record' }, '', '#record');
+      }
     }
 
     // Vérifier la session initiale
@@ -488,7 +496,11 @@ function App() {
       if (session?.user && event === 'SIGNED_IN') {
         // Si on a déjà une vue depuis l'URL, ne pas la changer
         const currentHash = window.location.hash.replace('#', '');
-        if (!currentHash || !['record', 'history', 'upload', 'settings', 'dashboard', 'contact', 'subscription'].includes(currentHash)) {
+        const navigationAnchors = ['avantages', 'etapes', 'prix'];
+        const validViews = ['record', 'history', 'upload', 'settings', 'dashboard', 'contact', 'subscription'];
+
+        // Ne pas rediriger si on est sur une ancre de navigation ou une vue valide
+        if (!currentHash || (!validViews.includes(currentHash) && !navigationAnchors.includes(currentHash))) {
           setView('record');
           window.history.replaceState({ view: 'record' }, '', '#record');
         }
@@ -548,10 +560,17 @@ function App() {
           setView('history');
           window.history.replaceState({ view: 'history' }, '', '#history');
         } else if (hash && hash !== '') {
-          // Hash invalide
-          console.log('⚠️ Hash invalide:', hash, 'redirection vers record');
-          setView('record');
-          window.history.replaceState({ view: 'record' }, '', '#record');
+          // Vérifier si c'est une ancre de navigation
+          const navigationAnchors = ['avantages', 'etapes', 'prix'];
+          if (navigationAnchors.includes(hashView)) {
+            console.log('📍 Ancre de navigation détectée:', hashView);
+            setView('landing');
+          } else {
+            // Hash invalide
+            console.log('⚠️ Hash invalide:', hash, 'redirection vers record');
+            setView('record');
+            window.history.replaceState({ view: 'record' }, '', '#record');
+          }
         }
         return;
       }
