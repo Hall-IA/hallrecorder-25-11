@@ -2105,14 +2105,14 @@ function App() {
           <>
             {/* Overlay */}
             <div
-              className="fixed inset-0 bg-black/50 z-30 xl:hidden"
+              className="fixed inset-0 bg-black/50 z-[55] xl:hidden"
               onClick={() => setIsMobileMenuOpen(false)}
             ></div>
 
             {/* Menu slide-in */}
-            <nav className="fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl z-40 xl:hidden overflow-y-auto">
+            <nav className={`fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl z-[60] xl:hidden overflow-y-auto ${isRecording ? 'pt-[124px]' : ''}`}>
               {/* Header du menu */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <div className={`flex items-center justify-between p-4 border-b border-gray-200 ${isRecording ? 'fixed top-[124px] left-0 w-80 max-w-[85vw] bg-white z-10' : ''}`}>
                 <div className="flex items-center gap-2.5">
                   <img src="/logohallia.png" alt="Logo Hallia" className="w-8 h-8 object-contain" />
                   <span className="text-lg font-thunder font-bold text-gray-900">HALL RECORDER</span>
