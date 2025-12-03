@@ -104,11 +104,11 @@ export function ProductivityCard() {
           </h3>
 
           {/* Conteneur avec les 3 étapes */}
-          <div className="relative flex flex-col items-center gap-2 sm:gap-3 md:gap-4 lg:flex-row lg:justify-center lg:gap-0">
+          <div className="relative flex flex-col items-center gap-2 sm:gap-3 md:gap-4 lg:flex-row lg:items-stretch lg:justify-center lg:gap-0">
             {steps.map((step, index) => (
               <div
                 key={index}
-                className={`relative flex items-center ${index > 0 ? 'lg:-ml-[106px]' : ''}`}
+                className={`relative flex h-full ${index > 0 ? 'lg:-ml-[106px]' : ''}`}
                 style={{
                   // Z-index décroissant : carte 1 = 3, carte 2 = 2, carte 3 = 1
                   // Ainsi la première carte est AU-DESSUS de la deuxième
@@ -116,14 +116,29 @@ export function ProductivityCard() {
                 }}
               >
                 {/* Carte en forme de flèche */}
-                <div className="relative">
+                <div className="relative w-full max-w-[300px] sm:max-w-[400px] md:max-w-[450px] lg:max-w-[500px] flex flex-col">
+                  {/* Contenu de la carte qui définit la hauteur */}
+                  <div className="flex flex-col justify-center lg:justify-start gap-2 sm:gap-3 md:gap-4 px-5 pr-6 py-4 sm:px-12 md:px-16 lg:px-20 min-h-[180px] sm:min-h-[200px] md:min-h-[224px]">
+                    <div className="hidden sm:flex bg-orange-200/50 rounded-xl p-2 w-fit flex-shrink-0">{step.icon}</div>
+                    <h4 className="font-roboto text-sm font-semibold text-orange-500 sm:px-0 md:text-sm lg:text-sm xl:text-lg flex-shrink-0">
+                      {step.title}
+                    </h4>
+                    <p className="font-roboto text-xs text-gray-600 px-2 sm:px-0 md:text-sm lg:text-xs xl:text-base">
+                      {step.description}
+                    </p>
+                  </div>
+                  {/* SVG en arrière-plan qui s'adapte à la hauteur du contenu */}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="495"
                     height="224"
                     viewBox="0 0 495 224"
                     fill="none"
-                    className="h-auto w-full max-w-[300px] sm:max-w-[400px] md:max-w-[450px] lg:max-w-[500px]"
+                    preserveAspectRatio="xMidYMid meet"
+                    className="absolute inset-0 w-full h-full pointer-events-none"
+                    style={{
+                      zIndex: -1,
+                    }}
                   >
                     <defs>
                       <filter
@@ -171,16 +186,6 @@ export function ProductivityCard() {
                       />
                     </g>
                   </svg>
-                  {/* Contenu de la carte */}
-                  <div className="absolute inset-0 flex flex-col justify-center lg:justify-start gap-4 px-5 pr-6 py-2 sm:px-12 md:px-16 lg:px-20 mt-1 lg:mt-1">
-                    <div className="hidden sm:flex bg-orange-200/50 rounded-xl p-2 w-fit">{step.icon}</div>
-                    <h4 className="font-roboto text-sm font-semibold text-orange-500  sm:px-0 md:text-sm  lg:text-sm xl:text-lg">
-                      {step.title}
-                    </h4>
-                    <p className="font-roboto text-xs text-gray-600 px-2 sm:px-0 md:text-sm lg:text-xs xl:text-base">
-                      {step.description}
-                    </p>
-                  </div>
                 </div>
               </div>
             ))}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Mail, Lock, LogIn, UserPlus } from 'lucide-react';
+import { Mail, Lock, LogIn, UserPlus, Home } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { PasswordResetModal } from './PasswordResetModal';
 
@@ -67,19 +67,22 @@ export const Login = ({ onSuccess }: LoginProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-amber-50 flex items-center justify-center px-4 relative">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-amber-50 flex items-center justify-center px-4 pb-20 md:pb-4 relative">
       {/* Bouton Retour à la page d'accueil */}
       <button
         onClick={() => {
           window.location.href = window.location.origin + '/';
         }}
-        className="absolute font-roboto top-4 left-4 px-4 py-2 rounded-full text-white font-semibold text-sm shadow-lg transition-all hover:scale-105"
+        className="absolute font-roboto top-4 left-4 px-4 py-2 md:px-4 md:py-2 rounded-full text-white font-semibold text-sm shadow-lg transition-all hover:scale-105"
         style={{
           background: `conic-gradient(from 194deg at 84% -3.1%, #FF9A34 0deg, #F35F4F 76.15384697914124deg, #CE7D2A 197.30769395828247deg, #FFAD5A 245.76922416687012deg), rgba(249, 247, 245, 0.64)`,
           backdropFilter: 'blur(4px)',
         }}
       >
-        Retour à la page d'accueil
+        <span className="md:hidden">
+          <Home className="w-5 h-5" />
+        </span>
+        <span className="hidden md:inline">Retour à la page d'accueil</span>
       </button>
       
       <div className="max-w-md w-full">
