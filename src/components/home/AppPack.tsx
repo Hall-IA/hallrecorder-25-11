@@ -11,11 +11,9 @@ export default function AppPack() {
     return params.get('promo') === 'true';
   }, []);
   
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
   
   const handleStartClick = (planType: string) => {
-    setSelectedPlan(planType);
     localStorage.setItem('selected_plan', planType);
     // Rediriger vers la page de connexion
     window.location.href = window.location.origin + '/#record';
@@ -99,7 +97,7 @@ export default function AppPack() {
         )}
 
         <CardPack
-          title="Formule Business"
+          title={`Formule Business \n 7 jours gratuits`}
           features={[
             { title: '600 minutes d\'enregistrements / mois' },
             {
@@ -124,7 +122,6 @@ export default function AppPack() {
             window.location.href = window.location.origin + '/#record';
           }}
           price="39"
-          basePrice={39}
           className={!showFreeTrial ? 'lg:flex-1 lg:w-1/2' : 'lg:w-96'}
         />
 
@@ -136,7 +133,7 @@ export default function AppPack() {
               #D1AAFF 50%,
               transparent 80%
           )`}
-          title="Formule Illimitée"
+          title={`Formule Illimitée \n 7 jours gratuits`}
           features={[
             {
               title: "Enregistrements illimités",
@@ -159,10 +156,11 @@ export default function AppPack() {
             { title: 'Statistiques et analytics' },
             { title: 'Choix des préférences de résumé ' },
           ]}
-          buttonText="Nous contacter"
-          buttonHref="https://hallia.ai/contact"
+          buttonText="Commencer"
+          onButtonClick={() => {
+            window.location.href = window.location.origin + '/#record';
+          }}
           price="49"
-          basePrice={49}
           priceUnit="HT / par mois"
           classNameButton="mt-10 xl:mt-0"
           className={!showFreeTrial ? 'lg:flex-1 lg:w-1/2' : 'lg:w-96'}

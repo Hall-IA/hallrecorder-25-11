@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import CustomButton from './CustomButton';
-import { Plus, Minus, BadgeCheck, HelpCircle, XCircle } from 'lucide-react';
+import { BadgeCheck, HelpCircle, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Feature {
@@ -19,11 +19,6 @@ interface CardPackProps {
   topGradient?: string;
   onButtonClick?: () => void;
   buttonHref?: string;
-  // Nouvelles props pour le compteur
-  enableCounter?: boolean;
-  basePrice?: number; // Prix de base (premier email)
-  additionalPrice?: number; // Prix par email additionnel
-  localStorageKey?: string; // Clé pour le localStorage
   hidePrice?: boolean; // Masquer le prix et le hr dotted
   classNameButton?: string;
   className?: string;
@@ -53,53 +48,11 @@ export default function CardPack({
   )`,
   onButtonClick,
   buttonHref,
-  enableCounter = false,
-  basePrice = 29,
-  additionalPrice = 19,
-  localStorageKey = 'email_counter',
   hidePrice = false,
   classNameButton,
   className,
 }: CardPackProps) {
-  // État pour le compteur d'emails additionnels
-  const [additionalEmails, setAdditionalEmails] = useState(0);
-  const [mounted, setMounted] = useState(false);
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
-
-  // Charger depuis localStorage au montage
-  useEffect(() => {
-    setMounted(true);
-    if (enableCounter && typeof window !== 'undefined') {
-      const saved = localStorage.getItem(localStorageKey);
-      if (saved) {
-        setAdditionalEmails(parseInt(saved, 10));
-      }
-    }
-  }, [enableCounter, localStorageKey]);
-
-  // Sauvegarder dans localStorage quand le compteur change
-  useEffect(() => {
-    if (mounted && enableCounter && typeof window !== 'undefined') {
-      localStorage.setItem(localStorageKey, additionalEmails.toString());
-    }
-  }, [additionalEmails, enableCounter, localStorageKey, mounted]);
-
-  // Calculer le prix total
-  const calculateTotalPrice = () => {
-    if (!enableCounter) return price;
-    const total = basePrice + additionalEmails * additionalPrice;
-    return total.toString();
-  };
-
-  // Incrémenter le compteur
-  const incrementCounter = () => {
-    setAdditionalEmails((prev) => prev + 1);
-  };
-
-  // Décrémenter le compteur (minimum 0)
-  const decrementCounter = () => {
-    setAdditionalEmails((prev) => Math.max(0, prev - 1));
-  };
   return (
     <div className={cn("font-roboto relative flex w-full flex-col justify-between overflow-hidden rounded-2xl bg-white", className)}>
       {/* Gradient blur en haut */}
@@ -113,7 +66,7 @@ export default function CardPack({
 
       {/* Section titre et features */}
       <div className="relative z-20 space-y-5 px-10 pt-30 pb-0">
-        <h3 className="font-thunder mb-5 lg:text-5xl text-4xl font-medium text-black">{title}</h3>
+        <h3 className="font-thunder mb-5 lg:text-5xl text-4xl font-medium text-black whitespace-pre-line">{title}</h3>
 
         {subtitle && <p>{subtitle}</p>}
 
@@ -130,44 +83,6 @@ export default function CardPack({
             </li>
           ))}
         </ul>
-
-        {enableCounter && (
-          <section className="space-y-2">
-            <p className="mb-2 text-sm font-semibold text-gray-700">Emails additionnels</p>
-            <div className="space-y-3 rounded-xl bg-gray-50">
-              <div className="flex items-stretch justify-between gap-4">
-                <button
-                  onClick={decrementCounter}
-                  disabled={additionalEmails === 0}
-                  className="flex w-12 cursor-pointer items-center justify-center rounded-l-lg bg-black transition-all hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-black"
-                  aria-label="Diminuer"
-                >
-                  <Minus className="h-5 w-5 text-white" />
-                </button>
-
-                <div className="flex flex-1 flex-col items-center justify-center">
-                  <span className="text-2xl font-bold text-gray-900">{additionalEmails}</span>
-                  <span className="$text-gray-500 mb-2 text-xs">
-                    {additionalEmails === 0
-                      ? '1 email inclus'
-                      : `${additionalEmails + 1} emails au total`}
-                  </span>
-                </div>
-
-                <button
-                  onClick={incrementCounter}
-                  className="flex w-12 cursor-pointer items-center justify-center rounded-r-lg bg-black transition-all hover:bg-gray-800"
-                  aria-label="Augmenter"
-                >
-                  <Plus className="h-5 w-5 text-white" />
-                </button>
-              </div>
-            </div>
-            <p className="text-center text-xs text-gray-500">
-              +{additionalPrice}€ par email additionnel
-            </p>
-          </section>
-        )}
       </div>
 
       {/* Section prix et bouton */}
@@ -192,17 +107,8 @@ export default function CardPack({
         {!hidePrice && (
           <div className="flex flex-col w-full gap-4">
               <p className="font-thunder text-4xl font-medium">
-                {calculateTotalPrice()}€ <span className="text-lg font-normal">{priceUnit}</span>
+                {price}€ <span className="text-lg font-normal">{priceUnit}</span>
               </p>
-
-              {/* Détail du prix si compteur activé */}
-              {enableCounter && additionalEmails > 0 && (
-                <p className="text-sm text-gray-500">
-                  {basePrice}€ (base) + {additionalEmails * additionalPrice}€ ({additionalEmails}{' '}
-                  email
-                  {additionalEmails > 1 ? 's' : ''} additionnel{additionalEmails > 1 ? 's' : ''})
-                </p>
-              )}
             <button
               onClick={() => setShowSubscriptionModal(true)}
               className="flex cursor-pointer items-center gap-1 text-gray-600 transition-colors hover:text-gray-800"
