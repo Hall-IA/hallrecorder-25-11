@@ -1089,30 +1089,46 @@ function App() {
       // 1) Finaliser la transcription D'ABORD (avant de créer la réunion)
       setProcessingStatus('Finalisation de la transcription...');
       const hasLive = (liveTranscriptRef.current || '').trim().length > 50;
-      
+
       let finalTranscript = '';
       let displayTranscript = '';
-      
-      if (hasLive) {
-        // Version pour l'affichage (avec séparateurs visuels)
-        const formattedTranscript = formatTranscriptWithSeparators(partialTranscripts);
-        if (formattedTranscript.trim()) {
-          displayTranscript = formattedTranscript;
-          console.log('📝 Transcription formatée avec séparateurs:', displayTranscript.substring(0, 100) + '...');
+
+      // Timeout de 5 secondes pour la finalisation de la transcription
+      const finalizationPromise = new Promise<{ final: string; display: string }>(async (resolve) => {
+        if (hasLive) {
+          // Version pour l'affichage (avec séparateurs visuels)
+          const formattedTranscript = formatTranscriptWithSeparators(partialTranscripts);
+          if (formattedTranscript.trim()) {
+            displayTranscript = formattedTranscript;
+            console.log('📝 Transcription formatée avec séparateurs:', displayTranscript.substring(0, 100) + '...');
+          } else {
+            // Fallback: nettoyer la transcription cumulée
+            displayTranscript = cleanTranscript(liveTranscriptRef.current.trim());
+            console.log('🧹 Transcription nettoyée (fallback):', displayTranscript.substring(0, 100) + '...');
+          }
+
+          // Version pour le résumé (sans séparateurs, texte propre)
+          const cleanForSummary = partialTranscripts.join(' ').trim();
+          finalTranscript = cleanTranscript(cleanForSummary);
+          console.log('📄 Transcription pour résumé (propre):', finalTranscript.substring(0, 100) + '...');
+          resolve({ final: finalTranscript, display: displayTranscript });
         } else {
-          // Fallback: nettoyer la transcription cumulée
-          displayTranscript = cleanTranscript(liveTranscriptRef.current.trim());
-          console.log('🧹 Transcription nettoyée (fallback):', displayTranscript.substring(0, 100) + '...');
+          const transcript = await transcribeAudio(audioBlob); // Fallback si, pour une raison, on n'a rien accumulé
+          resolve({ final: transcript, display: transcript });
         }
-        
-        // Version pour le résumé (sans séparateurs, texte propre)
-        const cleanForSummary = partialTranscripts.join(' ').trim();
-        finalTranscript = cleanTranscript(cleanForSummary);
-        console.log('📄 Transcription pour résumé (propre):', finalTranscript.substring(0, 100) + '...');
-      } else {
-        finalTranscript = await transcribeAudio(audioBlob); // Fallback si, pour une raison, on n'a rien accumulé
-        displayTranscript = finalTranscript; // Même version pour l'affichage
-      }
+      });
+
+      const timeoutPromise = new Promise<{ final: string; display: string }>((resolve) => {
+        setTimeout(() => {
+          console.log('⏱️ Timeout finalisation transcription - continuation avec données actuelles');
+          const fallbackText = liveTranscriptRef.current?.trim() || partialTranscripts.join(' ').trim() || '';
+          resolve({ final: fallbackText, display: fallbackText });
+        }, 5000); // 5 secondes max
+      });
+
+      const result = await Promise.race([finalizationPromise, timeoutPromise]);
+      finalTranscript = result.final;
+      displayTranscript = result.display;
 
       // 2) PRIORITÉ: Créer la réunion avec la transcription D'ABORD (avant le résumé)
       // Cela garantit qu'on ne perd jamais la transcription même si le résumé échoue
@@ -1950,7 +1966,7 @@ function App() {
           {/* Ligne principale */}
           <div className="flex items-center justify-between h-16">
             {/* Logo et nom */}
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 flex-shrink-0 min-w-fit">
               <img src="/logohallia.png" alt="Logo Hallia" className="w-9 h-9 object-contain" />
               <div className="hidden sm:flex items-baseline gap-1.5">
                 <span className="text-xl font-bold tracking-tight text-gray-900" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>HALL</span>
@@ -1959,19 +1975,19 @@ function App() {
             </div>
 
             {/* Navigation centrale - Desktop */}
-            <nav className="hidden md:flex items-center gap-1">
+            <nav className="hidden xl:flex items-center gap-0.5 flex-1 justify-center px-4">
               <button
                 onClick={() => {
                   setView('record');
                   window.location.hash = 'record';
                 }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
                   view === 'record'
                     ? 'text-coral-600 bg-coral-50'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
-                <Mic className="w-4 h-4" />
+                <Mic className="w-3.5 h-3.5" />
                 <span>Enregistrement</span>
               </button>
               <button
@@ -1979,13 +1995,13 @@ function App() {
                   setView('dashboard');
                   window.location.hash = 'dashboard';
                 }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
                   view === 'dashboard'
                     ? 'text-coral-600 bg-coral-50'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
-                <LayoutDashboard className="w-4 h-4" />
+                <LayoutDashboard className="w-3.5 h-3.5" />
                 <span>Tableau de bord</span>
               </button>
               <button
@@ -1993,13 +2009,13 @@ function App() {
                   setView('history');
                   window.location.hash = 'history';
                 }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
                   view === 'history'
                     ? 'text-coral-600 bg-coral-50'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
-                <History className="w-4 h-4" />
+                <History className="w-3.5 h-3.5" />
                 <span>Historique</span>
               </button>
               <button
@@ -2007,13 +2023,13 @@ function App() {
                   setView('upload');
                   window.location.hash = 'upload';
                 }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
                   view === 'upload'
                     ? 'text-coral-600 bg-coral-50'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
-                <Upload className="w-4 h-4" />
+                <Upload className="w-3.5 h-3.5" />
                 <span>Importer</span>
               </button>
               <button
@@ -2021,27 +2037,41 @@ function App() {
                   setView('settings');
                   window.location.hash = 'settings';
                 }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
                   view === 'settings'
                     ? 'text-coral-600 bg-coral-50'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
-                <SettingsIcon className="w-4 h-4" />
+                <SettingsIcon className="w-3.5 h-3.5" />
                 <span>Paramètres</span>
+              </button>
+              <button
+                onClick={() => {
+                  setView('subscription');
+                  window.location.hash = 'subscription';
+                }}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+                  view === 'subscription'
+                    ? 'text-coral-600 bg-coral-50'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                <CreditCard className="w-3.5 h-3.5" />
+                <span>Abonnement</span>
               </button>
               <button
                 onClick={() => {
                   setView('contact');
                   window.location.hash = 'contact';
                 }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
                   view === 'contact'
                     ? 'text-coral-600 bg-coral-50'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
-                <Mail className="w-4 h-4" />
+                <Mail className="w-3.5 h-3.5" />
                 <span>Support</span>
               </button>
             </nav>
@@ -2148,393 +2178,413 @@ function App() {
       </header>
 
       <main className="flex-1 overflow-auto">
-        <div className={view === 'record' ? 'flex gap-6 h-full' : 'max-w-6xl mx-auto px-4 md:px-8 py-4 md:py-8 h-full'}>
+        <div className={view === 'record' ? 'flex flex-col h-full' : 'max-w-6xl mx-auto px-4 md:px-8 py-4 md:py-8 h-full'}>
           {view === 'record' ? (
             <>
               {/* Contenu principal de l'enregistrement */}
-              <div className="flex-1 px-4 md:px-8 py-4 md:py-8 overflow-auto">
+              <div className="flex-1 px-4 md:px-8 py-4 md:py-6 overflow-y-auto min-h-0">
               {!isRecording ? (
-                <div className="relative bg-white rounded-2xl md:rounded-3xl shadow-2xl p-6 md:p-12 border-2 border-orange-100 overflow-hidden w-full max-w-5xl mx-auto">
-                  <div className="absolute inset-0 bg-gradient-to-br from-coral-50/30 via-transparent to-sunset-50/30 pointer-events-none"></div>
-                  <div className="relative flex flex-col items-center py-8">
-                    <div className="mb-12">
-                    <RecordingControls
-                      isRecording={isRecording}
-                      isPaused={isPaused}
-                      recordingTime={recordingTime}
-                      onStart={handleStartRecording}
-                      onPause={pauseRecording}
-                      onResume={resumeRecording}
-                      onStop={handleStopRecordingRequest}
-                  isStarting={isStartingRecording}
-                />
+                /* === AVANT L'ENREGISTREMENT === */
+                <div className="max-w-5xl mx-auto">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Panneau gauche - Démarrer un enregistrement */}
+                    <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                      <h2 className="text-lg font-semibold text-gray-900 mb-6">Démarrer un enregistrement</h2>
+
+                      {/* Nom de la réunion */}
+                      <div className="mb-6">
+                        <label htmlFor="meetingTitle" className="block text-sm font-medium text-gray-700 mb-2">
+                          Nom de la réunion
+                        </label>
+                        <input
+                          type="text"
+                          id="meetingTitle"
+                          value={meetingTitle}
+                          onChange={(e) => setMeetingTitle(e.target.value)}
+                          placeholder="Ex: Réunion d'équipe - Planning Q4"
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 text-sm text-gray-800 placeholder-gray-400 transition-all"
+                        />
+                        <p className="text-xs text-gray-500 mt-1.5">
+                          Optionnel - l'IA générera un titre si vide
+                        </p>
+                      </div>
+
+                      {/* Mode selector minimaliste */}
+                      <div className="mb-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-3">Mode d'enregistrement</label>
+                        <div className="space-y-2">
+                          <button
+                            onClick={() => setSelectedRecordingMode('microphone')}
+                            className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
+                              selectedRecordingMode === 'microphone'
+                                ? 'border-gray-900 bg-gray-50'
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                          >
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                              selectedRecordingMode === 'microphone' ? 'bg-gray-900' : 'bg-gray-100'
+                            }`}>
+                              <Mic className={`w-5 h-5 ${selectedRecordingMode === 'microphone' ? 'text-white' : 'text-gray-600'}`} />
+                            </div>
+                            <div className="text-left flex-1">
+                              <p className={`font-medium ${selectedRecordingMode === 'microphone' ? 'text-gray-900' : 'text-gray-700'}`}>
+                                Mode Présentiel
+                              </p>
+                              <p className="text-xs text-gray-500">Réunion en personne via microphone</p>
+                            </div>
+                            {selectedRecordingMode === 'microphone' && (
+                              <div className="w-5 h-5 rounded-full bg-gray-900 flex items-center justify-center">
+                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                </svg>
+                              </div>
+                            )}
+                          </button>
+
+                          <button
+                            onClick={() => setSelectedRecordingMode('visio')}
+                            className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
+                              selectedRecordingMode === 'visio'
+                                ? 'border-gray-900 bg-gray-50'
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                          >
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                              selectedRecordingMode === 'visio' ? 'bg-gray-900' : 'bg-gray-100'
+                            }`}>
+                              <svg className={`w-5 h-5 ${selectedRecordingMode === 'visio' ? 'text-white' : 'text-gray-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                            </div>
+                            <div className="text-left flex-1">
+                              <p className={`font-medium ${selectedRecordingMode === 'visio' ? 'text-gray-900' : 'text-gray-700'}`}>
+                                Mode Visio
+                              </p>
+                              <p className="text-xs text-gray-500">Réunion en ligne (Zoom, Meet, Teams...)</p>
+                            </div>
+                            {selectedRecordingMode === 'visio' && (
+                              <div className="w-5 h-5 rounded-full bg-gray-900 flex items-center justify-center">
+                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                </svg>
+                              </div>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
                     </div>
 
-                    
+                    {/* Panneau droit - Bouton microphone circulaire */}
+                    <div className="bg-gray-50 rounded-2xl border border-gray-200 p-6 flex flex-col items-center justify-center min-h-[300px]">
+                      {/* Grand bouton microphone circulaire avec animation */}
+                      <div className="relative">
+                        {/* Cercles d'animation pulsants - dégradé rose-corail vers orange */}
+                        {!isStartingRecording && (
+                          <>
+                            <div className="absolute inset-0 w-40 h-40 rounded-full opacity-75 animate-ping" style={{
+                              background: 'linear-gradient(135deg, #FF9999 0%, #FFB366 100%)'
+                            }}></div>
+                            <div className="absolute inset-0 w-40 h-40 rounded-full opacity-50 animate-pulse" style={{
+                              background: 'linear-gradient(135deg, #FF6B6B 0%, #FFA64D 100%)'
+                            }}></div>
+                          </>
+                        )}
 
-                    <div className="relative mb-8 w-full max-w-2xl px-4">
-                      <label htmlFor="meetingTitle" className="block text-xs md:text-sm font-semibold text-cocoa-800 mb-3 text-center">
-                        Nom de la réunion (optionnel)
-                      </label>
-                      <input
-                        type="text"
-                        id="meetingTitle"
-                        value={meetingTitle}
-                        onChange={(e) => setMeetingTitle(e.target.value)}
-                        placeholder="Ex: Réunion d'équipe - Planning Q4"
-                        className="w-full px-4 md:px-6 py-3 md:py-4 border-2 border-orange-200 rounded-xl md:rounded-2xl focus:outline-none focus:border-coral-500 focus:ring-4 focus:ring-coral-500/20 text-sm md:text-base text-cocoa-800 placeholder-cocoa-400 transition-all duration-300 text-center hover:border-coral-300 hover:shadow-lg"
-                      />
-                      <p className="text-xs text-cocoa-500 mt-2 text-center">
-                        Si vide, l'IA générera un titre automatiquement
+                        {/* Bouton principal - même dégradé rose-corail vers orange */}
+                        <button
+                          onClick={() => {
+                            console.log('🔴 CLIC sur bouton Enregistrer');
+                            handleStartRecording();
+                          }}
+                          disabled={isStartingRecording}
+                          className={`relative w-40 h-40 rounded-full flex flex-col items-center justify-center transition-all shadow-2xl ${
+                            isStartingRecording
+                              ? 'bg-gray-300 cursor-not-allowed'
+                              : 'hover:scale-110 active:scale-95 cursor-pointer'
+                          }`}
+                          style={!isStartingRecording ? {
+                            background: 'linear-gradient(135deg, #FF6B6B 0%, #FFA64D 100%)'
+                          } : undefined}
+                          onMouseEnter={(e) => {
+                            if (!isStartingRecording) {
+                              e.currentTarget.style.background = 'linear-gradient(135deg, #FF5252 0%, #FF9933 100%)';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isStartingRecording) {
+                              e.currentTarget.style.background = 'linear-gradient(135deg, #FF6B6B 0%, #FFA64D 100%)';
+                            }
+                          }}
+                        >
+                          {isStartingRecording ? (
+                            <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                          ) : (
+                            <>
+                              <Mic className="w-16 h-16 text-white mb-2" />
+                              <span className="text-white font-semibold text-lg">Démarrer</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Timer format digital sous le bouton */}
+                      <div className="mt-8 flex items-center gap-2">
+                        <div className="bg-white px-4 py-2 rounded-lg border border-gray-200">
+                          <span className="text-3xl font-bold text-gray-400 tabular-nums">00</span>
+                        </div>
+                        <span className="text-2xl text-gray-400">:</span>
+                        <div className="bg-white px-4 py-2 rounded-lg border border-gray-200">
+                          <span className="text-3xl font-bold text-gray-400 tabular-nums">00</span>
+                        </div>
+                        <span className="text-2xl text-gray-400">:</span>
+                        <div className="bg-white px-4 py-2 rounded-lg border border-gray-200">
+                          <span className="text-3xl font-bold text-gray-400 tabular-nums">00</span>
+                        </div>
+                      </div>
+
+                      <p className="text-gray-400 text-sm mt-4 text-center">
+                        Cliquez sur "Enregistrer" pour démarrer
                       </p>
-                    </div>
-
-                    <div className="mb-8 w-full max-w-4xl px-4">
-                      <RecordingModeSelector
-                        selectedMode={selectedRecordingMode}
-                        onModeChange={setSelectedRecordingMode}
-                        disabled={isRecording}
-                      />
-                    </div>
-
-                    <div className="mt-12 max-w-2xl text-center text-cocoa-600">
-                      <p className="text-base mb-4">
-                        {recordingMode === 'microphone' && "Mode Présentiel : enregistre votre voix pour les réunions en personne. Simple et efficace."}
-                        {recordingMode === 'system' && "Mode Visio : capture l'audio de votre écran pour enregistrer les réunions Discord, Zoom, Meet, etc."}
-                      </p>
-                      <p className="text-sm text-cocoa-500">
-                        La transcription sera générée automatiquement à la fin.
+                      <p className="text-gray-400 text-xs mt-2 text-center">
+                        La visualisation audio apparaîtra ici
                       </p>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="relative bg-white rounded-2xl md:rounded-3xl shadow-2xl p-6 md:p-12 border-2 border-orange-100 w-full max-w-7xl mx-auto">
-                  <div className="absolute inset-0 bg-gradient-to-br from-coral-50/20 via-transparent to-sunset-50/20 pointer-events-none"></div>
-                  <div className="relative flex flex-col items-center py-4 md:py-8">
-                    <button
-                      onClick={handleStopRecordingRequest}
-                      className="mb-6 md:mb-8 group transition-transform hover:scale-105 active:scale-95 cursor-pointer"
-                      title="Cliquez pour arrêter l'enregistrement"
-                    >
-                      <div className="relative w-20 h-20 md:w-24 md:h-24">
-                        <div className="absolute inset-0 bg-coral-400 rounded-full animate-ping opacity-75"></div>
-                        <div className="absolute inset-0 bg-coral-400 rounded-full opacity-20 blur-xl"></div>
-                        <div className="absolute inset-0 bg-gradient-to-br from-coral-500 via-coral-600 to-sunset-500 rounded-full flex items-center justify-center shadow-glow-coral group-hover:shadow-glow-coral-strong">
-                          <Mic className="w-10 h-10 md:w-12 md:h-12 text-white drop-shadow-lg" />
+                /* === PENDANT L'ENREGISTREMENT === */
+                <div className="max-w-5xl mx-auto">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Panneau gauche - Infos uniquement (les contrôles sont dans le bouton flottant) */}
+                    <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="relative">
+                          <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                          <div className="absolute inset-0 w-3 h-3 bg-red-500 rounded-full animate-ping opacity-75"></div>
                         </div>
+                        <span className="text-sm font-medium text-gray-700">Enregistrement en cours</span>
                       </div>
-                    </button>
-                    <h3 className="text-xl md:text-2xl font-bold text-cocoa-800 mb-2">Enregistrement en cours...</h3>
-                    <p className="text-sm md:text-base text-cocoa-600 text-center max-w-md mb-6 md:mb-8 px-4">
-                      L'audio est en cours d'enregistrement. Le résumé se génère progressivement.
-                    </p>
 
-                    {/* Visualisation audio en direct */}
-                    <div className="w-full max-w-3xl px-2 md:px-4 mb-6 md:mb-10">
-                      <AudioVisualizer
-                        stream={audioStream}
-                        isActive={isRecording && !isPaused && !showQuotaReachedModal}
-                        barColor="#FF6B4A"
-                        bgColor="linear-gradient(180deg, rgba(255,237,231,0.6) 0%, rgba(255,250,247,0.6) 100%)"
-                      />
+                      {/* Timer */}
+                      <div className="text-center mb-8">
+                        <p className="text-5xl font-bold text-gray-900 tabular-nums">
+                          {String(Math.floor(recordingTime / 3600)).padStart(2, '0')}:
+                          {String(Math.floor((recordingTime % 3600) / 60)).padStart(2, '0')}:
+                          {String(recordingTime % 60).padStart(2, '0')}
+                        </p>
+                      </div>
+
+                      {/* Boutons de contrôle */}
+                      <div className="flex items-center justify-center gap-4 mb-6">
+                        {isPaused ? (
+                          <button
+                            onClick={resumeRecording}
+                            className="flex items-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-medium transition-all"
+                          >
+                            <PlayCircle className="w-5 h-5" />
+                            Reprendre
+                          </button>
+                        ) : (
+                          <button
+                            onClick={pauseRecording}
+                            className="flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-all"
+                          >
+                            <PauseCircle className="w-5 h-5" />
+                            Pause
+                          </button>
+                        )}
+                        <button
+                          onClick={handleStopRecordingRequest}
+                          className="flex items-center gap-2 px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-all"
+                        >
+                          <StopCircle className="w-5 h-5" />
+                          Arrêter
+                        </button>
+                      </div>
+
+                      {/* Notes */}
+                      <div>
+                        <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
+                          Notes complémentaires
+                        </label>
+                        <textarea
+                          id="notes"
+                          value={recordingNotes}
+                          onChange={(e) => setRecordingNotes(e.target.value)}
+                          placeholder="Ajoutez vos notes ici..."
+                          className="w-full h-24 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 resize-none text-sm text-gray-800 placeholder-gray-400 transition-all"
+                        />
+                      </div>
                     </div>
 
-                    {/* Suggestions pendant l'enregistrement */}
-                    <div className="w-full max-w-6xl xl:max-w-7xl mt-4 md:mt-6 px-4">
-                      {/* Onglets */}
-                      <div className="flex items-center gap-2 mb-4">
-                        <button
-                          onClick={() => setActiveSuggestionsTab('clarify')}
-                          className={`px-4 py-2 rounded-full text-sm md:text-base font-semibold transition-all duration-300 border-2 ${
-                            activeSuggestionsTab === 'clarify'
-                              ? 'bg-gradient-to-r from-blue-500 to-indigo-600 border-blue-400 text-white shadow-lg scale-105'
-                              : 'bg-white border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 hover:scale-105'
-                          }`}
-                        >
-                          Points à clarifier
-                        </button>
-                        <button
-                          onClick={() => setActiveSuggestionsTab('explore')}
-                          className={`px-4 py-2 rounded-full text-sm md:text-base font-semibold transition-all duration-300 border-2 ${
-                            activeSuggestionsTab === 'explore'
-                              ? 'bg-gradient-to-r from-coral-500 to-sunset-500 border-coral-400 text-white shadow-lg scale-105'
-                              : 'bg-white border-orange-200 text-coral-700 hover:bg-coral-50 hover:border-coral-300 hover:scale-105'
-                          }`}
-                        >
-                          Sujets à explorer
-                        </button>
+                    {/* Panneau droit - Visualisation audio */}
+                    <div className="bg-gray-50 rounded-2xl border border-gray-200 p-6 flex flex-col">
+                      <div className="flex-1 flex items-center justify-center">
+                        <AudioVisualizer
+                          stream={audioStream}
+                          isActive={isRecording && !isPaused && !showQuotaReachedModal}
+                          barColor="#FF6B4A"
+                          bgColor="transparent"
+                        />
                       </div>
 
-                      {activeSuggestionsTab === 'clarify' ? (
-                      <div className="relative bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-50 rounded-xl md:rounded-2xl p-4 md:p-6 border-2 border-blue-200 shadow-lg overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent pointer-events-none"></div>
-                        <div className="relative flex items-center gap-3 mb-4">
-                          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
-                            {/* Icône ampoule avec animation */}
-                            <svg className="w-5 h-5 text-white animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                            </svg>
-                          </div>
-                          <h4 className="text-lg md:text-xl font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">Points à clarifier</h4>
+                      {isPaused && (
+                        <div className="text-center mt-4">
+                          <span className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
+                            <PauseCircle className="w-4 h-4" />
+                            En pause
+                          </span>
                         </div>
-
-                        {suggestions.some(s => s.suggestions && s.suggestions.length > 0) ? (
-                          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                            {suggestions.filter(s => s.suggestions && s.suggestions.length > 0).slice(-5).reverse().map((suggestion, index) => (
-                              <div key={index} className="bg-white rounded-lg p-4 border border-purple-100 animate-slide-in-right">
-                                {suggestion.suggestions.map((q, qIndex) => (
-                                  <div key={qIndex} className="flex items-start gap-2 py-1">
-                                    <span className="text-purple-500 mt-1">•</span>
-                                    <p className="text-sm md:text-base text-cocoa-800">{q}</p>
-                                  </div>
-                                ))}
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-center py-8">
-                            <div className="flex flex-col items-center gap-4">
-                              {/* Animation ampoule qui bouge */}
-                              <div className="relative">
-                                <svg className="w-16 h-16 text-purple-400 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                                </svg>
-                                {/* Ondes autour de l'ampoule */}
-                                <div className="absolute inset-0 -m-2 border-2 border-purple-300 rounded-full animate-ping opacity-50"></div>
-                              </div>
-                              <p className="text-sm md:text-base text-purple-700 font-medium">
-                                Analyse en cours...
-                              </p>
-                              <p className="text-xs text-purple-600">
-                                Les suggestions apparaîtront automatiquement
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      ) : (
-                      <div className="relative bg-gradient-to-br from-coral-50 via-orange-50 to-sunset-50 rounded-xl md:rounded-2xl p-4 md:p-6 border-2 border-coral-200 shadow-lg overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent pointer-events-none"></div>
-                        <div className="relative flex items-center gap-3 mb-4">
-                          <div className="w-8 h-8 bg-gradient-to-br from-coral-500 to-sunset-600 rounded-full flex items-center justify-center shadow-lg">
-                            {/* Icône boussole avec animation */}
-                            <svg className="w-5 h-5 text-white animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                            </svg>
-                          </div>
-                          <h4 className="text-lg md:text-xl font-bold text-coral-900">Sujets à explorer</h4>
-                        </div>
-
-                        {suggestions.some(s => s.topics_to_explore && s.topics_to_explore.length > 0) ? (
-                          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                            {suggestions.filter(s => s.topics_to_explore && s.topics_to_explore.length > 0).slice(-5).reverse().map((suggestion, index) => (
-                              <div key={index} className="bg-white rounded-lg p-4 border border-orange-100 animate-slide-in-right">
-                                <div className="flex flex-wrap gap-2">
-                                  {suggestion.topics_to_explore.map((topic, topicIndex) => (
-                                    <span key={topicIndex} className="px-3 py-1 bg-coral-100 text-coral-700 rounded-full text-xs md:text-sm font-medium">
-                                      {topic}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-center py-8">
-                            <div className="flex flex-col items-center gap-4">
-                              {/* Animation boussole qui bouge */}
-                              <div className="relative">
-                                <svg className="w-16 h-16 text-coral-400 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                                </svg>
-                                {/* Ondes autour de la boussole */}
-                                <div className="absolute inset-0 -m-2 border-2 border-coral-300 rounded-full animate-ping opacity-50"></div>
-                              </div>
-                              <p className="text-sm md:text-base text-coral-700 font-medium">
-                                Analyse en cours...
-                              </p>
-                              <p className="text-xs text-coral-600">
-                                Les sujets apparaîtront automatiquement
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
                       )}
+                    </div>
+                  </div>
 
-                      <div className="relative bg-gradient-to-br from-peach-50 to-coral-50 rounded-xl md:rounded-2xl p-4 md:p-6 border-2 border-coral-200 mt-6 shadow-lg overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent pointer-events-none"></div>
-                        <label htmlFor="notes" className="block text-xs md:text-sm font-semibold text-cocoa-800 mb-3">
-                          Notes complémentaires
-                      </label>
-                      <textarea
-                        id="notes"
-                        value={recordingNotes}
-                        onChange={(e) => setRecordingNotes(e.target.value)}
-                          placeholder="Ajoutez vos propres notes ici..."
-                          className="relative w-full h-32 md:h-40 px-4 md:px-6 py-3 md:py-4 border-2 border-orange-200 rounded-xl focus:outline-none focus:border-coral-500 focus:ring-4 focus:ring-coral-500/20 resize-none text-sm md:text-base text-cocoa-800 placeholder-cocoa-400 transition-all duration-300 bg-white hover:border-coral-300 hover:shadow-lg"
-                      />
-                        <p className="text-xs text-cocoa-500 mt-2">
-                          Ces notes seront ajoutées au résumé final
-                      </p>
+                  {/* Suggestions pendant l'enregistrement */}
+                  <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Points à clarifier */}
+                    <div className="bg-white rounded-2xl border border-gray-200 p-5">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                          <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                          </svg>
+                        </div>
+                        <h4 className="font-medium text-gray-900">Points à clarifier</h4>
                       </div>
+
+                      {suggestions.some(s => s.suggestions && s.suggestions.length > 0) ? (
+                        <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                          {suggestions.filter(s => s.suggestions && s.suggestions.length > 0).slice(-3).reverse().map((suggestion, index) => (
+                            <div key={index} className="text-sm text-gray-600">
+                              {suggestion.suggestions.map((q, qIndex) => (
+                                <p key={qIndex} className="py-1">• {q}</p>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-400">Analyse en cours...</p>
+                      )}
+                    </div>
+
+                    {/* Sujets à explorer */}
+                    <div className="bg-white rounded-2xl border border-gray-200 p-5">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                          <svg className="w-4 h-4 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                          </svg>
+                        </div>
+                        <h4 className="font-medium text-gray-900">Sujets à explorer</h4>
+                      </div>
+
+                      {suggestions.some(s => s.topics_to_explore && s.topics_to_explore.length > 0) ? (
+                        <div className="flex flex-wrap gap-2">
+                          {suggestions.filter(s => s.topics_to_explore && s.topics_to_explore.length > 0).slice(-2).reverse().flatMap((suggestion, index) =>
+                            suggestion.topics_to_explore.map((topic, topicIndex) => (
+                              <span key={`${index}-${topicIndex}`} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
+                                {topic}
+                              </span>
+                            ))
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-400">Analyse en cours...</p>
+                      )}
                     </div>
                   </div>
                 </div>
               )}
               </div>
 
-              {/* Barre latérale droite avec la liste des réunions */}
-              <aside className="hidden xl:block w-80 bg-gradient-to-b from-white to-orange-50/30 border-l-2 border-orange-100 p-6 overflow-y-auto">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold bg-gradient-to-r from-coral-500 to-sunset-500 bg-clip-text text-transparent">
-                    Réunions récentes
-                  </h3>
-                  <button
-                    onClick={() => {
-                      console.log('🔄 Rechargement manuel des réunions');
-                      loadMeetings(true);
-                    }}
-                    className="p-2 hover:bg-coral-50 rounded-xl transition-all duration-300 group hover:shadow-md"
-                    title="Rafraîchir"
-                  >
-                    <svg 
-                      className={`w-5 h-5 text-coral-600 transition-transform duration-500 ${isRecentRefreshing ? 'animate-spin' : 'group-hover:rotate-180'}`}
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
+              {/* Section Historique en bas - minimaliste avec 3 réunions - masquée pendant l'enregistrement */}
+              {!isRecording && (
+              <div className="flex-shrink-0 border-t border-gray-200 bg-white px-4 md:px-8 py-4">
+                <div className="max-w-5xl mx-auto">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-semibold text-gray-900">Historique</h3>
+                    <button
+                      onClick={() => setView('history')}
+                      className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                  </button>
-                </div>
-                <div className="space-y-3">
-                  {isRecentLoading && (
-                    <>
-                      {[...Array(4)].map((_, idx) => (
-                        <div
-                          key={`recent-skeleton-${idx}`}
-                          className="animate-pulse bg-white rounded-2xl p-4 border border-orange-100 shadow-sm"
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200" />
-                            <div className="flex-1">
-                              <div className="h-4 bg-gray-100 rounded-lg w-3/4 mb-2" />
-                              <div className="h-3 bg-gray-100 rounded-lg w-1/2" />
-                            </div>
-                          </div>
+                      Modifier
+                    </button>
+                  </div>
+
+                  {isRecentLoading ? (
+                    <div className="space-y-2">
+                      {[...Array(3)].map((_, idx) => (
+                        <div key={`skeleton-${idx}`} className="animate-pulse flex items-center gap-4 py-3 border-b border-gray-100 last:border-0">
+                          <div className="w-16 h-4 bg-gray-100 rounded" />
+                          <div className="flex-1 h-4 bg-gray-100 rounded" />
+                          <div className="w-12 h-4 bg-gray-100 rounded" />
                         </div>
                       ))}
-                    </>
-                  )}
+                    </div>
+                  ) : meetings.length === 0 ? (
+                    <p className="text-sm text-gray-400 py-4 text-center">Aucune réunion enregistrée</p>
+                  ) : (
+                    <div className="divide-y divide-gray-100">
+                      {meetings.slice(0, 3).map((meeting) => {
+                        const durationMins = Math.floor(meeting.duration / 60);
+                        const durationSecs = meeting.duration % 60;
 
-                  {!isRecentLoading && (console.log('📋 Sidebar: meetings:', meetings.length, 'first:', meetings[0]?.title, 'created_at:', meetings[0]?.created_at), meetings.slice(0, 10).map((meeting, index) => {
-                    // Couleurs différentes basées sur l'index ou la durée
-                    const colorSchemes = [
-                      { bg: 'from-coral-50 to-orange-50', border: 'border-coral-100 hover:border-coral-300', icon: 'from-coral-500 to-orange-500', text: 'text-coral-600' },
-                      { bg: 'from-blue-50 to-indigo-50', border: 'border-blue-100 hover:border-blue-300', icon: 'from-blue-500 to-indigo-500', text: 'text-blue-600' },
-                      { bg: 'from-purple-50 to-fuchsia-50', border: 'border-purple-100 hover:border-purple-300', icon: 'from-purple-500 to-fuchsia-500', text: 'text-purple-600' },
-                      { bg: 'from-emerald-50 to-teal-50', border: 'border-emerald-100 hover:border-emerald-300', icon: 'from-emerald-500 to-teal-500', text: 'text-emerald-600' },
-                      { bg: 'from-amber-50 to-yellow-50', border: 'border-amber-100 hover:border-amber-300', icon: 'from-amber-500 to-yellow-500', text: 'text-amber-600' },
-                    ];
-                    const colors = colorSchemes[index % colorSchemes.length];
-                    const durationMins = Math.floor(meeting.duration / 60);
-                    
-                    // Badge de durée
-                    const getDurationBadge = () => {
-                      if (durationMins >= 60) return { label: 'Long', color: 'bg-purple-100 text-purple-700' };
-                      if (durationMins >= 30) return { label: 'Moyen', color: 'bg-blue-100 text-blue-700' };
-                      return { label: 'Court', color: 'bg-emerald-100 text-emerald-700' };
-                    };
-                    const badge = getDurationBadge();
-                    
-                    return (
-                      <div
-                        key={meeting.id}
-                        onClick={() => {
-                          handleViewMeeting(meeting);
-                        }}
-                        className={`
-                          relative bg-gradient-to-br ${colors.bg} rounded-2xl p-4 
-                          border ${colors.border} 
-                          hover:shadow-lg transition-all duration-300 cursor-pointer group 
-                          overflow-hidden hover:-translate-y-0.5
-                        `}
-                        style={{ animationDelay: `${index * 50}ms` }}
-                      >
-                        {/* Effet de survol */}
-                        <div className="absolute inset-0 bg-white/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                        
-                        <div className="relative flex items-start gap-3">
-                          {/* Icône colorée */}
-                          <div className={`
-                            w-10 h-10 rounded-xl bg-gradient-to-br ${colors.icon} 
-                            flex items-center justify-center flex-shrink-0
-                            shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-300
-                          `}>
-                            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                          </div>
-                          
-                          <div className="flex-1 min-w-0">
-                            <h4 className={`font-semibold text-cocoa-800 text-sm truncate mb-1.5 group-hover:${colors.text} transition-colors duration-300`}>
+                        return (
+                          <div
+                            key={meeting.id}
+                            onClick={() => handleViewMeeting(meeting)}
+                            className="flex items-center gap-4 py-3 cursor-pointer hover:bg-gray-50 -mx-2 px-2 rounded-lg transition-colors"
+                          >
+                            {/* Date */}
+                            <span className="text-sm text-gray-500 w-20 flex-shrink-0">
+                              {new Date(meeting.created_at).toLocaleDateString('fr-FR', {
+                                day: 'numeric',
+                                month: 'short'
+                              })}
+                            </span>
+
+                            {/* Titre */}
+                            <span className="flex-1 text-sm text-gray-900 truncate font-medium">
                               {meeting.title}
-                            </h4>
-                            <div className="flex items-center gap-2 text-xs text-cocoa-500">
-                              <span className="truncate">
-                                {new Date(meeting.created_at).toLocaleDateString('fr-FR', {
-                                  day: 'numeric',
-                                  month: 'short'
-                                })}
+                            </span>
+
+                            {/* Catégorie/Badge */}
+                            {meeting.category && (
+                              <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full flex-shrink-0">
+                                {meeting.category.name}
                               </span>
-                              <span className="w-1 h-1 rounded-full bg-cocoa-300" />
-                              <span className="font-medium">
-                                {durationMins}:{(meeting.duration % 60).toString().padStart(2, '0')}
-                              </span>
+                            )}
+
+                            {/* Durée */}
+                            <span className="text-sm text-gray-500 w-14 text-right flex-shrink-0">
+                              {durationMins}:{durationSecs.toString().padStart(2, '0')}
+                            </span>
+
+                            {/* Actions */}
+                            <div className="flex items-center gap-1 flex-shrink-0">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleViewMeeting(meeting);
+                                }}
+                                className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+                                title="Voir"
+                              >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                              </button>
                             </div>
                           </div>
-                          
-                          {/* Badge de durée */}
-                          <span className={`
-                            text-[10px] font-semibold px-2 py-0.5 rounded-full ${badge.color}
-                            opacity-0 group-hover:opacity-100 transition-opacity duration-300
-                          `}>
-                            {badge.label}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  }))}
-
-                  {!isRecentLoading && meetings.length === 0 && (
-                    <div className="text-center py-12 px-4">
-                      <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-coral-100 to-orange-100 flex items-center justify-center">
-                        <svg className="w-8 h-8 text-coral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                        </svg>
-                      </div>
-                      <p className="text-cocoa-600 font-medium">Aucune réunion</p>
-                      <p className="text-cocoa-400 text-sm mt-1">Démarrez votre premier enregistrement !</p>
+                        );
+                      })}
                     </div>
                   )}
-
-                  {meetings.length > 5 && (
-                    <button
-                      onClick={() => {
-                        setView('history');
-                      }}
-                      className="w-full mt-4 px-4 py-3 text-sm font-semibold text-coral-600 hover:text-white bg-coral-50 hover:bg-gradient-to-r hover:from-coral-500 hover:to-sunset-500 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group"
-                    >
-                      <span>Voir tout l'historique</span>
-                      <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                      </svg>
-                    </button>
-                  )}
                 </div>
-              </aside>
+              </div>
+              )}
             </>
           ) : view === 'history' ? (
             <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-10 border border-orange-100 w-full">

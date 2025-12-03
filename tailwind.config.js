@@ -4,10 +4,14 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         roboto: ['Roboto', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         inter: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         thunder: ['Thunder', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         azeret: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
+      fontSize: {
+        base: ['16px', { lineHeight: '1.6' }],
       },
       colors: {
         background: 'var(--color-background)',

@@ -432,164 +432,130 @@ export function Dashboard() {
     .reverse();
  
   return (
-    <div className="h-full bg-gray-50/50 p-4 md:p-6 lg:p-8 overflow-auto">
+    <div className="h-full bg-white p-4 md:p-6 lg:p-8 overflow-auto">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header - Design professionnel */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 md:p-6">
-          {/* Ligne 1: Titre + Bouton Actualiser */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-gradient-to-br from-coral-500 to-sunset-500 rounded-xl shadow-lg shadow-coral-200/50">
-                <BarChart3 className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl md:text-2xl font-bold text-gray-900">Tableau de bord</h1>
-                <p className="text-xs text-gray-400 mt-0.5">Vue d'ensemble de votre activité</p>
-              </div>
+        {/* Header - Design minimaliste */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <h1 className="text-xl font-semibold text-gray-900">Tableau de bord</h1>
+
+            {/* Filtres de période inline */}
+            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+              <button
+                onClick={() => handlePeriodFilter('today')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                  periodFilter === 'today'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Aujourd'hui
+              </button>
+              <button
+                onClick={() => handlePeriodFilter('week')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                  periodFilter === 'week'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Cette semaine
+              </button>
+              <button
+                onClick={() => handlePeriodFilter('month')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                  periodFilter === 'month'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Ce mois
+              </button>
+              <button
+                onClick={() => handlePeriodFilter('year')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                  periodFilter === 'year'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Cette Année
+              </button>
+              <button
+                onClick={() => setShowCalendar(!showCalendar)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 ${
+                  periodFilter === 'custom'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <CalendarDays className="w-3.5 h-3.5" />
+                {periodFilter === 'custom' ? formatDateRange() : 'Personnalisé'}
+              </button>
             </div>
+
+            {/* Bouton Actualiser */}
             <button
               onClick={handleRefresh}
-              className="group flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-coral-500 to-sunset-500 text-white text-sm font-semibold rounded-xl shadow-lg shadow-coral-200/50 hover:shadow-xl hover:shadow-coral-200/60 transition-all duration-300 hover:scale-105"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 text-white text-xs font-medium rounded-lg hover:bg-orange-600 transition-colors"
             >
-              <RefreshCw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
-              <span className="hidden sm:inline">Actualiser</span>
+              <RefreshCw className="w-3.5 h-3.5" />
+              Actualiser
             </button>
           </div>
 
-          {/* Ligne 2: Onglets + Filtres - Alignés */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            {/* Onglets */}
-            <div className="flex items-center gap-1 bg-gray-100/80 rounded-xl p-1 w-fit">
-              <button
-                onClick={() => setActiveTab('overview')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  activeTab === 'overview'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-white/50'
-                }`}
-              >
-                <BarChart3 className="w-4 h-4" />
-                Aperçu
-              </button>
-              <button
-                onClick={() => setActiveTab('statistics')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  activeTab === 'statistics'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-white/50'
-                }`}
-              >
-                <PieChart className="w-4 h-4" />
-                Statistiques
-              </button>
-            </div>
+          {/* Lien Modifier à droite */}
+          <button
+            onClick={() => setActiveTab(activeTab === 'overview' ? 'statistics' : 'overview')}
+            className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+          >
+            <PieChart className="w-4 h-4" />
+            {activeTab === 'overview' ? 'Statistiques' : 'Aperçu'}
+          </button>
+        </div>
 
-            {/* Filtres de période */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <div className="flex items-center bg-gray-100/80 rounded-xl p-1">
+        {/* Dropdown calendrier - position fixe */}
+        <div className="relative" ref={calendarRef}>
+          {showCalendar && (
+            <div className="absolute right-0 top-0 bg-white rounded-xl shadow-2xl border border-gray-200 p-4 z-50 min-w-[280px]">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-semibold text-gray-900">Période personnalisée</h4>
                 <button
-                  onClick={() => handlePeriodFilter('today')}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
-                    periodFilter === 'today'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-white/50'
-                  }`}
+                  onClick={() => setShowCalendar(false)}
+                  className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  Aujourd'hui
-                </button>
-                <button
-                  onClick={() => handlePeriodFilter('week')}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
-                    periodFilter === 'week'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-white/50'
-                  }`}
-                >
-                  7 jours
-                </button>
-                <button
-                  onClick={() => handlePeriodFilter('month')}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
-                    periodFilter === 'month'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-white/50'
-                  }`}
-                >
-                  Ce mois
-                </button>
-                <button
-                  onClick={() => handlePeriodFilter('year')}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
-                    periodFilter === 'year'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-white/50'
-                  }`}
-                >
-                  Cette année
+                  <X className="w-4 h-4 text-gray-500" />
                 </button>
               </div>
-
-              {/* Sélecteur de dates personnalisées */}
-              <div className="relative" ref={calendarRef}>
-                <button
-                  onClick={() => setShowCalendar(!showCalendar)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all duration-200 ${
-                    periodFilter === 'custom'
-                      ? 'bg-gradient-to-r from-coral-500 to-sunset-500 text-white border-transparent shadow-lg shadow-coral-200/50'
-                      : 'bg-white text-gray-600 border-gray-200 hover:border-coral-300 hover:bg-coral-50'
-                  }`}
-                >
-                  <CalendarDays className="w-4 h-4" />
-                  <span className="text-sm font-medium">
-                    {periodFilter === 'custom' ? formatDateRange() : 'Personnalisé'}
-                  </span>
-                </button>
-
-                {/* Dropdown calendrier */}
-                {showCalendar && (
-                  <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 p-4 z-50 min-w-[280px]">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-semibold text-gray-900">Période personnalisée</h4>
-                      <button
-                        onClick={() => setShowCalendar(false)}
-                        className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-                      >
-                        <X className="w-4 h-4 text-gray-500" />
-                      </button>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">Date de début</label>
-                        <input
-                        type="date"
-                        value={customStartDate}
-                        onChange={(e) => setCustomStartDate(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-coral-500 focus:border-transparent"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Date de fin</label>
-                      <input
-                        type="date"
-                        value={customEndDate}
-                        onChange={(e) => setCustomEndDate(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-coral-500 focus:border-transparent"
-                      />
-                    </div>
-                    <button
-                      onClick={handleCustomDateApply}
-                      disabled={!customStartDate || !customEndDate}
-                      className="w-full py-2 bg-gradient-to-r from-coral-500 to-sunset-500 text-white text-sm font-semibold rounded-lg hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Appliquer
-                    </button>
-                  </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Date de début</label>
+                  <input
+                    type="date"
+                    value={customStartDate}
+                    onChange={(e) => setCustomStartDate(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
                 </div>
-              )}
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Date de fin</label>
+                  <input
+                    type="date"
+                    value={customEndDate}
+                    onChange={(e) => setCustomEndDate(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
+                <button
+                  onClick={handleCustomDateApply}
+                  disabled={!customStartDate || !customEndDate}
+                  className="w-full py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Appliquer
+                </button>
+              </div>
             </div>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Contenu selon l'onglet actif */}
@@ -685,162 +651,125 @@ export function Dashboard() {
           </div>
         )}
 
-        {/* Cartes statistiques */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {/* Total réunions (depuis le début) */}
-          <div className="group bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-lg hover:border-blue-200 transition-all duration-300">
-            <div className="flex items-start justify-between mb-4">
-              <div className="p-2.5 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg shadow-blue-200">
-                <FileText className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-full">Total</span>
+        {/* Cartes statistiques - Design épuré */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Réunions */}
+          <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-gray-500">Réunions</span>
+              <FileText className="w-4 h-4 text-gray-400" />
             </div>
-            <p className="text-3xl font-bold text-gray-900 mb-1">{stats.totalMeetings}</p>
-            <p className="text-sm text-gray-500">réunions depuis le début</p>
-            <p className="text-xs text-blue-600 font-medium mt-2">{stats.totalMinutes} min au total</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.periodMeetings}</p>
+            <p className="text-xs text-gray-500 mt-1">{stats.totalMeetings} au total</p>
           </div>
 
-          {/* Réunions sur la période */}
-          <div className="group bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-lg hover:border-coral-200 transition-all duration-300">
-            <div className="flex items-start justify-between mb-4">
-              <div className="p-2.5 bg-gradient-to-br from-coral-500 to-sunset-500 rounded-xl shadow-lg shadow-coral-200">
-                <Calendar className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xs font-medium text-coral-600 bg-coral-50 px-2 py-1 rounded-full">Période</span>
+          {/* Temps enregistré */}
+          <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-gray-500">Temps enregistré</span>
+              <Clock className="w-4 h-4 text-gray-400" />
             </div>
-            <p className="text-3xl font-bold text-gray-900 mb-1">{stats.periodMeetings}</p>
-            <p className="text-sm text-gray-500">réunions</p>
-            <p className="text-xs text-coral-600 font-medium mt-2">{stats.periodMinutes} min sur la période</p>
-          </div>
-
-          {/* Durée moyenne */}
-          <div className="group bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-lg hover:border-purple-200 transition-all duration-300">
-            <div className="flex items-start justify-between mb-4">
-              <div className="p-2.5 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl shadow-lg shadow-purple-200">
-                <Clock className="w-5 h-5 text-white" />
-              </div>
-            </div>
-            <p className="text-3xl font-bold text-gray-900 mb-1">{stats.averageDuration}<span className="text-lg font-medium text-gray-400 ml-1">min</span></p>
-            <p className="text-sm text-gray-500">durée moyenne</p>
-            <p className="text-xs text-purple-600 font-medium mt-2">par réunion</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.periodMinutes} min</p>
+            <p className="text-xs text-gray-500 mt-1">{stats.totalMinutes} min au total</p>
           </div>
 
           {/* Emails envoyés */}
-          <div className="group bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-lg hover:border-emerald-200 transition-all duration-300">
-            <div className="flex items-start justify-between mb-4">
-              <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-lg shadow-emerald-200">
-                <Mail className="w-5 h-5 text-white" />
-              </div>
-              {stats.emailsOpened > 0 && (
-                <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full flex items-center gap-1">
-                  <Eye className="w-3 h-3" />
-                  {stats.emailsOpened}
-                </span>
-              )}
+          <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-gray-500">Emails envoyés</span>
+              <Mail className="w-4 h-4 text-gray-400" />
             </div>
-            <p className="text-3xl font-bold text-gray-900 mb-1">{stats.emailsSent}</p>
-            <p className="text-sm text-gray-500">emails envoyés</p>
-            {stats.emailsSent > 0 && (
-              <p className="text-xs text-emerald-600 font-medium mt-2">
-                {Math.round((stats.emailsOpened / stats.emailsSent) * 100)}% ouverts
-              </p>
-            )}
+            <p className="text-2xl font-bold text-gray-900">{stats.emailsSent}</p>
+            <p className="text-xs text-gray-500 mt-1">{stats.emailsOpened} ouvert{stats.emailsOpened > 1 ? 's' : ''}</p>
+          </div>
+
+          {/* Durée moyenne */}
+          <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-gray-500">Durée moyenne</span>
+              <TrendingUp className="w-4 h-4 text-gray-400" />
+            </div>
+            <p className="text-2xl font-bold text-gray-900">{stats.averageDuration} min</p>
+            <p className="text-xs text-gray-500 mt-1">par réunion</p>
           </div>
         </div>
 
         {/* Section inférieure */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Activité récente */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-gradient-to-br from-coral-500 to-sunset-500 rounded-xl shadow-lg shadow-coral-200">
-                  <TrendingUp className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Activité récente</h2>
-                  <p className="text-xs text-gray-400">
-                    {periodFilter === 'today' ? "Aujourd'hui" :
-                     periodFilter === 'week' ? '7 derniers jours' :
-                     periodFilter === 'month' ? 'Ce mois-ci' :
-                     periodFilter === 'year' ? 'Cette année' :
-                     formatDateRange()}
-                  </p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-2xl font-bold text-gray-900">{stats.periodMinutes}<span className="text-sm font-medium text-gray-400 ml-1">min</span></p>
-              </div>
+          <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-medium text-gray-700">Activité récente</h2>
+              <span className="text-xs text-gray-400">
+                {periodFilter === 'today' ? "Aujourd'hui" :
+                 periodFilter === 'week' ? '7 derniers jours' :
+                 periodFilter === 'month' ? 'Ce mois-ci' :
+                 periodFilter === 'year' ? 'Cette année' :
+                 formatDateRange()}
+              </span>
             </div>
 
             {stats.recentActivity.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 mx-auto mb-4 bg-gray-50 rounded-full flex items-center justify-center">
-                  <Calendar className="w-8 h-8 text-gray-300" />
-                </div>
-                <p className="text-gray-400">Aucune activité sur cette période</p>
+              <div className="text-center py-6">
+                <Calendar className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                <p className="text-sm text-gray-400">Aucune activité</p>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {stats.recentActivity.slice(0, 5).map((activity, index) => (
-                  <div key={index} className="group flex items-center justify-between py-3 px-3 hover:bg-gray-50 transition-all duration-200 rounded-xl">
+                  <div key={index} className="flex items-center justify-between py-2.5 px-3 hover:bg-white rounded-lg transition-colors">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center group-hover:from-coral-50 group-hover:to-sunset-50 transition-colors duration-200">
-                        <FileText className="w-5 h-5 text-gray-500 group-hover:text-coral-500 transition-colors duration-200" />
+                      <div className="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center">
+                        <FileText className="w-4 h-4 text-gray-400" />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900 text-sm">{formatDate(activity.date)}</p>
+                        <p className="text-sm font-medium text-gray-900">{formatDate(activity.date)}</p>
                         <p className="text-xs text-gray-400">{activity.meetings} réunion{activity.meetings > 1 ? 's' : ''}</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-sm text-coral-600">{activity.minutes} min</p>
-                    </div>
+                    <span className="text-sm font-medium text-gray-600">{activity.minutes} min</span>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Statistiques d'utilisation */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg shadow-indigo-200">
-                <BarChart3 className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900">Évolution</h2>
-                <p className="text-xs text-gray-400">Minutes par jour</p>
-              </div>
+          {/* Graphique d'évolution */}
+          <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-medium text-gray-700">Évolution</h2>
+              <span className="text-xs text-gray-400">Minutes par jour</span>
             </div>
 
             <div>
               {usageChartData.length === 0 ? (
-                <p className="text-xs text-gray-400 text-center py-8">Aucune donnée récente</p>
+                <div className="text-center py-6">
+                  <BarChart3 className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                  <p className="text-sm text-gray-400">Aucune donnée</p>
+                </div>
               ) : (
-                <div className="h-48">
+                <div className="h-44">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={usageChartData} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
                       <defs>
                         <linearGradient id="minutesGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#f97316" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
+                          <stop offset="5%" stopColor="#9ca3af" stopOpacity={0.2} />
+                          <stop offset="95%" stopColor="#9ca3af" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-                      <XAxis dataKey="date" stroke="#9ca3af" fontSize={11} tickLine={false} axisLine={false} />
-                      <YAxis yAxisId="minutes" orientation="right" stroke="#9ca3af" fontSize={11} tickLine={false} axisLine={false} width={40} />
+                      <XAxis dataKey="date" stroke="#9ca3af" fontSize={10} tickLine={false} axisLine={false} />
+                      <YAxis yAxisId="minutes" orientation="right" stroke="#9ca3af" fontSize={10} tickLine={false} axisLine={false} width={35} />
                       <Tooltip
-                        contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
-                        labelStyle={{ color: '#374151', fontWeight: 600, fontSize: '12px' }}
-                        itemStyle={{ fontSize: '12px' }}
+                        contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', fontSize: '12px' }}
+                        labelStyle={{ color: '#374151', fontWeight: 500 }}
                         formatter={(value, name) => [name === 'minutes' ? `${value} min` : `${value} réunion${Number(value) > 1 ? 's' : ''}`, name === 'minutes' ? 'Minutes' : 'Réunions']}
                       />
                       <Area
                         type="monotone"
                         dataKey="minutes"
-                        stroke="#f97316"
-                        strokeWidth={2}
+                        stroke="#6b7280"
+                        strokeWidth={1.5}
                         fill="url(#minutesGradient)"
                         yAxisId="minutes"
                       />

@@ -278,13 +278,13 @@ export const EmailHistory = ({ userId, onViewMeeting }: EmailHistoryProps) => {
 
   const getMethodBadge = (method: string) => {
     const badges = {
-      gmail: { color: 'bg-red-100 text-red-700', label: 'Gmail' },
-      smtp: { color: 'bg-blue-100 text-blue-700', label: 'SMTP' },
-      local: { color: 'bg-gray-100 text-gray-700', label: 'Local' }
+      gmail: { color: 'bg-gray-100 text-gray-600', label: 'Gmail' },
+      smtp: { color: 'bg-gray-100 text-gray-600', label: 'SMTP' },
+      local: { color: 'bg-gray-100 text-gray-600', label: 'Local' }
     };
     const badge = badges[method as keyof typeof badges] || badges.local;
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${badge.color}`}>
+      <span className={`px-2 py-0.5 rounded text-xs font-medium ${badge.color}`}>
         {badge.label}
       </span>
     );
@@ -613,7 +613,7 @@ export const EmailHistory = ({ userId, onViewMeeting }: EmailHistoryProps) => {
           return (
             <div
               key={email.id}
-              className="bg-white rounded-xl border-2 border-coral-100 hover:border-coral-300 transition-all overflow-hidden"
+              className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all overflow-hidden"
             >
               {/* Header */}
               <div
@@ -658,20 +658,15 @@ export const EmailHistory = ({ userId, onViewMeeting }: EmailHistoryProps) => {
                       {getMethodBadge(email.method)}
                       {/* Badge de suivi - différent selon la méthode d'envoi */}
                       {email.method === 'local' ? (
-                        <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold bg-amber-50 border border-amber-200 text-amber-600">
-                          <Eye className="w-3 h-3" />
-                          Suivi non disponible
+                        <span className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-500">
+                          Suivi indisponible
                         </span>
-                      ) : totalRecipients > 0 && (
-                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold ${
-                          openedRecipientsCount > 0
-                            ? 'bg-emerald-50 border border-emerald-200 text-emerald-600'
-                            : 'bg-gray-50 border border-gray-200 text-gray-500'
-                        }`}>
+                      ) : totalRecipients > 0 && openedRecipientsCount > 0 && (
+                        <span className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">
                           <Eye className="w-3 h-3" />
                           {openedRecipientsCount}/{totalRecipients}
-                          {totalOpenCount > 0 && (
-                            <span className="ml-1 px-1.5 py-0.5 bg-emerald-500 text-white text-xs rounded-full">
+                          {totalOpenCount > 1 && (
+                            <span className="ml-1 px-1.5 bg-green-500 text-white text-xs rounded">
                               {totalOpenCount}×
                             </span>
                           )}
@@ -683,22 +678,22 @@ export const EmailHistory = ({ userId, onViewMeeting }: EmailHistoryProps) => {
                   {/* Actions */}
                   <div className="flex items-center gap-2">
                     {/* Bouton suivi - uniquement si méthode != local */}
-                    {email.method !== 'local' && totalRecipients > 0 && (
+                    {email.method !== 'local' && totalRecipients > 0 && openedRecipientsCount > 0 && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           setOpenRecipientsEmailId(prev => prev === email.id ? null : email.id);
                         }}
-                        className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-colors text-xs font-semibold ${
-                          openedRecipientsCount > 0
-                            ? 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'
-                            : 'border-gray-200 text-gray-500 hover:bg-gray-50'
-                        }`}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 border border-green-200 text-green-700 hover:bg-green-100 transition-colors text-xs font-medium"
                         title="Voir le suivi des destinataires"
                       >
-                        <Eye className="w-4 h-4" />
-                        {openedRecipientsCount}/{totalRecipients}
-                        {totalOpenCount > 0 && ` (${totalOpenCount}×)`}
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Lu</span>
+                        {totalOpenCount > 1 && (
+                          <span className="px-1.5 py-0.5 bg-green-500 text-white text-xs rounded-full">
+                            {totalOpenCount}×
+                          </span>
+                        )}
                       </button>
                     )}
                     <button
@@ -717,7 +712,7 @@ export const EmailHistory = ({ userId, onViewMeeting }: EmailHistoryProps) => {
 
               {/* Détails étendus */}
               {expandedEmail === email.id && (
-                <div className="border-t border-coral-100 bg-coral-50 p-4 space-y-3">
+                <div className="border-t border-gray-100 bg-gray-50 p-4 space-y-3">
                   {email.cc_recipients && (
                     <div>
                       <span className="text-xs font-semibold text-cocoa-700">CC:</span>
@@ -760,20 +755,20 @@ export const EmailHistory = ({ userId, onViewMeeting }: EmailHistoryProps) => {
                         }}
                         className={`inline-flex items-center gap-2 px-3 py-2 bg-white border rounded-lg text-sm font-semibold transition-colors ${
                           openedRecipientsCount > 0
-                            ? 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'
-                            : 'border-coral-200 text-coral-600 hover:bg-coral-50'
+                            ? 'border-green-200 text-green-700 hover:bg-green-50'
+                            : 'border-gray-200 text-gray-600 hover:bg-gray-50'
                         }`}
                       >
                         <Eye className="w-4 h-4" />
                         Suivi des destinataires
                         {totalOpenCount > 0 && (
-                          <span className="px-2 py-0.5 bg-emerald-500 text-white text-xs rounded-full">
+                          <span className="px-2 py-0.5 bg-green-500 text-white text-xs rounded-full">
                             {totalOpenCount} ouverture{totalOpenCount > 1 ? 's' : ''}
                           </span>
                         )}
                       </button>
                       {openRecipientsEmailId === email.id && (
-                        <div className="mt-3 overflow-x-auto bg-white rounded-lg border border-coral-100">
+                        <div className="mt-3 overflow-x-auto bg-white rounded-lg border border-gray-200">
                           <table className="min-w-full text-sm">
                             <thead className="bg-gray-50">
                               <tr className="text-left text-xs uppercase text-cocoa-500 tracking-wide">

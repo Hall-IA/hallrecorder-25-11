@@ -1400,7 +1400,10 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                   <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
                     <BookOpen className="w-4 h-4 text-white" />
                   </div>
-                  <span className="text-sm font-semibold text-gray-900">Dictionnaire</span>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold text-gray-900">Correction automatique</span>
+                    <span className="text-xs text-gray-500">Personnalisez les mots corrigés dans les transcriptions</span>
+                  </div>
                   {customDictionary.length > 0 && (
                     <span className="px-2 py-0.5 bg-orange-50 text-orange-600 text-xs font-medium rounded-full">
                       {customDictionary.length}
@@ -1478,11 +1481,14 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
             {/* En-tête */}
             <div className="px-5 py-4 border-b border-gray-100">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5 flex-1">
                   <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
                     <Users className="w-4 h-4 text-white" />
                   </div>
-                  <span className="text-sm font-semibold text-gray-900">Groupes</span>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold text-gray-900">Groupes de contacts</span>
+                    <span className="text-xs text-gray-500">Créez des listes pour envoyer vos résumés rapidement</span>
+                  </div>
                   {contactGroups.length > 0 && (
                     <span className="px-2 py-0.5 bg-orange-50 text-orange-600 text-xs font-medium rounded-full">
                       {contactGroups.length}

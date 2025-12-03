@@ -23,9 +23,9 @@ export const FloatingRecordButton = ({
   const dragOffsetRef = useRef({ x: 0, y: 0 });
   const [position, setPosition] = useState(() => {
     if (typeof window === 'undefined') return { x: 0, y: 0 };
-    // Position par défaut : bas gauche
+    // Position par défaut : bas droite
     return {
-      x: 16,
+      x: Math.max(16, window.innerWidth - 176), // 176 = largeur du bouton + padding
       y: Math.max(16, window.innerHeight - 220),
     };
   });
@@ -85,11 +85,11 @@ export const FloatingRecordButton = ({
         ? safeAreaPadding.sm
         : safeAreaPadding.md;
 
-    const { height } = getContainerSize();
+    const { width, height } = getContainerSize();
 
-    // Position par défaut : bas gauche
+    // Position par défaut : bas droite
     return {
-      x: edgePadding,
+      x: window.innerWidth - width - edgePadding,
       y: window.innerHeight - height - (edgePadding + (window.innerWidth < 640 ? 56 : 32)),
     };
   }, [getContainerSize, safeAreaPadding]);
