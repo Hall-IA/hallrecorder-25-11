@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Mic, History, LogOut, Settings as SettingsIcon, Upload, LayoutDashboard, Mail, BellRing, PauseCircle, StopCircle, PlayCircle, X, CreditCard } from 'lucide-react';
+import { Mic, History, LogOut, Settings as SettingsIcon, Upload, LayoutDashboard, Mail, BellRing, PauseCircle, StopCircle, PlayCircle, X, CreditCard, Menu } from 'lucide-react';
 import { useAudioRecorder } from './hooks/useAudioRecorder';
 import { useLiveSuggestions } from './hooks/useLiveSuggestions';
 import { RecordingControls } from './components/RecordingControls';
@@ -128,6 +128,7 @@ function App() {
 
   const [view, setView] = useState<'landing' | 'auth' | 'record' | 'history' | 'detail' | 'settings' | 'upload' | 'dashboard' | 'gmail-callback' | 'contact' | 'subscription'>(getInitialView());
   const [historyTab, setHistoryTab] = useState<'meetings' | 'emails'>('meetings'); // Onglet d'historique
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Menu burger mobile
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStatus, setProcessingStatus] = useState('');
   const [result, setResult] = useState<{
@@ -1965,12 +1966,20 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           {/* Ligne principale */}
           <div className="flex items-center justify-between h-16">
-            {/* Logo et nom */}
-            <div className="flex items-center gap-2.5 flex-shrink-0 min-w-fit">
+            {/* Menu burger - Mobile uniquement (à gauche) */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="xl:hidden flex items-center justify-center w-10 h-10 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all"
+              aria-label="Menu"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+
+            {/* Logo et nom - Centré sur mobile, à gauche sur desktop */}
+            <div className="flex items-center gap-2.5 flex-shrink-0 min-w-fit xl:flex-1">
               <img src="/logohallia.png" alt="Logo Hallia" className="w-9 h-9 object-contain" />
-              <div className="hidden sm:flex items-baseline gap-1.5">
-                <span className="text-xl font-bold tracking-tight text-gray-900" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>HALL</span>
-                <span className="text-xl font-medium tracking-tight text-gray-500" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>recorder</span>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-xl md:text-2xl font-thunder font-bold tracking-tight text-gray-900">HALL RECORDER</span>
               </div>
             </div>
 
@@ -2076,105 +2085,174 @@ function App() {
               </button>
             </nav>
 
-            {/* Bouton déconnexion */}
+            {/* Bouton déconnexion - Caché sur mobile (dans le menu burger) */}
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all"
+              className="hidden xl:flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all"
               title="Déconnexion"
             >
-              <span className="hidden sm:block">Déconnexion</span>
+              <span>Déconnexion</span>
               <LogOut className="w-4 h-4" />
             </button>
-          </div>
 
-          {/* Navigation mobile - Scrollable */}
-          <nav className="md:hidden flex items-center gap-1 py-2 overflow-x-auto scrollbar-hide -mx-4 px-4">
-            <button
-              onClick={() => {
-                setView('record');
-                window.location.hash = 'record';
-              }}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                view === 'record'
-                  ? 'text-coral-600 bg-coral-50'
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              <Mic className="w-4 h-4" />
-              <span>Enregistrement</span>
-            </button>
-            <button
-              onClick={() => {
-                setView('dashboard');
-                window.location.hash = 'dashboard';
-              }}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                view === 'dashboard'
-                  ? 'text-coral-600 bg-coral-50'
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              <LayoutDashboard className="w-4 h-4" />
-              <span>Dashboard</span>
-            </button>
-            <button
-              onClick={() => {
-                setView('history');
-                window.location.hash = 'history';
-              }}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                view === 'history'
-                  ? 'text-coral-600 bg-coral-50'
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              <History className="w-4 h-4" />
-              <span>Historique</span>
-            </button>
-            <button
-              onClick={() => {
-                setView('upload');
-                window.location.hash = 'upload';
-              }}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                view === 'upload'
-                  ? 'text-coral-600 bg-coral-50'
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              <Upload className="w-4 h-4" />
-              <span>Importer</span>
-            </button>
-            <button
-              onClick={() => {
-                setView('settings');
-                window.location.hash = 'settings';
-              }}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                view === 'settings'
-                  ? 'text-coral-600 bg-coral-50'
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              <SettingsIcon className="w-4 h-4" />
-              <span>Paramètres</span>
-            </button>
-            <button
-              onClick={() => {
-                setView('contact');
-                window.location.hash = 'contact';
-              }}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                view === 'contact'
-                  ? 'text-coral-600 bg-coral-50'
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              <Mail className="w-4 h-4" />
-              <span>Support</span>
-            </button>
-          </nav>
+            {/* Placeholder pour équilibrer le layout sur mobile */}
+            <div className="xl:hidden w-10"></div>
+          </div>
         </div>
+
+        {/* Menu burger mobile - Panneau slide-in */}
+        {isMobileMenuOpen && (
+          <>
+            {/* Overlay */}
+            <div
+              className="fixed inset-0 bg-black/50 z-30 xl:hidden"
+              onClick={() => setIsMobileMenuOpen(false)}
+            ></div>
+
+            {/* Menu slide-in */}
+            <nav className="fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl z-40 xl:hidden overflow-y-auto">
+              {/* Header du menu */}
+              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                <div className="flex items-center gap-2.5">
+                  <img src="/logohallia.png" alt="Logo Hallia" className="w-8 h-8 object-contain" />
+                  <span className="text-lg font-thunder font-bold text-gray-900">HALL RECORDER</span>
+                </div>
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Items du menu */}
+              <div className="py-4">
+                <div className="flex flex-col gap-1 px-3">
+                <button
+                  onClick={() => {
+                    setView('record');
+                    window.location.hash = 'record';
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                    view === 'record'
+                      ? 'text-orange-600 bg-orange-50'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <Mic className="w-5 h-5" />
+                  <span>Enregistrement</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setView('dashboard');
+                    window.location.hash = 'dashboard';
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                    view === 'dashboard'
+                      ? 'text-orange-600 bg-orange-50'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <LayoutDashboard className="w-5 h-5" />
+                  <span>Tableau de bord</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setView('history');
+                    window.location.hash = 'history';
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                    view === 'history'
+                      ? 'text-orange-600 bg-orange-50'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <History className="w-5 h-5" />
+                  <span>Historique</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setView('upload');
+                    window.location.hash = 'upload';
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                    view === 'upload'
+                      ? 'text-orange-600 bg-orange-50'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <Upload className="w-5 h-5" />
+                  <span>Importer</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setView('settings');
+                    window.location.hash = 'settings';
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                    view === 'settings'
+                      ? 'text-orange-600 bg-orange-50'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <SettingsIcon className="w-5 h-5" />
+                  <span>Paramètres</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setView('subscription');
+                    window.location.hash = 'subscription';
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                    view === 'subscription'
+                      ? 'text-orange-600 bg-orange-50'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <CreditCard className="w-5 h-5" />
+                  <span>Abonnement</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setView('contact');
+                    window.location.hash = 'contact';
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                    view === 'contact'
+                      ? 'text-orange-600 bg-orange-50'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <Mail className="w-5 h-5" />
+                  <span>Support</span>
+                </button>
+
+                {/* Séparateur */}
+                <div className="border-t border-gray-200 my-2"></div>
+
+                {/* Bouton déconnexion */}
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-all"
+                >
+                  <LogOut className="w-5 h-5" />
+                  <span>Déconnexion</span>
+                </button>
+                </div>
+              </div>
+            </nav>
+          </>
+        )}
       </header>
 
       <main className="flex-1 overflow-auto">

@@ -731,9 +731,9 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
   // Supprimer l'affichage du récapitulatif séparé - tout sera affiché dans le mode édition
 
   return (
-    <div className="h-full bg-gradient-to-br from-peach-50 via-white to-coral-50 p-4 md:p-8 overflow-auto">
+    <div className="h-full bg-gradient-to-br from-peach-50 via-white to-coral-50 p-3 md:p-6 lg:p-8 overflow-auto">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-3xl font-bold text-cocoa-900 mb-8 animate-fadeInDown">
+        <h2 className="text-2xl md:text-3xl font-bold text-cocoa-900 mb-6 md:mb-8 animate-fadeInDown">
           Paramètres
         </h2>
 
@@ -760,22 +760,22 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
           </div>
         )}
 
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
         {/* Résumé par défaut - Design PRO */}
-        <div className="bg-[#FAFAFA] rounded-2xl shadow-sm border border-gray-200 p-6 animate-fadeInUp delay-200">
+        <div className="bg-[#FAFAFA] rounded-2xl shadow-sm border border-gray-200 p-4 md:p-6 animate-fadeInUp delay-200">
           {/* Header */}
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2.5 bg-gradient-to-br from-coral-500 to-sunset-500 rounded-xl shadow-md">
-              <Sparkles className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-3 mb-4 md:mb-6">
+            <div className="p-2 md:p-2.5 bg-gradient-to-br from-coral-500 to-sunset-500 rounded-xl shadow-md flex-shrink-0">
+              <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-white" />
             </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-bold text-gray-900">Mode de résumé par défaut</h3>
-              <p className="text-sm text-gray-500">Choisissez la version générée automatiquement</p>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base md:text-lg font-bold text-gray-900">Mode de résumé par défaut</h3>
+              <p className="text-xs md:text-sm text-gray-500">Choisissez la version générée automatiquement</p>
             </div>
             {isSavingSummaryMode && (
-              <div className="flex items-center gap-2 text-sm text-gray-500">
+              <div className="hidden md:flex items-center gap-2 text-sm text-gray-500">
                 <div className="animate-spin rounded-full h-4 w-4 border-2 border-coral-500 border-t-transparent"></div>
-                <span>Sauvegarde...</span>
+                <span className="hidden lg:inline">Sauvegarde...</span>
               </div>
             )}
           </div>
@@ -907,29 +907,31 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
             <button
               type="button"
               onClick={() => setEmailMethod('local')}
-              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all ${
+              className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 md:gap-2 px-2 md:px-4 py-2.5 rounded-md text-xs md:text-sm font-medium transition-all ${
                 emailMethod === 'local'
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <Mail className="w-4 h-4" />
-              <span>Application email</span>
+              <Mail className="w-4 h-4 flex-shrink-0" />
+              <span className="hidden sm:inline">Application email</span>
+              <span className="sm:hidden">App mail</span>
             </button>
             <button
               type="button"
               onClick={() => setEmailMethod('smtp')}
-              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all ${
+              className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 md:gap-2 px-2 md:px-4 py-2.5 rounded-md text-xs md:text-sm font-medium transition-all ${
                 emailMethod === 'smtp'
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               {/* Icône SMTP - Serveur technique */}
-              <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+              <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm14 1a1 1 0 11-2 0 1 1 0 012 0zM2 13a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 01-2 2H4a2 2 0 01-2-2v-2zm14 1a1 1 0 11-2 0 1 1 0 012 0z"/>
               </svg>
-              <span>SMTP avancé</span>
+              <span className="hidden sm:inline">SMTP avancé</span>
+              <span className="sm:hidden">SMTP</span>
             </button>
           </div>
 
@@ -1394,26 +1396,26 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
           {/* Section Dictionnaire - Design Compact */}
           <div>
             {/* En-tête avec zone de saisie intégrée */}
-            <div className="px-5 py-4 border-b border-gray-100">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex items-center gap-2.5 flex-1">
+            <div className="px-4 md:px-5 py-3 md:py-4 border-b border-gray-100">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+                <div className="flex items-center gap-2.5 flex-1 min-w-0">
                   <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
                     <BookOpen className="w-4 h-4 text-white" />
                   </div>
-                  <div className="flex flex-col">
+                  <div className="flex flex-col min-w-0 flex-1">
                     <span className="text-sm font-semibold text-gray-900">Correction automatique</span>
-                    <span className="text-xs text-gray-500">Personnalisez les mots corrigés dans les transcriptions</span>
+                    <span className="text-xs text-gray-500 truncate">Personnalisez les mots corrigés dans les transcriptions</span>
                   </div>
-                  {customDictionary.length > 0 && (
-                    <span className="px-2 py-0.5 bg-orange-50 text-orange-600 text-xs font-medium rounded-full">
-                      {customDictionary.length}
-                    </span>
-                  )}
                 </div>
+                {customDictionary.length > 0 && (
+                  <span className="px-2 py-0.5 bg-orange-50 text-orange-600 text-xs font-medium rounded-full self-start sm:self-center">
+                    {customDictionary.length}
+                  </span>
+                )}
               </div>
 
               {/* Zone de saisie inline */}
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 <input
                   type="text"
                   value={newIncorrectWord}

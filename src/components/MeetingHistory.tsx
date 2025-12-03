@@ -899,17 +899,18 @@ const previewBaseScale = 0.22;
 
 
       {/* Filters Bar */}
-      <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
-        <div className="flex flex-wrap items-center gap-3">
+      <div className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 bg-gray-50/50">
+        {/* Ligne 1: Recherche et actions */}
+        <div className="flex flex-col md:flex-row md:items-center gap-3 mb-3">
           {/* Search */}
-          <div className="relative flex-1 min-w-[200px] max-w-xs">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
               placeholder="Rechercher..."
               value={searchTitle}
               onChange={(e) => setSearchTitle(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-100 bg-white"
+              className="w-full pl-9 pr-3 py-2.5 md:py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-100 bg-white"
             />
             {searchTitle && (
               <button
@@ -921,26 +922,92 @@ const previewBaseScale = 0.22;
             )}
           </div>
 
-          {/* Date filter */}
-          <div className="relative">
-            <input
-              type="date"
-              value={searchDate}
-              onChange={(e) => setSearchDate(e.target.value)}
-              className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-100 bg-white"
-            />
-            {searchDate && (
-              <button
-                onClick={() => setSearchDate('')}
-                className="absolute -right-2 -top-2 p-0.5 bg-gray-500 text-white rounded-full hover:bg-gray-600"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            )}
-          </div>
+          {/* Actions - Date, Edit, Refresh, View toggle */}
+          <div className="flex items-center gap-2">
+            {/* Date filter */}
+            <div className="relative flex-1 md:flex-none">
+              <input
+                type="date"
+                value={searchDate}
+                onChange={(e) => setSearchDate(e.target.value)}
+                className="w-full md:w-auto px-3 py-2.5 md:py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-100 bg-white"
+              />
+              {searchDate && (
+                <button
+                  onClick={() => setSearchDate('')}
+                  className="absolute -right-2 -top-2 p-0.5 bg-gray-500 text-white rounded-full hover:bg-gray-600"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
 
-          {/* Category chips */}
-          <div className="flex items-center gap-2 flex-wrap">
+            {/* Edit button - Caché sur mobile */}
+            <button
+              onClick={() => setShowManageCategories(true)}
+              className="hidden md:flex px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors items-center gap-1.5"
+            >
+              <Edit2 className="w-3 h-3" />
+              Édit
+            </button>
+
+            {/* Refresh button */}
+            <button
+              onClick={() => {
+                console.log('🔄 Rechargement manuel des réunions depuis l\'historique');
+                onUpdateMeetings();
+              }}
+              disabled={isLoading}
+              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+              title="Rafraîchir"
+            >
+              <svg
+                className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+
+            {/* View toggle - Caché sur mobile */}
+            <div className="hidden md:flex items-center bg-gray-100 rounded-lg p-0.5">
+              <button
+                onClick={() => {
+                  setViewMode('list');
+                  localStorage.setItem('meetingViewMode', 'list');
+                }}
+                className={`p-1.5 rounded-md transition-all ${
+                  viewMode === 'list'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+                title="Vue liste"
+              >
+                <List className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => {
+                  setViewMode('grid');
+                  localStorage.setItem('meetingViewMode', 'grid');
+                }}
+                className={`p-1.5 rounded-md transition-all ${
+                  viewMode === 'grid'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+                title="Vue grille"
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Ligne 2: Category chips - Scrollable horizontal sur mobile */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide flex-1">
             <button
               onClick={() => setSelectedCategoryId('all')}
               draggable={Boolean(draggedMeetingId)}
@@ -996,71 +1063,18 @@ const previewBaseScale = 0.22;
             ))}
           </div>
 
-          {/* Edit button */}
+          {/* Edit button - Visible uniquement sur mobile */}
           <button
             onClick={() => setShowManageCategories(true)}
-            className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1.5"
+            className="md:hidden p-2 text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center flex-shrink-0"
           >
-            <Edit2 className="w-3 h-3" />
-            Édit
+            <Edit2 className="w-4 h-4" />
           </button>
-
-          {/* Refresh button */}
-          <button
-            onClick={() => {
-              console.log('🔄 Rechargement manuel des réunions depuis l\'historique');
-              onUpdateMeetings();
-            }}
-            disabled={isLoading}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
-            title="Rafraîchir"
-          >
-            <svg
-              className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </button>
-
-          {/* View toggle */}
-          <div className="flex items-center bg-gray-100 rounded-lg p-0.5 ml-auto">
-            <button
-              onClick={() => {
-                setViewMode('list');
-                localStorage.setItem('meetingViewMode', 'list');
-              }}
-              className={`p-1.5 rounded-md transition-all ${
-                viewMode === 'list'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-              title="Vue liste"
-            >
-              <List className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => {
-                setViewMode('grid');
-                localStorage.setItem('meetingViewMode', 'grid');
-              }}
-              className={`p-1.5 rounded-md transition-all ${
-                viewMode === 'grid'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-              title="Vue grille"
-            >
-              <LayoutGrid className="w-4 h-4" />
-            </button>
-          </div>
         </div>
 
         {/* Filter status */}
         {(searchTitle || searchDate || selectedCategoryId !== 'all') && (
-          <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
+          <div className="mt-3 px-3 md:px-0 flex items-center justify-between text-xs text-gray-500">
             <span>
               {filteredMeetings.length} réunion{filteredMeetings.length !== 1 ? 's' : ''} trouvée{filteredMeetings.length !== 1 ? 's' : ''}
             </span>
@@ -1078,7 +1092,7 @@ const previewBaseScale = 0.22;
         )}
 
         {categoryError && (
-          <div className="mt-2 text-xs text-red-600">{categoryError}</div>
+          <div className="mt-2 px-3 md:px-0 text-xs text-red-600">{categoryError}</div>
         )}
       </div>
 
@@ -1324,14 +1338,14 @@ const previewBaseScale = 0.22;
             {paginatedMeetings.map((meeting, index) => (
               <div
                 key={meeting.id}
-                className={`flex items-center gap-4 py-3 px-2 hover:bg-gray-50 transition-all duration-150 rounded-lg group ${
+                className={`flex items-center gap-2 md:gap-4 py-3 px-2 hover:bg-gray-50 transition-all duration-150 rounded-lg group ${
                   deletingId === meeting.id ? 'opacity-0 scale-95' : ''
                 } ${draggedMeetingId === meeting.id ? 'scale-98 opacity-70 bg-orange-50' : ''}`}
                 style={{
-                  cursor: draggedMeetingId === meeting.id ? 'grabbing' : 'grab',
+                  cursor: draggedMeetingId === meeting.id ? 'grabbing' : 'auto',
                 }}
-                draggable
-                onDragStart={(e) => handleDragStart(e, meeting)}
+                draggable={window.innerWidth >= 768}
+                onDragStart={(e) => window.innerWidth >= 768 && handleDragStart(e, meeting)}
                 onDragEnd={handleDragEnd}
               >
                 {/* File icon */}
@@ -1342,8 +1356,8 @@ const previewBaseScale = 0.22;
                   <FileText className="w-5 h-5 text-gray-500" />
                 </div>
 
-                {/* Date */}
-                <div className="flex-shrink-0 w-24 text-sm text-gray-600">
+                {/* Date - Caché sur mobile */}
+                <div className="hidden md:flex flex-shrink-0 w-24 text-sm text-gray-600">
                   {new Date(meeting.created_at).toLocaleDateString('fr-FR', {
                     day: '2-digit',
                     month: '2-digit',
@@ -1351,7 +1365,7 @@ const previewBaseScale = 0.22;
                   })}
                 </div>
 
-                {/* Title - clickable */}
+                {/* Title - clickable - Avec date sur mobile */}
                 <div
                   className="flex-1 min-w-0 cursor-pointer"
                   onClick={() => editingId !== meeting.id && onView(meeting)}
@@ -1370,22 +1384,32 @@ const previewBaseScale = 0.22;
                       autoFocus
                     />
                   ) : (
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-gray-900 truncate hover:text-orange-600 transition-colors">
-                        {meeting.title}
-                      </span>
-                      {sentMeetingIds.has(meeting.id) && (
-                        <span className="flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-                          <Send className="w-3 h-3" />
-                          Envoyé
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-gray-900 truncate hover:text-orange-600 transition-colors">
+                          {meeting.title}
                         </span>
-                      )}
+                        {sentMeetingIds.has(meeting.id) && (
+                          <span className="flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                            <Send className="w-3 h-3" />
+                            Envoyé
+                          </span>
+                        )}
+                      </div>
+                      {/* Date sur mobile uniquement */}
+                      <span className="md:hidden text-xs text-gray-500">
+                        {new Date(meeting.created_at).toLocaleDateString('fr-FR', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric'
+                        })}
+                      </span>
                     </div>
                   )}
                 </div>
 
-                {/* Category badge */}
-                <div className="flex-shrink-0 w-32">
+                {/* Category badge - Plus petit sur mobile */}
+                <div className="flex-shrink-0 w-auto md:w-32">
                   {meeting.category ? (
                     <span
                       className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full cursor-pointer hover:opacity-80 transition-opacity"
@@ -1413,7 +1437,7 @@ const previewBaseScale = 0.22;
                   )}
                 </div>
 
-                {/* Actions */}
+                {/* Actions - Certains cachés sur mobile */}
                 <div className="flex-shrink-0 flex items-center gap-1">
                   {editingId === meeting.id ? (
                     <>
@@ -1440,12 +1464,13 @@ const previewBaseScale = 0.22;
                     </>
                   ) : (
                     <>
+                      {/* Edit button - Caché sur mobile */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleEditTitle(meeting);
                         }}
-                        className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-colors"
+                        className="hidden md:block p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-colors"
                         title="Modifier"
                       >
                         <Edit2 className="w-4 h-4" />

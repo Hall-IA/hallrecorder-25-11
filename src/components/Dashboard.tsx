@@ -435,15 +435,27 @@ export function Dashboard() {
     <div className="h-full bg-white p-4 md:p-6 lg:p-8 overflow-auto">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header - Design minimaliste */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-semibold text-gray-900">Tableau de bord</h1>
+        <div className="flex flex-col gap-4">
+          {/* Ligne 1: Titre et bouton statistiques */}
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl md:text-2xl font-semibold text-gray-900">Tableau de bord</h1>
 
-            {/* Filtres de période inline */}
-            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+            {/* Lien Statistiques - Desktop uniquement */}
+            <button
+              onClick={() => setActiveTab(activeTab === 'overview' ? 'statistics' : 'overview')}
+              className="hidden md:flex text-sm text-blue-600 hover:text-blue-700 font-medium items-center gap-1"
+            >
+              <PieChart className="w-4 h-4" />
+              {activeTab === 'overview' ? 'Statistiques' : 'Aperçu'}
+            </button>
+          </div>
+
+          {/* Ligne 2: Filtres de période - Scrollable sur mobile */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5 flex-shrink-0">
               <button
                 onClick={() => handlePeriodFilter('today')}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                className={`px-2.5 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
                   periodFilter === 'today'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
@@ -453,64 +465,64 @@ export function Dashboard() {
               </button>
               <button
                 onClick={() => handlePeriodFilter('week')}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                className={`px-2.5 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
                   periodFilter === 'week'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                Cette semaine
+                Semaine
               </button>
               <button
                 onClick={() => handlePeriodFilter('month')}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                className={`px-2.5 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
                   periodFilter === 'month'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                Ce mois
+                Mois
               </button>
               <button
                 onClick={() => handlePeriodFilter('year')}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                className={`px-2.5 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
                   periodFilter === 'year'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                Cette Année
+                Année
               </button>
               <button
                 onClick={() => setShowCalendar(!showCalendar)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 ${
+                className={`px-2.5 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 whitespace-nowrap ${
                   periodFilter === 'custom'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 <CalendarDays className="w-3.5 h-3.5" />
-                {periodFilter === 'custom' ? formatDateRange() : 'Personnalisé'}
+                <span className="hidden md:inline">{periodFilter === 'custom' ? formatDateRange() : 'Personnalisé'}</span>
               </button>
             </div>
 
             {/* Bouton Actualiser */}
             <button
               onClick={handleRefresh}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 text-white text-xs font-medium rounded-lg hover:bg-orange-600 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 text-white text-xs font-medium rounded-lg hover:bg-orange-600 transition-colors flex-shrink-0"
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              Actualiser
+              <span className="hidden md:inline">Actualiser</span>
             </button>
           </div>
 
-          {/* Lien Modifier à droite */}
+          {/* Bouton Statistiques - Mobile uniquement */}
           <button
             onClick={() => setActiveTab(activeTab === 'overview' ? 'statistics' : 'overview')}
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+            className="md:hidden flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium rounded-lg transition-colors text-sm"
           >
             <PieChart className="w-4 h-4" />
-            {activeTab === 'overview' ? 'Statistiques' : 'Aperçu'}
+            {activeTab === 'overview' ? 'Voir les Statistiques' : 'Voir l\'Aperçu'}
           </button>
         </div>
 
@@ -652,9 +664,9 @@ export function Dashboard() {
         )}
 
         {/* Cartes statistiques - Design épuré */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {/* Réunions */}
-          <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+          <div className="bg-gray-50 rounded-xl p-4 md:p-5 border border-gray-100">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm text-gray-500">Réunions</span>
               <FileText className="w-4 h-4 text-gray-400" />
@@ -664,7 +676,7 @@ export function Dashboard() {
           </div>
 
           {/* Temps enregistré */}
-          <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+          <div className="bg-gray-50 rounded-xl p-4 md:p-5 border border-gray-100">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm text-gray-500">Temps enregistré</span>
               <Clock className="w-4 h-4 text-gray-400" />
@@ -674,7 +686,7 @@ export function Dashboard() {
           </div>
 
           {/* Emails envoyés */}
-          <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+          <div className="bg-gray-50 rounded-xl p-4 md:p-5 border border-gray-100">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm text-gray-500">Emails envoyés</span>
               <Mail className="w-4 h-4 text-gray-400" />
@@ -684,7 +696,7 @@ export function Dashboard() {
           </div>
 
           {/* Durée moyenne */}
-          <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+          <div className="bg-gray-50 rounded-xl p-4 md:p-5 border border-gray-100">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm text-gray-500">Durée moyenne</span>
               <TrendingUp className="w-4 h-4 text-gray-400" />
@@ -695,9 +707,9 @@ export function Dashboard() {
         </div>
 
         {/* Section inférieure */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
           {/* Activité récente */}
-          <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+          <div className="bg-gray-50 rounded-xl p-4 md:p-5 border border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-medium text-gray-700">Activité récente</h2>
               <span className="text-xs text-gray-400">
@@ -735,7 +747,7 @@ export function Dashboard() {
           </div>
 
           {/* Graphique d'évolution */}
-          <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+          <div className="bg-gray-50 rounded-xl p-4 md:p-5 border border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-medium text-gray-700">Évolution</h2>
               <span className="text-xs text-gray-400">Minutes par jour</span>

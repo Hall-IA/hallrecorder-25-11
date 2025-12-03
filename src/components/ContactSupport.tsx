@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Mail, Upload, Send, CheckCircle, AlertCircle, Loader2, X, Image as ImageIcon, PartyPopper, HelpCircle, Bug, Sparkles, MessageCircle, Lightbulb } from 'lucide-react';
+import { Mail, Upload, Send, CheckCircle, AlertCircle, Loader2, X, Image as ImageIcon, PartyPopper, HelpCircle, XCircle, Sparkles, MessageCircle, Lightbulb } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useDialog } from '../context/DialogContext';
 
@@ -135,7 +135,7 @@ export const ContactSupport = ({ userId, userEmail }: ContactSupportProps) => {
 
   const categories = [
     { id: 'question' as const, label: 'Question', IconComponent: HelpCircle },
-    { id: 'bug' as const, label: 'Bug / Problème technique', IconComponent: Bug },
+    { id: 'bug' as const, label: 'Bug / Problème technique', IconComponent: XCircle },
     { id: 'feature' as const, label: 'Demande de fonctionnalité', IconComponent: Sparkles },
     { id: 'other' as const, label: 'Autre', IconComponent: MessageCircle },
   ];
