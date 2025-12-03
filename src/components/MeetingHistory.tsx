@@ -1240,16 +1240,6 @@ const previewBaseScale = 0.22;
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 mb-3">
-                  <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border ${summaryBadge.className}`}>
-                    {summaryBadge.label}
-                  </span>
-                  {meeting.summary_regenerated && (
-                    <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold border bg-emerald-50 text-emerald-700 border-emerald-200">
-                      Nouvelle version appliquée
-                    </span>
-                  )}
-                </div>
 
                 {/* Actions */}
                 <div className="flex items-center justify-end gap-1 pt-2 border-t border-gray-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -1385,16 +1375,6 @@ const previewBaseScale = 0.22;
                     <Clock className="w-3.5 h-3.5 md:w-4 md:h-4 text-sunset-500" />
                     <span>{formatDuration(meeting.duration)}</span>
                   </div>
-                </div>
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border ${summaryBadge.className}`}>
-                    {summaryBadge.label}
-                  </span>
-                  {meeting.summary_regenerated && (
-                    <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold border bg-emerald-50 text-emerald-700 border-emerald-200">
-                      Nouvelle version appliquée
-                    </span>
-                  )}
                 </div>
               </div>
             </div>

@@ -15,6 +15,7 @@ interface MeetingDetailProps {
   meeting: Meeting;
   onBack: () => void;
   onUpdate: () => void;
+  userDefaultSummaryMode?: SummaryMode | null;
 }
 
 const inferSummaryValues = (meeting: Meeting) => {
@@ -25,11 +26,14 @@ const inferSummaryValues = (meeting: Meeting) => {
   };
 };
 
-export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps) => {
+export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMode }: MeetingDetailProps) => {
   const [activeTab, setActiveTab] = useState<'summary' | 'transcript' | 'suggestions'>('summary');
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(meeting.title);
-  const [activeSummaryMode, setActiveSummaryMode] = useState<SummaryMode>((meeting.summary_mode as SummaryMode) || 'detailed');
+  // Priorité : mode par défaut de l'utilisateur > mode du résumé de la réunion > 'detailed'
+  const [activeSummaryMode, setActiveSummaryMode] = useState<SummaryMode>(
+    userDefaultSummaryMode || (meeting.summary_mode as SummaryMode) || 'detailed'
+  );
   const [editedSummaries, setEditedSummaries] = useState(() => inferSummaryValues(meeting));
   const [editedTranscript, setEditedTranscript] = useState(meeting.display_transcript || meeting.transcript || '');
   const [editedNotes, setEditedNotes] = useState(meeting.notes || '');
@@ -115,8 +119,9 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
   ]);
 
   useEffect(() => {
-    setActiveSummaryMode((meeting.summary_mode as SummaryMode) || 'detailed');
-  }, [meeting.id, meeting.summary_mode]);
+    // Priorité : mode par défaut de l'utilisateur > mode du résumé de la réunion > 'detailed'
+    setActiveSummaryMode(userDefaultSummaryMode || (meeting.summary_mode as SummaryMode) || 'detailed');
+  }, [meeting.id, meeting.summary_mode, userDefaultSummaryMode]);
 
   useEffect(() => {
     loadSignature();
@@ -1139,7 +1144,7 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
     setEditedSummaries(inferSummaryValues(meeting));
     setEditedTranscript(meeting.display_transcript || meeting.transcript || '');
     setEditedNotes(meeting.notes || '');
-    setActiveSummaryMode((meeting.summary_mode as SummaryMode) || 'detailed');
+    setActiveSummaryMode(userDefaultSummaryMode || (meeting.summary_mode as SummaryMode) || 'detailed');
     setIsEditing(false);
   };
 
