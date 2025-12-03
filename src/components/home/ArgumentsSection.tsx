@@ -104,7 +104,7 @@ export default function ArgumentsSection() {
                 </div>
                 <button 
                   onClick={() => {
-                    window.location.href = window.location.origin + '/#record';
+                    window.location.href = window.location.origin + '/#record?signup=true';
                   }}
                   className="flex w-fit items-center gap-2 rounded-full bg-gradient-to-br from-[#F35F4F] to-[#FFAD5A] px-8 py-3 text-sm sm:text-base md:text-lg font-semibold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl"
                 >

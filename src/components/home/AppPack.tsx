@@ -15,8 +15,8 @@ export default function AppPack() {
   
   const handleStartClick = (planType: string) => {
     localStorage.setItem('selected_plan', planType);
-    // Rediriger vers la page de connexion
-    window.location.href = window.location.origin + '/#record';
+    // Rediriger vers la page de connexion en mode inscription
+    window.location.href = window.location.origin + '/#record?signup=true';
   };
 
   return (
@@ -119,7 +119,7 @@ export default function AppPack() {
           priceUnit="HT / par mois"
           buttonText="Commencer"
           onButtonClick={() => {
-            window.location.href = window.location.origin + '/#record';
+            window.location.href = window.location.origin + '/#record?signup=true';
           }}
           price="39"
           className={!showFreeTrial ? 'lg:flex-1 lg:w-1/2' : 'lg:w-96'}
@@ -158,7 +158,7 @@ export default function AppPack() {
           ]}
           buttonText="Commencer"
           onButtonClick={() => {
-            window.location.href = window.location.origin + '/#record';
+            window.location.href = window.location.origin + '/#record?signup=true';
           }}
           price="49"
           priceUnit="HT / par mois"

@@ -25,6 +25,28 @@ export const Login = ({ onSuccess }: LoginProps) => {
       // Nettoyer le localStorage après récupération
       localStorage.removeItem('initialEmail');
     }
+    
+    // Vérifier si on doit afficher le formulaire d'inscription
+    // Les paramètres peuvent être dans le hash (#record?signup=true) ou dans l'URL (?signup=true)
+    const hash = window.location.hash;
+    const searchParams = window.location.search;
+    
+    // Parser le hash pour extraire les paramètres (format: #record?signup=true)
+    if (hash.includes('?')) {
+      const hashParts = hash.split('?');
+      if (hashParts.length > 1) {
+        const hashParams = new URLSearchParams(hashParts[1]);
+        if (hashParams.get('signup') === 'true') {
+          setIsSignUp(true);
+        }
+      }
+    }
+    
+    // Vérifier dans les paramètres de requête standard
+    const urlParams = new URLSearchParams(searchParams);
+    if (urlParams.get('signup') === 'true') {
+      setIsSignUp(true);
+    }
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
