@@ -11,9 +11,9 @@ interface FeatureCardProps {
 function FeatureCard({ icon, iconMobile, title, text }: FeatureCardProps) {
   return (
     <div
-      className="flex items-center gap-4 rounded-lg border overflow-hidden w-full max-w-[282px] h-[180px]"
+      className="flex items-center gap-2 md:gap-4 rounded-lg border overflow-hidden w-full max-w-[282px] h-[120px] md:h-[180px]"
       style={{
-        padding: '16px 8px',
+        padding: '12px 6px',
         border: '1px solid #FEFDFD',
         borderRadius: '8px',
         background: `conic-gradient(from 194deg at 84% -3.1%, #FF9A34 0deg, #F35F4F 76.15384697914124deg, #CE7D2A 197.30769395828247deg, #FFAD5A 245.76922416687012deg), rgba(249, 247, 245, 0.64)`,
@@ -36,7 +36,9 @@ function FeatureCard({ icon, iconMobile, title, text }: FeatureCardProps) {
       {/* Icône mobile centrée */}
       {iconMobile && (
         <div className="flex items-center justify-center sm:hidden flex-shrink-0">
-          {iconMobile}
+          <div className="scale-75">
+            {iconMobile}
+          </div>
         </div>
       )}
 
@@ -49,22 +51,22 @@ function FeatureCard({ icon, iconMobile, title, text }: FeatureCardProps) {
           style={{
             color: '#FFFEFD',
             textAlign: 'center',
-            fontSize: 'clamp(18px, 4vw, 24px)',
+            fontSize: 'clamp(14px, 3.5vw, 24px)',
             fontWeight: 600,
             lineHeight: 'normal',
-            marginBottom: '4px',
+            marginBottom: '2px',
           }}
         >
           {title}
         </h3>
         <p
-          className="font-roboto px-2"
+          className="font-roboto px-1 md:px-2"
           style={{
             color: '#FFFEFD',
             textAlign: 'center',
-            fontSize: 'clamp(12px, 3vw, 16px)',
+            fontSize: 'clamp(10px, 2.5vw, 16px)',
             fontWeight: 400,
-            lineHeight: 'normal',
+            lineHeight: '1.2',
           }}
         >
           {text}
@@ -104,7 +106,7 @@ export default function FeatureCards() {
 
   return (
     <div
-      className="flex max-xl:flex-wrap justify-center gap-2 px-4 sm:px-0"
+      className="grid grid-cols-2 md:flex md:flex-wrap justify-center gap-2 px-4 sm:px-0"
       style={{
         gap: '8px',
       }}
