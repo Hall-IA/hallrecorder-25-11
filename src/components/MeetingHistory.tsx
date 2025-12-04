@@ -1,4 +1,4 @@
-import { Calendar, Clock, FileText, Trash2, Loader2, Search, X, Mail, Edit2, Check, ChevronLeft, ChevronRight, Send, PlusCircle, Tag, FolderPlus, List, LayoutGrid, Sparkles } from 'lucide-react';
+import { Calendar, Clock, FileText, Trash2, Loader2, Search, X, Mail, Edit2, Check, ChevronLeft, ChevronRight, Send, PlusCircle, Tag, FolderPlus, List, LayoutGrid, Sparkles, ChevronDown } from 'lucide-react';
 import { Meeting, MeetingCategory } from '../lib/supabase';
 import { useState, useMemo, useEffect, useRef, useCallback, CSSProperties } from 'react';
 import { supabase } from '../lib/supabase';
@@ -73,6 +73,7 @@ export const MeetingHistory = ({
   const [isRegeneratingSummary, setIsRegeneratingSummary] = useState(false);
   const [regenerationError, setRegenerationError] = useState<string | null>(null);
   const [regenerationToast, setRegenerationToast] = useState<{ message: string; mode: SummaryMode } | null>(null);
+  const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
 
   // Palette de couleurs professionnelle et douce (style Notion/Linear)
   const colorPalette = [
@@ -247,6 +248,18 @@ const previewBaseScale = 0.22;
   useEffect(() => {
     loadCategories();
   }, [loadCategories]);
+
+  // Fermer le dropdown des catégories quand on clique en dehors
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (showCategoriesDropdown && !target.closest('.categories-dropdown-container')) {
+        setShowCategoriesDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showCategoriesDropdown]);
 
   useEffect(() => {
     setCategorySelectorMeetingId(null);
@@ -889,9 +902,9 @@ const previewBaseScale = 0.22;
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="bg-white overflow-hidden">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-100">
+      <div className="px-0 md:px-6 py-4 border-b border-gray-100">
         <h2 className="text-xl font-semibold text-gray-900" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
           Historique
         </h2>
@@ -899,7 +912,7 @@ const previewBaseScale = 0.22;
 
 
       {/* Filters Bar */}
-      <div className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 bg-gray-50/50">
+      <div className="px-0 md:px-6 py-3 md:py-4 border-b border-gray-100 bg-gray-50/50">
         {/* Ligne 1: Recherche et actions */}
         <div className="flex flex-col md:flex-row md:items-center gap-3 mb-3">
           {/* Search */}
@@ -932,6 +945,12 @@ const previewBaseScale = 0.22;
                 onChange={(e) => setSearchDate(e.target.value)}
                 className="w-full md:w-auto px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-100 bg-white"
               />
+              {/* Placeholder simulé pour mobile */}
+              {!searchDate && (
+                <span className="md:hidden absolute left-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">
+                  jj/mm/aaaa
+                </span>
+              )}
               {searchDate && (
                 <button
                   onClick={() => setSearchDate('')}
@@ -1006,9 +1025,10 @@ const previewBaseScale = 0.22;
           </div>
         </div>
 
-        {/* Ligne 2: Category chips - Scrollable horizontal sur mobile */}
+        {/* Ligne 2: Category chips - Dropdown sur mobile, scrollable sur desktop */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide flex-1">
+          {/* Version Desktop - Scrollable horizontal */}
+          <div className="hidden md:flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide flex-1">
             <button
               onClick={() => setSelectedCategoryId('all')}
               draggable={Boolean(draggedMeetingId)}
@@ -1064,6 +1084,81 @@ const previewBaseScale = 0.22;
             ))}
           </div>
 
+          {/* Version Mobile - Dropdown */}
+          <div className="md:hidden relative flex-1 categories-dropdown-container">
+            <button
+              onClick={() => setShowCategoriesDropdown(!showCategoriesDropdown)}
+              className="w-full flex items-center justify-between px-4 py-2.5 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              {selectedCategoryId === 'all' ? (
+                <span className="text-sm font-medium text-gray-700">Mes catégories</span>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span
+                    className="w-3 h-3 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: categories.find(c => c.id === selectedCategoryId)?.color || '#gray' }}
+                  />
+                  <span 
+                    className="text-sm font-medium"
+                    style={{ color: categories.find(c => c.id === selectedCategoryId)?.color || '#gray' }}
+                  >
+                    {categories.find(c => c.id === selectedCategoryId)?.name || 'Catégorie'}
+                  </span>
+                </div>
+              )}
+              <ChevronDown 
+                className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
+                  showCategoriesDropdown ? 'rotate-180' : ''
+                } ${!showCategoriesDropdown ? 'animate-pulse' : ''}`}
+              />
+            </button>
+
+            {/* Dropdown content */}
+            {showCategoriesDropdown && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                <div className="p-2 space-y-1">
+                  <button
+                    onClick={() => {
+                      setSelectedCategoryId('all');
+                      setShowCategoriesDropdown(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm font-medium rounded-lg transition-all ${
+                      selectedCategoryId === 'all'
+                        ? 'bg-orange-500 text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    Toutes
+                  </button>
+                  {!isCategoriesLoading && categories.map((category) => (
+                    <button
+                      key={category.id}
+                      onClick={() => {
+                        setSelectedCategoryId(category.id);
+                        setShowCategoriesDropdown(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2 ${
+                        selectedCategoryId === category.id
+                          ? 'text-white'
+                          : 'text-gray-600 hover:opacity-80'
+                      }`}
+                      style={{
+                        backgroundColor: selectedCategoryId === category.id ? category.color : `${category.color}20`,
+                        color: selectedCategoryId === category.id ? '#fff' : category.color
+                      }}
+                    >
+                      <span
+                        className="w-3 h-3 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: category.color }}
+                      />
+                      {category.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Edit button - Visible uniquement sur mobile */}
           <button
             onClick={() => setShowManageCategories(true)}
@@ -1099,7 +1194,7 @@ const previewBaseScale = 0.22;
 
       {/* Refreshing indicator */}
       {isRefreshing && meetings.length > 0 && (
-        <div className="px-6 py-2 bg-orange-50 border-b border-orange-100 flex items-center gap-2 text-sm text-orange-700">
+        <div className="px-0 md:px-6 py-2 bg-orange-50 border-b border-orange-100 flex items-center gap-2 text-sm text-orange-700">
           <Loader2 className="w-4 h-4 animate-spin" />
           Mise à jour des réunions...
         </div>
@@ -1162,7 +1257,7 @@ const previewBaseScale = 0.22;
       )}
 
       {/* Content */}
-      <div className="p-6">
+      <div className="p-0 md:p-6">
         {filteredMeetings.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -1174,7 +1269,7 @@ const previewBaseScale = 0.22;
         ) : viewMode === 'grid' ? (
         <>
         {/* Vue grille */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-0 md:gap-5">
           {paginatedMeetings.map((meeting, index) => {
             const summaryBadge = getSummaryBadge(meeting);
             const showRegenerateButton = canRegenerateSummary(meeting);
@@ -1339,7 +1434,7 @@ const previewBaseScale = 0.22;
             {paginatedMeetings.map((meeting, index) => (
               <div
                 key={meeting.id}
-                className={`flex items-center gap-2 md:gap-4 py-3 px-2 hover:bg-gray-50 transition-all duration-150 rounded-lg group ${
+                className={`flex items-center gap-2 md:gap-4 py-3 px-0 md:px-2 hover:bg-gray-50 transition-all duration-150 rounded-lg group ${
                   deletingId === meeting.id ? 'opacity-0 scale-95' : ''
                 } ${draggedMeetingId === meeting.id ? 'scale-98 opacity-70 bg-orange-50' : ''}`}
                 style={{
@@ -1349,9 +1444,9 @@ const previewBaseScale = 0.22;
                 onDragStart={(e) => window.innerWidth >= 768 && handleDragStart(e, meeting)}
                 onDragEnd={handleDragEnd}
               >
-                {/* File icon */}
+                {/* File icon - Caché sur mobile */}
                 <div
-                  className="flex-shrink-0 w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors"
+                  className="hidden md:flex flex-shrink-0 w-10 h-10 bg-gray-100 rounded-lg items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors"
                   onClick={() => onView(meeting)}
                 >
                   <FileText className="w-5 h-5 text-gray-500" />
@@ -1562,31 +1657,31 @@ const previewBaseScale = 0.22;
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
-            <div className="text-sm text-gray-500">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0 mt-6 px-2">
+            <div className="text-xs sm:text-sm text-cocoa-600 order-2 sm:order-1">
               Page {currentPage} sur {totalPages} • {filteredMeetings.length} réunion{filteredMeetings.length !== 1 ? 's' : ''}
             </div>
-            <nav className="flex items-center gap-1" aria-label="Pagination des réunions">
+            <nav className="flex items-center gap-1 sm:gap-2 order-1 sm:order-2" aria-label="Pagination des réunions">
               <button
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
-                className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                className="h-8 w-8 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-coral-200 text-coral-700 hover:bg-coral-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                 aria-label="Page précédente"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5 sm:gap-1">
                 {paginationRange.map((item, index) => (
                   item === 'dots' ? (
-                    <span key={`dots-${index}`} className="w-8 text-center text-sm text-gray-400">...</span>
+                    <span key={`dots-${index}`} className="px-1 sm:px-2 text-xs sm:text-sm font-medium text-cocoa-400">...</span>
                   ) : (
                     <button
                       key={`page-${item}`}
                       onClick={() => setCurrentPage(item)}
-                      className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-all ${
+                      className={`min-w-[2rem] sm:min-w-[2.5rem] h-8 sm:h-10 px-2 sm:px-3 rounded-full text-xs sm:text-sm font-semibold transition-all ${
                         currentPage === item
-                          ? 'bg-orange-500 text-white'
-                          : 'border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'
+                          ? 'bg-coral-500 text-white shadow-md'
+                          : 'border border-coral-200 text-coral-700 hover:bg-coral-100'
                       }`}
                       aria-current={currentPage === item ? 'page' : undefined}
                     >
@@ -1598,10 +1693,10 @@ const previewBaseScale = 0.22;
               <button
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
-                className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                className="h-8 w-8 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-coral-200 text-coral-700 hover:bg-coral-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                 aria-label="Page suivante"
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
             </nav>
           </div>

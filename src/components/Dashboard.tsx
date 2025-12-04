@@ -451,11 +451,11 @@ export function Dashboard() {
           </div>
 
           {/* Ligne 2: Filtres de période - Scrollable sur mobile */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
-            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5 flex-shrink-0">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+            <div className="flex items-center w-fit gap-1 bg-gray-100 rounded-lg p-1 flex-shrink-0">
               <button
                 onClick={() => handlePeriodFilter('today')}
-                className={`px-2.5 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
+                className={`px-2 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
                   periodFilter === 'today'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
@@ -465,7 +465,7 @@ export function Dashboard() {
               </button>
               <button
                 onClick={() => handlePeriodFilter('week')}
-                className={`px-2.5 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
+                className={`px-2 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
                   periodFilter === 'week'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
@@ -475,7 +475,7 @@ export function Dashboard() {
               </button>
               <button
                 onClick={() => handlePeriodFilter('month')}
-                className={`px-2.5 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
+                className={`px-2 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
                   periodFilter === 'month'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
@@ -485,7 +485,7 @@ export function Dashboard() {
               </button>
               <button
                 onClick={() => handlePeriodFilter('year')}
-                className={`px-2.5 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
+                className={`px-2 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
                   periodFilter === 'year'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
@@ -495,7 +495,7 @@ export function Dashboard() {
               </button>
               <button
                 onClick={() => setShowCalendar(!showCalendar)}
-                className={`px-2.5 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 whitespace-nowrap ${
+                className={`px-2 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 whitespace-nowrap ${
                   periodFilter === 'custom'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
@@ -509,10 +509,10 @@ export function Dashboard() {
             {/* Bouton Actualiser */}
             <button
               onClick={handleRefresh}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 text-white text-xs font-medium rounded-lg hover:bg-orange-600 transition-colors flex-shrink-0"
+              className=" w-fit flex items-center gap-1.5 px-3 py-1.5 md:py-2 bg-orange-500 text-white text-xs font-medium rounded-lg hover:bg-orange-600 transition-colors flex-shrink-0"
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Actualiser</span>
+              <span>Actualiser</span>
             </button>
           </div>
 

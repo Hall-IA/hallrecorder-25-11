@@ -863,7 +863,7 @@ export function EmailComposer({
           <button
             onClick={handleSend}
             disabled={isSending}
-            className="px-8 py-3 bg-gradient-to-r from-[#EF6855] via-[#E5503F] to-[#D64838] text-white rounded-xl font-bold hover:from-[#E5503F] hover:via-[#D64838] hover:to-[#C73E2E] transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transform hover:scale-105"
+            className="md:px-8 md:py-3 px-3 py-3 bg-gradient-to-r from-[#EF6855] via-[#E5503F] to-[#D64838] text-white text-xs rounded-xl font-bold hover:from-[#E5503F] hover:via-[#D64838] hover:to-[#C73E2E] transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transform hover:scale-105"
           >
             {isSending ? (
               <>
