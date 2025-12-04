@@ -923,32 +923,33 @@ const previewBaseScale = 0.22;
           </div>
 
           {/* Actions - Date, Edit, Refresh, View toggle */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {/* Date filter */}
             <div className="relative flex-1 md:flex-none">
               <input
                 type="date"
                 value={searchDate}
                 onChange={(e) => setSearchDate(e.target.value)}
-                className="w-full md:w-auto px-3 py-2.5 md:py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-100 bg-white"
+                className="w-full md:w-auto px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-100 bg-white"
               />
               {searchDate && (
                 <button
                   onClick={() => setSearchDate('')}
-                  className="absolute -right-2 -top-2 p-0.5 bg-gray-500 text-white rounded-full hover:bg-gray-600"
+                  className="absolute -right-1 -top-1 sm:-right-2 sm:-top-2 p-0.5 bg-gray-500 text-white rounded-full hover:bg-gray-600"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                 </button>
               )}
             </div>
 
-            {/* Edit button - Caché sur mobile */}
+            {/* Edit button - Icon seulement sur mobile */}
             <button
               onClick={() => setShowManageCategories(true)}
-              className="hidden md:flex px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors items-center gap-1.5"
+              className="flex px-2 py-2 sm:px-3 sm:py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors items-center gap-1.5"
+              title="Gérer les catégories"
             >
-              <Edit2 className="w-3 h-3" />
-              Édit
+              <Edit2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
+              <span className="hidden sm:inline">Édit</span>
             </button>
 
             {/* Refresh button */}
@@ -958,11 +959,11 @@ const previewBaseScale = 0.22;
                 onUpdateMeetings();
               }}
               disabled={isLoading}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+              className="p-1.5 sm:p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
               title="Rafraîchir"
             >
               <svg
-                className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`}
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isLoading ? 'animate-spin' : ''}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -971,28 +972,28 @@ const previewBaseScale = 0.22;
               </svg>
             </button>
 
-            {/* View toggle - Caché sur mobile */}
-            <div className="hidden md:flex items-center bg-gray-100 rounded-lg p-0.5">
+            {/* View toggle - Visible sur mobile */}
+            <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
               <button
                 onClick={() => {
                   setViewMode('list');
                   localStorage.setItem('meetingViewMode', 'list');
                 }}
-                className={`p-1.5 rounded-md transition-all ${
+                className={`p-1 sm:p-1.5 rounded-md transition-all ${
                   viewMode === 'list'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
                 title="Vue liste"
               >
-                <List className="w-4 h-4" />
+                <List className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
               <button
                 onClick={() => {
                   setViewMode('grid');
                   localStorage.setItem('meetingViewMode', 'grid');
                 }}
-                className={`p-1.5 rounded-md transition-all ${
+                className={`p-1 sm:p-1.5 rounded-md transition-all ${
                   viewMode === 'grid'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
@@ -1384,16 +1385,23 @@ const previewBaseScale = 0.22;
                       autoFocus
                     />
                   ) : (
-                    <div className="flex flex-col gap-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-gray-900 truncate hover:text-orange-600 transition-colors">
+                    <div className="flex flex-col gap-1 min-w-0 flex-1">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-sm font-medium text-gray-900 truncate hover:text-orange-600 transition-colors min-w-0">
                           {meeting.title}
                         </span>
                         {sentMeetingIds.has(meeting.id) && (
-                          <span className="flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-                            <Send className="w-3 h-3" />
-                            Envoyé
-                          </span>
+                          <>
+                            {/* Version desktop */}
+                            <span className="hidden sm:inline-flex flex-shrink-0 items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                              <Send className="w-3 h-3" />
+                              Envoyé
+                            </span>
+                            {/* Version mobile - icon seulement */}
+                            <span className="sm:hidden flex-shrink-0 inline-flex items-center justify-center w-5 h-5 bg-green-100 text-green-600 rounded-full" title="Envoyé">
+                              <Send className="w-3 h-3" />
+                            </span>
+                          </>
                         )}
                       </div>
                       {/* Date sur mobile uniquement */}
@@ -1408,8 +1416,8 @@ const previewBaseScale = 0.22;
                   )}
                 </div>
 
-                {/* Category badge - Plus petit sur mobile */}
-                <div className="flex-shrink-0 w-auto md:w-32">
+                {/* Category badge - Caché sur mobile */}
+                <div className="hidden md:flex flex-shrink-0 w-auto md:w-32">
                   {meeting.category ? (
                     <span
                       className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full cursor-pointer hover:opacity-80 transition-opacity"
@@ -1475,12 +1483,13 @@ const previewBaseScale = 0.22;
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
+                      {/* Mail button - Caché sur mobile */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           onSendEmail(meeting);
                         }}
-                        className="p-1.5 text-gray-400 hover:text-orange-500 hover:bg-orange-50 rounded transition-colors"
+                        className="hidden md:block p-1.5 text-gray-400 hover:text-orange-500 hover:bg-orange-50 rounded transition-colors"
                         title="Envoyer par email"
                       >
                         <Mail className="w-4 h-4" />
