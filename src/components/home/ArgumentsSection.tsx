@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { ArrowRight } from 'lucide-react';
+import { Image } from '../ui/Image';
 
 interface ArgumentItem {
   title: string;
@@ -123,11 +124,12 @@ export default function ArgumentsSection() {
                     : 'rounded-2xl min-[1100px]:rounded-tr-[250px] min-[1100px]:rounded-br-[250px] xl:rounded-tr-[300px] xl:rounded-br-[300px]'
                 }`}
               >
-                <img
+                <Image
                   src={argument.image}
                   alt={argument.title}
                   className="h-full w-full object-cover object-[center_top]"
                   loading="lazy"
+                  decoding="async"
                 />
               </div>
             </div>
