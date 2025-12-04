@@ -1404,7 +1404,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                   </div>
                   <div className="flex flex-col min-w-0 flex-1">
                     <span className="text-sm font-semibold text-gray-900">Correction automatique</span>
-                    <span className="text-xs text-gray-500 truncate">Personnalisez les mots corrigés dans les transcriptions</span>
+                    <span className="text-xs text-gray-500 truncate">Personnalisez les mots corrigés dans les résumés</span>
                   </div>
                 </div>
                 {customDictionary.length > 0 && (

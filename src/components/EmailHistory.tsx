@@ -459,20 +459,20 @@ export const EmailHistory = ({ userId, onViewMeeting }: EmailHistoryProps) => {
   return (
     <div className="space-y-4">
       {/* Header avec compteur et bouton filtres */}
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold text-cocoa-900">
-          Historique des emails ({filteredEmails.length}/{emails.length})
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
+        <h3 className="text-lg sm:text-xl font-bold text-cocoa-900">
+          Historique des emails <span className="text-sm sm:text-base">({filteredEmails.length}/{emails.length})</span>
         </h3>
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all ${
+          className={`flex items-center gap-2 px-3 py-2 sm:px-4 rounded-xl text-sm font-semibold transition-all ${
             hasActiveFilters
               ? 'bg-coral-500 text-white hover:bg-coral-600'
               : 'bg-coral-100 text-coral-700 hover:bg-coral-200'
           }`}
         >
           <Filter className="w-4 h-4" />
-          Filtres
+          <span className="hidden sm:inline">Filtres</span>
           {hasActiveFilters && (
             <span className="ml-1 px-2 py-0.5 bg-white text-coral-600 rounded-full text-xs font-bold">
               {[searchQuery, filterMethod !== 'all', filterStatus !== 'all', filterDateRange !== 'all'].filter(Boolean).length}
@@ -483,45 +483,45 @@ export const EmailHistory = ({ userId, onViewMeeting }: EmailHistoryProps) => {
 
       {/* Panneau de filtres */}
       {showFilters && (
-        <div className="bg-gradient-to-br from-coral-50 to-sunset-50 rounded-2xl p-6 border-2 border-coral-200 space-y-4 animate-slideDown">
+        <div className="bg-gradient-to-br from-coral-50 to-sunset-50 rounded-2xl p-3 sm:p-6 border-2 border-coral-200 space-y-4 animate-slideDown">
           {/* Barre de recherche */}
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-cocoa-400" />
+            <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-cocoa-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Rechercher par sujet, destinataire..."
-              className="w-full pl-12 pr-12 py-3 rounded-xl border-2 border-coral-200 focus:border-coral-500 focus:ring-2 focus:ring-coral-200 outline-none transition-all"
+              className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-2.5 sm:py-3 text-sm rounded-xl border-2 border-coral-200 focus:border-coral-500 focus:ring-2 focus:ring-coral-200 outline-none transition-all"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-cocoa-400 hover:text-cocoa-600"
+                className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-cocoa-400 hover:text-cocoa-600"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             )}
           </div>
 
           {/* Filtres rapides */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             {/* Méthode */}
             <div>
-              <label className="block text-sm font-semibold text-cocoa-700 mb-2">
+              <label className="block text-xs sm:text-sm font-semibold text-cocoa-700 mb-2">
                 Méthode d'envoi
               </label>
               <div className="relative">
                 <select
                   value={filterMethod}
                   onChange={(e) => setFilterMethod(e.target.value as any)}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-coral-200 focus:border-coral-500 focus:ring-2 focus:ring-coral-200 outline-none transition-all bg-white text-cocoa-800 font-semibold cursor-pointer hover:border-coral-300 hover:shadow-md appearance-none pr-10"
+                  className="w-full px-3 py-2.5 sm:px-4 sm:py-3 text-sm rounded-xl border-2 border-coral-200 focus:border-coral-500 focus:ring-2 focus:ring-coral-200 outline-none transition-all bg-white text-cocoa-800 font-semibold cursor-pointer hover:border-coral-300 hover:shadow-md appearance-none pr-10"
                 >
                   <option value="all">Toutes</option>
                   <option value="gmail">Gmail</option>
                   <option value="smtp">SMTP</option>
                 </select>
-                <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-coral-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-coral-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
@@ -529,20 +529,20 @@ export const EmailHistory = ({ userId, onViewMeeting }: EmailHistoryProps) => {
 
             {/* Statut */}
             <div>
-              <label className="block text-sm font-semibold text-cocoa-700 mb-2">
+              <label className="block text-xs sm:text-sm font-semibold text-cocoa-700 mb-2">
                 Statut
               </label>
               <div className="relative">
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value as any)}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-coral-200 focus:border-coral-500 focus:ring-2 focus:ring-coral-200 outline-none transition-all bg-white text-cocoa-800 font-semibold cursor-pointer hover:border-coral-300 hover:shadow-md appearance-none pr-10"
+                  className="w-full px-3 py-2.5 sm:px-4 sm:py-3 text-sm rounded-xl border-2 border-coral-200 focus:border-coral-500 focus:ring-2 focus:ring-coral-200 outline-none transition-all bg-white text-cocoa-800 font-semibold cursor-pointer hover:border-coral-300 hover:shadow-md appearance-none pr-10"
                 >
                   <option value="all">Tous</option>
                   <option value="sent">Envoyés</option>
                   <option value="failed">Échecs</option>
                 </select>
-                <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-coral-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-coral-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
@@ -550,21 +550,21 @@ export const EmailHistory = ({ userId, onViewMeeting }: EmailHistoryProps) => {
 
             {/* Période */}
             <div>
-              <label className="block text-sm font-semibold text-cocoa-700 mb-2">
+              <label className="block text-xs sm:text-sm font-semibold text-cocoa-700 mb-2">
                 Période
               </label>
               <div className="relative">
                 <select
                   value={filterDateRange}
                   onChange={(e) => setFilterDateRange(e.target.value as any)}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-coral-200 focus:border-coral-500 focus:ring-2 focus:ring-coral-200 outline-none transition-all bg-white text-cocoa-800 font-semibold cursor-pointer hover:border-coral-300 hover:shadow-md appearance-none pr-10"
+                  className="w-full px-3 py-2.5 sm:px-4 sm:py-3 text-sm rounded-xl border-2 border-coral-200 focus:border-coral-500 focus:ring-2 focus:ring-coral-200 outline-none transition-all bg-white text-cocoa-800 font-semibold cursor-pointer hover:border-coral-300 hover:shadow-md appearance-none pr-10"
                 >
                   <option value="all">Toutes</option>
                   <option value="today">Aujourd'hui</option>
                   <option value="week">Cette semaine</option>
                   <option value="month">Ce mois</option>
                 </select>
-                <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-coral-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-coral-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
@@ -573,13 +573,14 @@ export const EmailHistory = ({ userId, onViewMeeting }: EmailHistoryProps) => {
 
           {/* Bouton réinitialiser */}
           {hasActiveFilters && (
-            <div className="flex justify-end">
+            <div className="flex justify-center sm:justify-end">
               <button
                 onClick={resetFilters}
-                className="flex items-center gap-2 px-4 py-2 bg-white text-coral-600 rounded-xl font-semibold hover:bg-coral-50 transition-all border-2 border-coral-200"
+                className="flex items-center gap-2 px-3 py-2 sm:px-4 text-sm bg-white text-coral-600 rounded-xl font-semibold hover:bg-coral-50 transition-all border-2 border-coral-200"
               >
                 <X className="w-4 h-4" />
-                Réinitialiser les filtres
+                <span className="hidden sm:inline">Réinitialiser les filtres</span>
+                <span className="sm:hidden">Réinitialiser</span>
               </button>
             </div>
           )}
@@ -617,26 +618,26 @@ export const EmailHistory = ({ userId, onViewMeeting }: EmailHistoryProps) => {
             >
               {/* Header */}
               <div
-                className="p-4 cursor-pointer"
+                className="p-3 sm:p-4 cursor-pointer"
                 onClick={() => setExpandedEmail(expandedEmail === email.id ? null : email.id)}
               >
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start justify-between gap-2 sm:gap-4">
                   <div className="flex-1 min-w-0">
                     {/* Sujet */}
                     <div className="flex items-center gap-2 mb-2">
                       {email.status === 'sent' ? (
-                        <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                        <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
                       ) : (
-                        <XCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                        <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 flex-shrink-0" />
                       )}
-                      <h4 className="font-semibold text-cocoa-900 truncate">
+                      <h4 className="font-semibold text-sm sm:text-base text-cocoa-900 truncate">
                         {email.subject}
                       </h4>
                     </div>
 
                     {/* Destinataires */}
-                    <div className="flex items-center gap-2 text-sm text-cocoa-600 mb-2">
-                      <User className="w-4 h-4 flex-shrink-0" />
+                    <div className="flex items-center gap-2 text-xs sm:text-sm text-cocoa-600 mb-2">
+                      <User className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                       <span className="truncate">
                         {email.recipients}
                         {email.cc_recipients && ` +${email.cc_recipients.split(',').length} CC`}
@@ -644,29 +645,31 @@ export const EmailHistory = ({ userId, onViewMeeting }: EmailHistoryProps) => {
                     </div>
 
                     {/* Métadonnées */}
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-cocoa-500">
+                    <div className="flex flex-wrap items-center gap-2 text-[10px] sm:text-xs text-cocoa-500">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
-                        {formatDate(email.sent_at)}
+                        <span className="hidden sm:inline">{formatDate(email.sent_at)}</span>
+                        <span className="sm:hidden">{new Date(email.sent_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}</span>
                       </div>
                       {email.attachments_count > 0 && (
                         <div className="flex items-center gap-1">
                           <Paperclip className="w-3 h-3" />
-                          {email.attachments_count} PJ ({formatSize(email.total_attachments_size)})
+                          <span className="hidden sm:inline">{email.attachments_count} PJ ({formatSize(email.total_attachments_size)})</span>
+                          <span className="sm:hidden">{email.attachments_count}</span>
                         </div>
                       )}
                       {getMethodBadge(email.method)}
                       {/* Badge de suivi - différent selon la méthode d'envoi */}
                       {email.method === 'local' ? (
-                        <span className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-500">
+                        <span className="hidden sm:inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-500">
                           Suivi indisponible
                         </span>
                       ) : totalRecipients > 0 && openedRecipientsCount > 0 && (
-                        <span className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">
-                          <Eye className="w-3 h-3" />
+                        <span className="inline-flex items-center gap-1 rounded px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-medium bg-green-100 text-green-700">
+                          <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                           {openedRecipientsCount}/{totalRecipients}
                           {totalOpenCount > 1 && (
-                            <span className="ml-1 px-1.5 bg-green-500 text-white text-xs rounded">
+                            <span className="ml-1 px-1 sm:px-1.5 bg-green-500 text-white text-[9px] sm:text-xs rounded">
                               {totalOpenCount}×
                             </span>
                           )}
@@ -676,7 +679,7 @@ export const EmailHistory = ({ userId, onViewMeeting }: EmailHistoryProps) => {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-2">
                     {/* Bouton suivi - uniquement si méthode != local */}
                     {email.method !== 'local' && totalRecipients > 0 && openedRecipientsCount > 0 && (
                       <button
@@ -684,13 +687,13 @@ export const EmailHistory = ({ userId, onViewMeeting }: EmailHistoryProps) => {
                           e.stopPropagation();
                           setOpenRecipientsEmailId(prev => prev === email.id ? null : email.id);
                         }}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 border border-green-200 text-green-700 hover:bg-green-100 transition-colors text-xs font-medium"
+                        className="inline-flex items-center gap-1 sm:gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg bg-green-50 border border-green-200 text-green-700 hover:bg-green-100 transition-colors text-[10px] sm:text-xs font-medium"
                         title="Voir le suivi des destinataires"
                       >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>Lu</span>
+                        <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                        <span className="hidden sm:inline">Lu</span>
                         {totalOpenCount > 1 && (
-                          <span className="px-1.5 py-0.5 bg-green-500 text-white text-xs rounded-full">
+                          <span className="px-1 sm:px-1.5 py-0.5 bg-green-500 text-white text-[9px] sm:text-xs rounded-full">
                             {totalOpenCount}×
                           </span>
                         )}
@@ -701,10 +704,10 @@ export const EmailHistory = ({ userId, onViewMeeting }: EmailHistoryProps) => {
                         e.stopPropagation();
                         handleDelete(email.id);
                       }}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-1.5 sm:p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       title="Supprimer"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
                   </div>
                 </div>
@@ -768,59 +771,108 @@ export const EmailHistory = ({ userId, onViewMeeting }: EmailHistoryProps) => {
                         )}
                       </button>
                       {openRecipientsEmailId === email.id && (
-                        <div className="mt-3 overflow-x-auto bg-white rounded-lg border border-gray-200">
-                          <table className="min-w-full text-sm">
-                            <thead className="bg-gray-50">
-                              <tr className="text-left text-xs uppercase text-cocoa-500 tracking-wide">
-                                <th className="py-3 px-4">Destinataire</th>
-                                <th className="py-3 px-4">Type</th>
-                                <th className="py-3 px-4">Ouvertures</th>
-                                <th className="py-3 px-4">Historique</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {recipientStatuses.map((recipient) => (
-                                <tr key={`${email.id}-${recipient.type}-${recipient.email}`} className="border-t border-gray-100 hover:bg-gray-50">
-                                  <td className="py-3 px-4 font-medium text-cocoa-800">{recipient.email}</td>
-                                  <td className="py-3 px-4 text-cocoa-500">{recipient.type}</td>
-                                  <td className="py-3 px-4">
-                                    {recipient.openCount > 0 ? (
-                                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-emerald-600 font-semibold">
-                                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                        {recipient.openCount}×
-                                      </span>
-                                    ) : (
-                                      <span className="inline-flex items-center gap-1 rounded-full bg-gray-50 border border-gray-200 px-2 py-0.5 text-gray-500 font-semibold">
-                                        <span className="w-2 h-2 rounded-full bg-gray-300"></span>
-                                        0
-                                      </span>
-                                    )}
-                                  </td>
-                                  <td className="py-3 px-4">
-                                    {recipient.openCount > 0 ? (
-                                      <div className="space-y-1 max-h-32 overflow-y-auto">
-                                        {recipient.opens.map((open, idx) => (
-                                          <div key={open.id || idx} className="flex items-center gap-2 text-xs">
-                                            <span className={`w-1.5 h-1.5 rounded-full ${idx === 0 ? 'bg-emerald-500' : 'bg-gray-300'}`}></span>
-                                            <span className={idx === 0 ? 'text-emerald-600 font-medium' : 'text-cocoa-500'}>
-                                              {formatExactDateTime(open.opened_at)}
-                                            </span>
-                                            {idx === 0 && (
-                                              <span className="text-emerald-500 text-xs">(dernière)</span>
-                                            )}
-                                          </div>
-                                        ))}
-                                      </div>
-                                    ) : (
-                                      <span className="text-xs text-gray-400 italic">Pas encore ouvert</span>
-                                    )}
-                                  </td>
+                        <div className="mt-3 bg-white rounded-lg border border-gray-200">
+                          {/* Version desktop - Tableau */}
+                          <div className="hidden sm:block overflow-x-auto">
+                            <table className="min-w-full text-sm">
+                              <thead className="bg-gray-50">
+                                <tr className="text-left text-xs uppercase text-cocoa-500 tracking-wide">
+                                  <th className="py-3 px-4">Destinataire</th>
+                                  <th className="py-3 px-4">Type</th>
+                                  <th className="py-3 px-4">Ouvertures</th>
+                                  <th className="py-3 px-4">Historique</th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody>
+                                {recipientStatuses.map((recipient) => (
+                                  <tr key={`${email.id}-${recipient.type}-${recipient.email}`} className="border-t border-gray-100 hover:bg-gray-50">
+                                    <td className="py-3 px-4 font-medium text-cocoa-800">{recipient.email}</td>
+                                    <td className="py-3 px-4 text-cocoa-500">{recipient.type}</td>
+                                    <td className="py-3 px-4">
+                                      {recipient.openCount > 0 ? (
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-emerald-600 font-semibold">
+                                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                          {recipient.openCount}×
+                                        </span>
+                                      ) : (
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-gray-50 border border-gray-200 px-2 py-0.5 text-gray-500 font-semibold">
+                                          <span className="w-2 h-2 rounded-full bg-gray-300"></span>
+                                          0
+                                        </span>
+                                      )}
+                                    </td>
+                                    <td className="py-3 px-4">
+                                      {recipient.openCount > 0 ? (
+                                        <div className="space-y-1 max-h-32 overflow-y-auto">
+                                          {recipient.opens.map((open, idx) => (
+                                            <div key={open.id || idx} className="flex items-center gap-2 text-xs">
+                                              <span className={`w-1.5 h-1.5 rounded-full ${idx === 0 ? 'bg-emerald-500' : 'bg-gray-300'}`}></span>
+                                              <span className={idx === 0 ? 'text-emerald-600 font-medium' : 'text-cocoa-500'}>
+                                                {formatExactDateTime(open.opened_at)}
+                                              </span>
+                                              {idx === 0 && (
+                                                <span className="text-emerald-500 text-xs">(dernière)</span>
+                                              )}
+                                            </div>
+                                          ))}
+                                        </div>
+                                      ) : (
+                                        <span className="text-xs text-gray-400 italic">Pas encore ouvert</span>
+                                      )}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+
+                          {/* Version mobile - Cartes */}
+                          <div className="sm:hidden space-y-3 p-3">
+                            {recipientStatuses.map((recipient) => (
+                              <div key={`${email.id}-${recipient.type}-${recipient.email}`} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                                {/* Email et type */}
+                                <div className="flex items-start justify-between gap-2 mb-2">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-sm text-cocoa-800 truncate">{recipient.email}</p>
+                                    <p className="text-xs text-cocoa-500 mt-0.5">{recipient.type}</p>
+                                  </div>
+                                  {/* Badge ouvertures */}
+                                  {recipient.openCount > 0 ? (
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2 py-1 text-emerald-600 font-semibold text-xs flex-shrink-0">
+                                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                      {recipient.openCount}×
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 border border-gray-200 px-2 py-1 text-gray-500 font-semibold text-xs flex-shrink-0">
+                                      <span className="w-2 h-2 rounded-full bg-gray-300"></span>
+                                      0
+                                    </span>
+                                  )}
+                                </div>
+                                {/* Historique */}
+                                {recipient.openCount > 0 ? (
+                                  <div className="space-y-1 max-h-24 overflow-y-auto mt-2 pt-2 border-t border-gray-200">
+                                    {recipient.opens.map((open, idx) => (
+                                      <div key={open.id || idx} className="flex items-center gap-2">
+                                        <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${idx === 0 ? 'bg-emerald-500' : 'bg-gray-300'}`}></span>
+                                        <span className={`text-[10px] ${idx === 0 ? 'text-emerald-600 font-medium' : 'text-cocoa-500'}`}>
+                                          {formatExactDateTime(open.opened_at)}
+                                        </span>
+                                        {idx === 0 && (
+                                          <span className="text-emerald-500 text-[10px]">(dernière)</span>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <p className="text-xs text-gray-400 italic mt-2 pt-2 border-t border-gray-200">Pas encore ouvert</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+
                           {/* Résumé */}
-                          <div className="px-4 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between text-sm">
+                          <div className="px-3 py-2 sm:px-4 sm:py-3 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs sm:text-sm">
                             <span className="text-cocoa-600">
                               <strong>{openedRecipientsCount}</strong> sur <strong>{totalRecipients}</strong> destinataires ont ouvert
                             </span>
@@ -863,28 +915,28 @@ export const EmailHistory = ({ userId, onViewMeeting }: EmailHistoryProps) => {
 
      {/* Pagination */}
      {totalPages > 1 && (
-       <div className="flex items-center justify-between mt-6 px-2">
-         <div className="text-sm text-cocoa-600">
+       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0 mt-6 px-2">
+         <div className="text-xs sm:text-sm text-cocoa-600 order-2 sm:order-1">
            Page {currentPage} sur {totalPages} • {filteredEmails.length} email{filteredEmails.length !== 1 ? 's' : ''}
          </div>
-         <nav className="flex items-center gap-2" aria-label="Pagination des emails">
+         <nav className="flex items-center gap-1 sm:gap-2 order-1 sm:order-2" aria-label="Pagination des emails">
            <button
              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
              disabled={currentPage === 1}
-             className="h-10 w-10 flex items-center justify-center rounded-full border border-coral-200 text-coral-700 hover:bg-coral-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+             className="h-8 w-8 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-coral-200 text-coral-700 hover:bg-coral-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
              aria-label="Page précédente"
            >
-             <ChevronLeft className="w-4 h-4" />
+             <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
            </button>
-           <div className="flex items-center gap-1">
+           <div className="flex items-center gap-0.5 sm:gap-1">
              {paginationRange.map((item, index) => (
                item === 'dots' ? (
-                 <span key={`dots-${index}`} className="px-2 text-sm font-medium text-cocoa-400">...</span>
+                 <span key={`dots-${index}`} className="px-1 sm:px-2 text-xs sm:text-sm font-medium text-cocoa-400">...</span>
                ) : (
                  <button
                    key={`page-${item}`}
                    onClick={() => setCurrentPage(item)}
-                   className={`min-w-[2.5rem] h-10 px-3 rounded-full text-sm font-semibold transition-all ${
+                   className={`min-w-[2rem] sm:min-w-[2.5rem] h-8 sm:h-10 px-2 sm:px-3 rounded-full text-xs sm:text-sm font-semibold transition-all ${
                      currentPage === item
                        ? 'bg-coral-500 text-white shadow-md'
                        : 'border border-coral-200 text-coral-700 hover:bg-coral-100'
@@ -899,10 +951,10 @@ export const EmailHistory = ({ userId, onViewMeeting }: EmailHistoryProps) => {
            <button
              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
              disabled={currentPage === totalPages}
-             className="h-10 w-10 flex items-center justify-center rounded-full border border-coral-200 text-coral-700 hover:bg-coral-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+             className="h-8 w-8 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-coral-200 text-coral-700 hover:bg-coral-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
              aria-label="Page suivante"
            >
-             <ChevronRight className="w-4 h-4" />
+             <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
            </button>
          </nav>
        </div>
