@@ -389,14 +389,15 @@ export const AudioUpload = ({ userId, onSuccess }: AudioUploadProps) => {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-2xl p-6 md:p-10 border border-orange-100">
-      <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-coral-500 to-sunset-500 bg-clip-text text-transparent mb-6">
-        Importer un fichier audio
-      </h2>
+    <div className="max-w-4xl mx-auto">
+      <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 md:p-12 bg-white">
+        <h2 className="text-lg font-semibold text-gray-900 mb-8">
+          Importer un fichier audio
+        </h2>
 
-      <div className="space-y-6">
-        {/* Zone de drop/sélection */}
-        <div className="border-2 border-dashed border-coral-300 rounded-xl p-8 text-center hover:border-coral-500 transition-all bg-gradient-to-br from-orange-50 to-coral-50">
+        <div className="space-y-6">
+          {/* Zone de drop/sélection */}
+          <div className="bg-gray-50 rounded-lg p-12 text-center hover:bg-gray-100 transition-all">
           <input
             ref={fileInputRef}
             type="file"
@@ -412,14 +413,14 @@ export const AudioUpload = ({ userId, onSuccess }: AudioUploadProps) => {
           >
             {selectedFile ? (
               <>
-                <FileAudio className="w-16 h-16 text-coral-500" />
+                <FileAudio className="w-12 h-12 text-gray-400" />
                 <div className="text-center">
-                  <p className="font-semibold text-cocoa-800">{selectedFile.name}</p>
-                  <p className="text-sm text-cocoa-600">
+                  <p className="font-medium text-gray-900">{selectedFile.name}</p>
+                  <p className="text-sm text-gray-500 mt-1">
                     {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                   </p>
                   {audioDuration > 0 && (
-                    <p className="text-sm text-green-600 font-semibold mt-1">
+                    <p className="text-sm text-gray-600 mt-1">
                       Durée: {Math.floor(audioDuration / 60)}:{String(audioDuration % 60).padStart(2, '0')}
                     </p>
                   )}
@@ -433,7 +434,7 @@ export const AudioUpload = ({ userId, onSuccess }: AudioUploadProps) => {
                     setIsCalculatingDuration(false);
                     if (fileInputRef.current) fileInputRef.current.value = '';
                   }}
-                  className="text-sm text-coral-600 hover:text-coral-700 font-semibold flex items-center gap-1"
+                  className="text-sm text-gray-600 hover:text-gray-800 font-medium flex items-center gap-1"
                 >
                   <X className="w-4 h-4" />
                   Supprimer
@@ -441,12 +442,12 @@ export const AudioUpload = ({ userId, onSuccess }: AudioUploadProps) => {
               </>
             ) : (
               <>
-                <Upload className="w-16 h-16 text-coral-400" />
+                <Upload className="w-12 h-12 text-gray-400" />
                 <div>
-                  <p className="font-semibold text-cocoa-800">
+                  <p className="font-medium text-gray-900 mb-1">
                     Cliquez pour sélectionner un fichier audio
                   </p>
-                  <p className="text-sm text-cocoa-600 mt-1">
+                  <p className="text-sm text-gray-500">
                     MP3, WAV, M4A, WebM, OGG, FLAC, etc.
                   </p>
                 </div>
@@ -457,7 +458,7 @@ export const AudioUpload = ({ userId, onSuccess }: AudioUploadProps) => {
 
         {/* Titre */}
         <div>
-          <label htmlFor="upload-title" className="block text-sm font-semibold text-cocoa-800 mb-2">
+          <label htmlFor="upload-title" className="block text-sm font-medium text-gray-700 mb-2">
             Titre de la réunion (optionnel)
           </label>
           <input
@@ -465,44 +466,26 @@ export const AudioUpload = ({ userId, onSuccess }: AudioUploadProps) => {
             id="upload-title"
             value={meetingTitle}
             onChange={(e) => setMeetingTitle(e.target.value)}
-            placeholder="Ex: Réunion client - Projet X"
-            className="w-full px-4 py-3 border-2 border-orange-200 rounded-xl focus:outline-none focus:border-coral-500 focus:ring-4 focus:ring-coral-500/20 text-cocoa-800"
-            disabled={isProcessing}
-          />
-        </div>
-
-        {/* Notes */}
-        <div>
-          <label htmlFor="upload-notes" className="block text-sm font-semibold text-cocoa-800 mb-2">
-            Notes complémentaires (optionnel)
-          </label>
-          <textarea
-            id="upload-notes"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Ajoutez vos notes ici..."
-            className="w-full h-24 px-4 py-3 border-2 border-orange-200 rounded-xl focus:outline-none focus:border-coral-500 focus:ring-4 focus:ring-coral-500/20 resize-none text-cocoa-800"
+            placeholder="Ex : Rendez-vous client"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-200 text-gray-900"
             disabled={isProcessing}
           />
         </div>
 
         {/* Indicateur de calcul de durée */}
         {isCalculatingDuration && selectedFile && (
-          <div className="p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
-            <p className="text-sm font-semibold text-blue-800 flex items-center gap-2">
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800 flex items-center gap-2">
               <Loader className="w-4 h-4 animate-spin" />
               Calcul de la durée du fichier en cours...
-            </p>
-            <p className="text-xs text-blue-600 mt-1">
-              Cela peut prendre quelques secondes pour les fichiers volumineux
             </p>
           </div>
         )}
 
         {/* Affichage de la durée détectée */}
         {audioDuration > 0 && !isCalculatingDuration && (
-          <div className="p-4 bg-green-50 border-2 border-green-200 rounded-xl">
-            <p className="text-sm font-semibold text-green-800 flex items-center gap-2">
+          <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-sm text-green-800 flex items-center gap-2">
               ✅ Durée détectée : {Math.floor(audioDuration / 60)} min {audioDuration % 60} sec
             </p>
           </div>
@@ -512,25 +495,24 @@ export const AudioUpload = ({ userId, onSuccess }: AudioUploadProps) => {
         <button
           onClick={handleUpload}
           disabled={!selectedFile || isProcessing || isCalculatingDuration || audioDuration === 0}
-          className={`w-full py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 ${
+          className={`w-auto px-8 py-2.5 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 ${
             !selectedFile || isProcessing || isCalculatingDuration || audioDuration === 0
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-gradient-to-r from-coral-500 to-coral-600 text-white hover:from-coral-600 hover:to-coral-700 shadow-lg hover:shadow-xl'
+              : 'bg-orange-500 text-white hover:bg-orange-600'
           }`}
         >
           {isProcessing ? (
             <>
-              <Loader className="w-6 h-6 animate-spin" />
+              <Loader className="w-4 h-4 animate-spin" />
               <span>Traitement en cours...</span>
             </>
           ) : isCalculatingDuration ? (
             <>
-              <Loader className="w-6 h-6 animate-spin" />
+              <Loader className="w-4 h-4 animate-spin" />
               <span>Analyse du fichier...</span>
             </>
           ) : (
             <>
-              <FileAudio className="w-6 h-6" />
               <span>Transcrire et générer le résumé</span>
             </>
           )}
@@ -539,22 +521,20 @@ export const AudioUpload = ({ userId, onSuccess }: AudioUploadProps) => {
         {/* Progression */}
         {progress && (
           <div className="space-y-3">
-            <div className="p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
-              <p className="text-sm font-semibold text-blue-800 flex items-center gap-2">
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800 flex items-center gap-2">
                 <Loader className="w-4 h-4 animate-spin" />
                 {progress}
               </p>
             </div>
-            <div className="p-3 bg-orange-50 border-2 border-orange-200 rounded-xl">
-              <p className="text-xs font-semibold text-orange-800 flex items-center gap-2">
+            <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+              <p className="text-xs text-orange-800 flex items-center gap-2">
                 ⚠️ Ne fermez pas cette page et ne rafraîchissez pas le navigateur pendant le traitement !
-              </p>
-              <p className="text-xs text-orange-700 mt-1">
-                Le traitement se fait dans votre navigateur. Si vous rafraîchissez la page, vous perdrez votre progression.
               </p>
             </div>
           </div>
         )}
+        </div>
       </div>
 
       {/* Modal de quota complètement atteint */}

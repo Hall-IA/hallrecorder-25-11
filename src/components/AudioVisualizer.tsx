@@ -23,14 +23,16 @@ export const AudioVisualizer = ({
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !canvas.parentElement) return;
 
     // Utiliser le DPI natif complet pour un rendu cristallin
     const dpr = window.devicePixelRatio || 1;
     const resize = () => {
-      const rect = canvas.getBoundingClientRect();
+      const parent = canvas.parentElement;
+      if (!parent) return;
+      const rect = parent.getBoundingClientRect();
       const cssWidth = rect.width || 600;
-      const cssHeight = 160;
+      const cssHeight = rect.height || 200;
       // Canvas haute résolution
       canvas.width = Math.round(cssWidth * dpr);
       canvas.height = Math.round(cssHeight * dpr);
@@ -41,7 +43,7 @@ export const AudioVisualizer = ({
     resize();
 
     const ro = new ResizeObserver(resize);
-    ro.observe(canvas);
+    ro.observe(canvas.parentElement);
     return () => ro.disconnect();
   }, []);
 
@@ -92,8 +94,29 @@ export const AudioVisualizer = ({
       const h = canvas.height;
       const mid = h / 2;
 
-      // Fond transparent
-      ctx.clearRect(0, 0, w, h);
+      // Fond gris clair
+      ctx.fillStyle = '#f3f4f6'; // gray-100
+      ctx.fillRect(0, 0, w, h);
+
+      // Dessiner les lignes verticales de grille
+      const gridLineCount = 12;
+      ctx.strokeStyle = '#e5e7eb'; // gray-200
+      ctx.lineWidth = 1 * dpr;
+      for (let i = 1; i < gridLineCount; i++) {
+        const x = (w / gridLineCount) * i;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        ctx.stroke();
+      }
+
+      // Ligne horizontale centrale
+      ctx.strokeStyle = '#d1d5db'; // gray-300
+      ctx.lineWidth = 1 * dpr;
+      ctx.beginPath();
+      ctx.moveTo(0, mid);
+      ctx.lineTo(w, mid);
+      ctx.stroke();
 
       // Récupérer les données de fréquence
       analyser.getByteFrequencyData(freqData);
@@ -172,18 +195,16 @@ export const AudioVisualizer = ({
   }, [isActive, stream, barColor]);
 
   return (
-    <div className="flex justify-center items-center w-full py-4 px-2 rounded-xl" style={{ background: bgColor }}>
+    <div className="w-full h-full" style={{ background: bgColor }}>
       <canvas
         ref={canvasRef}
-        className="rounded-lg w-full"
+        className="w-full h-full"
         style={{
           display: isActive ? 'block' : 'none',
-          maxWidth: '100%',
-          height: '160px',
         }}
       />
       {!isActive && (
-        <div className="flex items-center justify-center h-[160px] w-full text-cocoa-500/70 text-sm">
+        <div className="flex items-center justify-center h-full w-full text-cocoa-500/70 text-sm">
           Visualisation en pause
         </div>
       )}

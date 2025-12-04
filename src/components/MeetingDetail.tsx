@@ -15,6 +15,7 @@ interface MeetingDetailProps {
   meeting: Meeting;
   onBack: () => void;
   onUpdate: () => void;
+  userDefaultSummaryMode?: SummaryMode | null;
 }
 
 const inferSummaryValues = (meeting: Meeting) => {
@@ -25,11 +26,14 @@ const inferSummaryValues = (meeting: Meeting) => {
   };
 };
 
-export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps) => {
+export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMode }: MeetingDetailProps) => {
   const [activeTab, setActiveTab] = useState<'summary' | 'transcript' | 'suggestions'>('summary');
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(meeting.title);
-  const [activeSummaryMode, setActiveSummaryMode] = useState<SummaryMode>((meeting.summary_mode as SummaryMode) || 'detailed');
+  // Priorité : mode par défaut de l'utilisateur > mode du résumé de la réunion > 'detailed'
+  const [activeSummaryMode, setActiveSummaryMode] = useState<SummaryMode>(
+    userDefaultSummaryMode || (meeting.summary_mode as SummaryMode) || 'detailed'
+  );
   const [editedSummaries, setEditedSummaries] = useState(() => inferSummaryValues(meeting));
   const [editedTranscript, setEditedTranscript] = useState(meeting.display_transcript || meeting.transcript || '');
   const [editedNotes, setEditedNotes] = useState(meeting.notes || '');
@@ -115,8 +119,9 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
   ]);
 
   useEffect(() => {
-    setActiveSummaryMode((meeting.summary_mode as SummaryMode) || 'detailed');
-  }, [meeting.id, meeting.summary_mode]);
+    // Priorité : mode par défaut de l'utilisateur > mode du résumé de la réunion > 'detailed'
+    setActiveSummaryMode(userDefaultSummaryMode || (meeting.summary_mode as SummaryMode) || 'detailed');
+  }, [meeting.id, meeting.summary_mode, userDefaultSummaryMode]);
 
   useEffect(() => {
     loadSignature();
@@ -1039,7 +1044,7 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
 
         return (
           <div key={lineIndex} className="flex items-start gap-2 mb-1">
-            <span className="text-coral-600 mt-1 text-sm">•</span>
+            <span className="text-orange-500 mt-1 text-sm">•</span>
             <span className="flex-1 text-cocoa-800">{renderedParts}</span>
           </div>
         );
@@ -1139,7 +1144,7 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
     setEditedSummaries(inferSummaryValues(meeting));
     setEditedTranscript(meeting.display_transcript || meeting.transcript || '');
     setEditedNotes(meeting.notes || '');
-    setActiveSummaryMode((meeting.summary_mode as SummaryMode) || 'detailed');
+    setActiveSummaryMode(userDefaultSummaryMode || (meeting.summary_mode as SummaryMode) || 'detailed');
     setIsEditing(false);
   };
 
@@ -1237,23 +1242,24 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
 
   if (isEditing) {
     return (
-      <div className="bg-white rounded-2xl md:rounded-3xl shadow-2xl overflow-hidden border-2 border-orange-100 h-full flex flex-col">
-        <div className="bg-gradient-to-r from-coral-500 to-sunset-500 p-4 md:p-6 flex items-center justify-between flex-shrink-0">
+      <div className="bg-white h-full flex flex-col">
+        {/* Header minimaliste blanc */}
+        <div className="border-b border-gray-200 p-4 md:p-6 flex items-center justify-between flex-shrink-0 bg-white sticky top-0 z-10">
           <div className="flex items-center gap-3">
-            <Edit2 className="w-5 h-5 md:w-6 md:h-6 text-white" />
-            <h2 className="text-xl md:text-2xl font-bold text-white">Modification de la réunion</h2>
+            <Edit2 className="w-5 h-5 md:w-6 md:h-6 text-gray-600" />
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900">Modification de la réunion</h2>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handleCancelEdit}
-              className="flex items-center gap-2 px-3 md:px-5 py-2 md:py-2.5 bg-white/20 hover:bg-white/30 text-white rounded-lg md:rounded-xl transition-colors font-semibold text-sm md:text-base"
+              className="flex items-center gap-2 px-3 md:px-5 py-2 md:py-2.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors font-medium text-sm md:text-base"
             >
               <X className="w-4 h-4 md:w-5 md:h-5" />
               <span className="hidden sm:inline">Annuler</span>
             </button>
             <button
               onClick={handleSave}
-              className="flex items-center gap-2 px-3 md:px-5 py-2 md:py-2.5 bg-white text-coral-600 hover:bg-orange-50 rounded-lg md:rounded-xl transition-colors font-semibold shadow-lg text-sm md:text-base"
+              className="flex items-center gap-2 px-3 md:px-5 py-2 md:py-2.5 bg-orange-500 text-white hover:bg-orange-600 rounded-lg transition-colors font-semibold shadow-sm text-sm md:text-base"
             >
               <Save className="w-4 h-4 md:w-5 md:h-5" />
               Enregistrer
@@ -1261,48 +1267,64 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6">
-          <div>
-            <label className="block text-sm font-bold text-cocoa-800 mb-2">
-              Titre de la réunion
-            </label>
-            <input
-              type="text"
-              value={editedTitle}
-              onChange={(e) => setEditedTitle(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-orange-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-coral-500 focus:border-coral-500 text-cocoa-800 text-lg font-semibold"
-              placeholder="Titre de la réunion"
-            />
-          </div>
+        {/* Contenu de l'éditeur - style document */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-12 bg-gray-50">
+          <div className="max-w-4xl mx-auto space-y-8">
+            {/* Titre - style document sans bordure */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">
+                Titre de la réunion
+              </label>
+              <input
+                type="text"
+                value={editedTitle}
+                onChange={(e) => setEditedTitle(e.target.value)}
+                className="w-full px-0 py-3 border-0 border-b-2 border-transparent hover:border-gray-200 focus:border-orange-400 focus:outline-none text-gray-900 text-3xl md:text-4xl font-bold bg-transparent transition-colors"
+                placeholder="Sans titre"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-bold text-cocoa-800 mb-2">
-              <FileText className="w-4 h-4 inline mr-2 text-amber-600" />
-              Notes prises pendant l'enregistrement
-            </label>
-            <textarea
-              value={editedNotes}
-              onChange={(e) => setEditedNotes(e.target.value)}
-              placeholder="Ajoutez vos notes ici..."
-              className="w-full min-h-[100px] p-4 border-2 border-amber-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-cocoa-800 leading-relaxed bg-gradient-to-br from-amber-50 to-orange-50 resize-y"
-            />
-          </div>
+            {/* Notes - style document */}
+            <div className="bg-white rounded-xl shadow-sm p-8 md:p-10">
+              <label className="flex items-center gap-2 text-xs font-semibold text-gray-500 mb-4 uppercase tracking-wide">
+                <FileText className="w-4 h-4" />
+                Notes prises pendant l'enregistrement
+              </label>
+              <textarea
+                value={editedNotes}
+                onChange={(e) => setEditedNotes(e.target.value)}
+                placeholder="Ajoutez vos notes ici..."
+                className="w-full min-h-[120px] p-0 border-0 focus:outline-none focus:ring-0 text-gray-700 text-base leading-relaxed bg-transparent resize-none font-normal"
+                style={{
+                  overflow: 'hidden',
+                  minHeight: editedNotes ? `${Math.max(120, editedNotes.split('\n').length * 26)}px` : '120px'
+                }}
+              />
+            </div>
 
-          <div className="flex-1">
-            <label className="block text-sm font-bold text-cocoa-800 mb-2">
-              Résumé IA · {activeSummaryMode === 'short' ? 'Version courte' : 'Version détaillée'}
-            </label>
-            <textarea
-              value={editedSummaries[activeSummaryMode] || ''}
-              onChange={(e) =>
-                setEditedSummaries((prev) => ({
-                  ...prev,
-                  [activeSummaryMode]: e.target.value,
-                }))
-              }
-              placeholder="Le résumé généré par l'IA apparaîtra ici..."
-              className="w-full min-h-[500px] p-6 border-2 border-orange-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-coral-500 focus:border-coral-500 text-cocoa-800 text-lg leading-relaxed resize-y"
-            />
+            {/* Résumé - style document épuré */}
+            <div className="bg-white rounded-xl shadow-sm p-8 md:p-10">
+              <label className="block text-xs font-semibold text-gray-500 mb-4 uppercase tracking-wide">
+                Résumé IA · {activeSummaryMode === 'short' ? 'Version courte' : 'Version détaillée'}
+              </label>
+              <textarea
+                value={editedSummaries[activeSummaryMode] || ''}
+                onChange={(e) =>
+                  setEditedSummaries((prev) => ({
+                    ...prev,
+                    [activeSummaryMode]: e.target.value,
+                  }))
+                }
+                placeholder="Le résumé généré par l'IA apparaîtra ici..."
+                className="w-full min-h-[600px] p-0 border-0 focus:outline-none focus:ring-0 text-gray-700 text-base leading-relaxed bg-transparent resize-none font-normal"
+                style={{
+                  overflow: 'hidden',
+                  minHeight: editedSummaries[activeSummaryMode]
+                    ? `${Math.max(600, editedSummaries[activeSummaryMode].split('\n').length * 26)}px`
+                    : '600px'
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -1326,13 +1348,13 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
               <div className="flex items-center gap-2 w-full sm:w-auto pb-6 sm:pb-0">
                 <button
                   onClick={handleDownloadPDF}
-                  className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 rounded-lg transition-all shadow-sm font-semibold text-sm flex-1 sm:flex-initial justify-center"
+                  className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 bg-white border-2 border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50 rounded-lg transition-all shadow-sm font-semibold text-sm flex-1 sm:flex-initial justify-center"
                 >
                   <FileDown className="w-4 h-4 md:w-5 md:h-5" />
                   <span className="hidden sm:inline">Télécharger PDF</span>
                   <span className="sm:hidden">PDF</span>
                 </button>
-                    
+
                     {/* Bouton télécharger audio */}
                     {meeting.audio_url && (
                       <div className="relative flex-1 sm:flex-initial">
@@ -1341,12 +1363,12 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
                           disabled={isDownloadingAudio || (audioTimeRemaining?.includes('Expiré') ?? false)}
                           className={`flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 rounded-lg transition-all shadow-sm font-semibold text-sm justify-center w-full ${
                             audioTimeRemaining?.includes('Expiré')
-                              ? 'bg-gray-400 text-white cursor-not-allowed'
+                              ? 'bg-gray-300 text-gray-500 cursor-not-allowed border-2 border-gray-300'
                               : audioAvailable === false
-                              ? 'bg-amber-500 text-white hover:bg-amber-600'
+                              ? 'bg-amber-500 text-white hover:bg-amber-600 border-2 border-amber-500'
                               : isDownloadingAudio
-                              ? 'bg-blue-400 text-white cursor-wait'
-                              : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700'
+                              ? 'bg-gray-100 text-gray-600 cursor-wait border-2 border-gray-300'
+                              : 'bg-white border-2 border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'
                           }`}
                           title={
                             audioTimeRemaining?.includes('Expiré')
@@ -1360,7 +1382,7 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
                         >
                           {isDownloadingAudio ? (
                             <>
-                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
                               <span className="hidden sm:inline">Téléchargement...</span>
                             </>
                           ) : audioTimeRemaining?.includes('Expiré') ? (
@@ -1385,8 +1407,8 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
                         </button>
                         {audioTimeRemaining && audioAvailable && !audioTimeRemaining.includes('Expiré') && (
                           <div className="absolute -bottom-5 left-0 right-0 text-xs text-center whitespace-nowrap">
-                            <span className={`font-semibold ${audioTimeRemaining.includes('minutes') && !audioTimeRemaining.includes('h') ? 'text-amber-600' : 'text-blue-600'}`}>
-                              ⏰ {audioTimeRemaining}
+                            <span className={`font-semibold ${audioTimeRemaining.includes('minutes') && !audioTimeRemaining.includes('h') ? 'text-amber-600' : 'text-gray-600'}`}>
+                              Expire dans : {audioTimeRemaining}
                             </span>
                           </div>
                         )}
@@ -1399,7 +1421,7 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
                         setInitialEmailBody(emailBody);
                         setShowEmailComposer(true);
                       }}
-                      className="flex items-center gap-1 md:gap-2 px-3 md:px-5 py-2 md:py-3 text-cocoa-600 hover:text-cocoa-800 hover:bg-orange-50 rounded-lg md:rounded-xl transition-colors font-semibold border-2 border-transparent hover:border-orange-200 text-sm md:text-base flex-1 sm:flex-initial justify-center"
+                      className="flex items-center gap-1 md:gap-2 px-3 md:px-5 py-2 md:py-3 bg-orange-500 text-white hover:bg-orange-600 rounded-lg md:rounded-xl transition-colors font-semibold shadow-sm text-sm md:text-base flex-1 sm:flex-initial justify-center"
                     >
                       <Mail className="w-4 h-4 md:w-5 md:h-5" />
                       <span className="hidden sm:inline">Envoyer par email</span>
@@ -1577,9 +1599,9 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate }: MeetingDetailProps)
               )}
 
               {meeting.notes && (
-                <div className="mb-8 bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 border-2 border-amber-200">
+                <div className="mb-8 bg-gray-50 rounded-2xl p-6 border-2 border-gray-200">
                   <div className="flex items-center gap-2 mb-3">
-                    <FileText className="w-5 h-5 text-amber-600" />
+                    <FileText className="w-5 h-5 text-gray-600" />
                     <h4 className="text-lg font-bold text-cocoa-800">Notes prises pendant l'enregistrement</h4>
                   </div>
                   <p className="text-cocoa-700 whitespace-pre-wrap leading-relaxed">

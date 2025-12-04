@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import { Square, Pause, Play } from 'lucide-react';
+import { Square, Pause, Play, Menu } from 'lucide-react';
 
 interface FloatingRecordButtonProps {
   isRecording: boolean;
@@ -9,6 +9,7 @@ interface FloatingRecordButtonProps {
   onPause: () => void;
   onResume: () => void;
   onStop: () => void;
+  onMenuClick?: () => void;
 }
 
 export const FloatingRecordButton = ({
@@ -23,9 +24,9 @@ export const FloatingRecordButton = ({
   const dragOffsetRef = useRef({ x: 0, y: 0 });
   const [position, setPosition] = useState(() => {
     if (typeof window === 'undefined') return { x: 0, y: 0 };
-    // Position par défaut : bas gauche
+    // Position par défaut : bas droite
     return {
-      x: 16,
+      x: Math.max(16, window.innerWidth - 176), // 176 = largeur du bouton + padding
       y: Math.max(16, window.innerHeight - 220),
     };
   });
@@ -85,11 +86,11 @@ export const FloatingRecordButton = ({
         ? safeAreaPadding.sm
         : safeAreaPadding.md;
 
-    const { height } = getContainerSize();
+    const { width, height } = getContainerSize();
 
-    // Position par défaut : bas gauche
+    // Position par défaut : bas droite
     return {
-      x: edgePadding,
+      x: window.innerWidth - width - edgePadding,
       y: window.innerHeight - height - (edgePadding + (window.innerWidth < 640 ? 56 : 32)),
     };
   }, [getContainerSize, safeAreaPadding]);
@@ -197,16 +198,65 @@ export const FloatingRecordButton = ({
   if (!isRecording) return null;
 
   return (
-    <div
-      ref={containerRef}
-      className={`fixed z-50 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
-      style={{ top: `${position.y}px`, left: `${position.x}px` }}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerUp}
-      onPointerLeave={handlePointerUp}
-    >
+    <>
+      {/* Barre sticky en haut pour mobile */}
+      <div className="md:hidden fixed top-16 left-0 right-0 z-50 bg-gradient-to-r from-coral-500 to-coral-600 shadow-lg h-[60px]">
+        <div className="flex items-center justify-between px-4 h-full">
+          {/* Timer et indicateur */}
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 bg-white rounded-full animate-pulse shadow-lg" />
+            <span className="font-mono font-bold text-white text-lg tabular-nums">
+              {formatTime(recordingTime)}
+            </span>
+            {isPaused && (
+              <span className="text-xs text-white font-bold tracking-wider bg-white/20 px-2 py-1 rounded">
+                PAUSE
+              </span>
+            )}
+          </div>
+
+          {/* Boutons de contrôle */}
+          <div className="flex items-center gap-2">
+            {isPaused ? (
+              <button
+                onClick={onResume}
+                className="p-2.5 bg-green-500 hover:bg-green-600 text-white rounded-full transition-all shadow-lg active:scale-95"
+                title="Reprendre"
+              >
+                <Play className="w-5 h-5" />
+              </button>
+            ) : (
+              <button
+                onClick={onPause}
+                className="p-2.5 bg-sunset-500 hover:bg-sunset-600 text-white rounded-full transition-all shadow-lg active:scale-95"
+                title="Pause"
+              >
+                <Pause className="w-5 h-5" />
+              </button>
+            )}
+
+            <button
+              onClick={onStop}
+              className="p-2.5 bg-red-500 hover:bg-red-600 text-white rounded-full transition-all shadow-lg active:scale-95"
+              title="Arrêter"
+            >
+              <Square className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Bouton flottant pour desktop uniquement */}
+      <div
+        ref={containerRef}
+        className={`hidden md:block fixed z-50 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+        style={{ top: `${position.y}px`, left: `${position.x}px` }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+      >
       {showDragHint && (
         <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-cocoa-900/90 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-lg pointer-events-none">
           Glissez pour déplacer
@@ -281,6 +331,7 @@ export const FloatingRecordButton = ({
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };

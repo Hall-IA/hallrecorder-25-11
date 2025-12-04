@@ -481,25 +481,38 @@ export function EmailComposer({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col animate-scaleIn">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4 animate-fadeIn">
+      <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-5xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col animate-scaleIn">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-[#EF6855] via-[#E5503F] to-[#D64838] text-white p-6 flex justify-between items-center z-10 shadow-lg">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-white/20 rounded-xl">
-              <Send className="w-6 h-6" />
+        <div className="sticky top-0 bg-gradient-to-r from-[#EF6855] via-[#E5503F] to-[#D64838] text-white p-3 sm:p-6 z-10 shadow-lg">
+          <div className="flex flex-col gap-3">
+            {/* Ligne 1: Titre et fermer */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                <div className="p-1.5 sm:p-2 bg-white/20 rounded-lg sm:rounded-xl flex-shrink-0">
+                  <Send className="w-4 h-4 sm:w-6 sm:h-6" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-lg sm:text-2xl font-bold truncate">Nouveau message</h2>
+                  <p className="text-xs sm:text-sm text-white/80 hidden sm:block">Composez et envoyez votre email</p>
+                </div>
+              </div>
+              <button
+                onClick={onClose}
+                className="p-1.5 sm:p-2 hover:bg-white/20 rounded-lg transition-all flex-shrink-0"
+                disabled={isSending}
+              >
+                <X className="w-5 h-5 sm:w-6 sm:h-6" />
+              </button>
             </div>
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold">Nouveau message</h2>
-              <p className="text-sm text-white/80">Composez et envoyez votre email</p>
-            </div>
-            {/* Sélecteur de méthode d'envoi */}
-            <div className="flex items-center gap-1 bg-white/10 rounded-xl p-1">
+
+            {/* Ligne 2: Sélecteur de méthode d'envoi */}
+            <div className="flex items-center gap-1 bg-white/10 rounded-lg sm:rounded-xl p-1">
               {/* Gmail */}
               <button
                 onClick={() => handleMethodChange('gmail')}
                 disabled={isSending}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all flex-1 justify-center ${
                   emailMethod === 'gmail'
                     ? 'bg-white text-red-600 shadow-md'
                     : availableMethods.gmail
@@ -508,17 +521,17 @@ export function EmailComposer({
                 }`}
                 title={availableMethods.gmail ? 'Envoyer via Gmail' : 'Gmail non configuré'}
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/>
                 </svg>
-                {emailMethod === 'gmail' && 'Gmail'}
+                <span className={emailMethod === 'gmail' ? '' : 'hidden sm:inline'}>Gmail</span>
               </button>
 
               {/* SMTP */}
               <button
                 onClick={() => handleMethodChange('smtp')}
                 disabled={isSending}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all flex-1 justify-center ${
                   emailMethod === 'smtp'
                     ? 'bg-white text-blue-600 shadow-md'
                     : availableMethods.smtp
@@ -527,118 +540,116 @@ export function EmailComposer({
                 }`}
                 title={availableMethods.smtp ? 'Envoyer via SMTP' : 'SMTP non configuré'}
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="2" y="4" width="20" height="16" rx="2"/>
                   <path d="m2 7 10 7 10-7"/>
                 </svg>
-                {emailMethod === 'smtp' && 'SMTP'}
+                <span className={emailMethod === 'smtp' ? '' : 'hidden sm:inline'}>SMTP</span>
               </button>
 
               {/* App locale */}
               <button
                 onClick={() => handleMethodChange('app')}
                 disabled={isSending}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all flex-1 justify-center ${
                   emailMethod === 'app'
                     ? 'bg-white text-gray-700 shadow-md'
                     : 'text-white/80 hover:bg-white/20'
                 }`}
                 title="Ouvrir dans l'application email"
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="3" y="5" width="18" height="14" rx="2"/>
                   <path d="m3 7 9 6 9-6"/>
                 </svg>
-                {emailMethod === 'app' && 'App'}
+                <span className={emailMethod === 'app' ? '' : 'hidden sm:inline'}>App</span>
               </button>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            disabled={isSending}
-            className="p-2 hover:bg-white/20 rounded-xl transition-all disabled:opacity-50"
-          >
-            <X className="w-6 h-6" />
-          </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-5">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-4 sm:space-y-5">
           {/* Destinataires */}
           <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <label className="text-sm font-semibold text-gray-700 w-16">À:</label>
-              <div className="flex-1">
+            <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3">
+              <label className="text-sm font-semibold text-gray-700 sm:w-16 sm:pt-2">À:</label>
+              <div className="flex-1 space-y-2">
                 {recipients.map((recipient, index) => (
-                  <div key={index} className="flex items-center gap-3 mb-2">
-                    <input
-                      type="email"
-                      placeholder="email@exemple.com"
-                      value={recipient.email}
-                      onChange={(e) => updateRecipient(index, e.target.value)}
-                      className="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EF6855] focus:border-transparent"
-                      disabled={isSending}
-                      required
-                    />
-                    <div className="w-1/2 flex gap-3 flex-wrap">
-                      <button
-                        onClick={addRecipient}
+                  <div key={index} className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="email"
+                        placeholder="email@exemple.com"
+                        value={recipient.email}
+                        onChange={(e) => updateRecipient(index, e.target.value)}
+                        className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EF6855] focus:border-transparent"
                         disabled={isSending}
-                        className="flex items-center gap-2 text-sm text-[#EF6855] hover:text-[#E5503F] font-medium disabled:opacity-50"
-                      >
-                        <Plus className="w-4 h-4" />
-                        Ajouter un destinataire
-                      </button>
-                      {contactGroups.length > 0 && (
+                        required
+                      />
+                      {recipients.length > 1 && (
                         <button
-                          onClick={() => setShowGroupSelector(true)}
+                          onClick={() => removeRecipient(index)}
                           disabled={isSending}
-                          className="flex items-center gap-2 text-sm text-purple-600 hover:text-purple-700 font-medium disabled:opacity-50"
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 flex-shrink-0"
                         >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                          </svg>
-                          Groupe
-                        </button>
-                      )}
-                      {!showCC && (
-                        <button
-                          onClick={() => {
-                            setShowCC(true);
-                            if (ccRecipients.length === 0) {
-                              setCcRecipients([{ name: '', email: '' }]);
-                            }
-                          }}
-                          disabled={isSending}
-                          className="flex items-center gap-2 text-sm text-[#EF6855] hover:text-[#E5503F] font-medium disabled:opacity-50"
-                        >
-                          <Plus className="w-4 h-4" />
-                          CC
-                        </button>
-                      )}
-                      {!showBCC && (
-                        <button
-                          onClick={() => {
-                            setShowBCC(true);
-                            if (bccRecipients.length === 0) {
-                              setBccRecipients([{ name: '', email: '' }]);
-                            }
-                          }}
-                          disabled={isSending}
-                          className="flex items-center gap-2 text-sm text-[#EF6855] hover:text-[#E5503F] font-medium disabled:opacity-50"
-                        >
-                          <Plus className="w-4 h-4" />
-                          CCI
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       )}
                     </div>
-                    {recipients.length > 1 && (
-                      <button
-                        onClick={() => removeRecipient(index)}
-                        disabled={isSending}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
+                    {index === recipients.length - 1 && (
+                      <div className="flex gap-2 flex-wrap">
+                        <button
+                          onClick={addRecipient}
+                          disabled={isSending}
+                          className="flex items-center gap-1.5 text-xs sm:text-sm text-[#EF6855] hover:text-[#E5503F] font-medium disabled:opacity-50"
+                        >
+                          <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          <span className="hidden sm:inline">Ajouter un destinataire</span>
+                          <span className="sm:hidden">+ Destinataire</span>
+                        </button>
+                        {contactGroups.length > 0 && (
+                          <button
+                            onClick={() => setShowGroupSelector(true)}
+                            disabled={isSending}
+                            className="flex items-center gap-1.5 text-xs sm:text-sm text-purple-600 hover:text-purple-700 font-medium disabled:opacity-50"
+                          >
+                            <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            Groupe
+                          </button>
+                        )}
+                        {!showCC && (
+                          <button
+                            onClick={() => {
+                              setShowCC(true);
+                              if (ccRecipients.length === 0) {
+                                setCcRecipients([{ name: '', email: '' }]);
+                              }
+                            }}
+                            disabled={isSending}
+                            className="flex items-center gap-1.5 text-xs sm:text-sm text-[#EF6855] hover:text-[#E5503F] font-medium disabled:opacity-50"
+                          >
+                            <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            CC
+                          </button>
+                        )}
+                        {!showBCC && (
+                          <button
+                            onClick={() => {
+                              setShowBCC(true);
+                              if (bccRecipients.length === 0) {
+                                setBccRecipients([{ name: '', email: '' }]);
+                              }
+                            }}
+                            disabled={isSending}
+                            className="flex items-center gap-1.5 text-xs sm:text-sm text-[#EF6855] hover:text-[#E5503F] font-medium disabled:opacity-50"
+                          >
+                            <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            CCI
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
                 ))}
@@ -647,8 +658,8 @@ export function EmailComposer({
 
             {/* CC Recipients */}
             {showCC && (
-              <div className="flex items-center gap-3">
-                <label className="text-sm font-semibold text-gray-700 w-16">CC:</label>
+              <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3">
+                <label className="text-sm font-semibold text-gray-700 sm:w-16 sm:pt-2">CC:</label>
                 <div className="flex-1 space-y-2">
                   {ccRecipients.map((recipient, index) => (
                     <div key={index} className="flex gap-2">
@@ -657,7 +668,7 @@ export function EmailComposer({
                         placeholder="email@exemple.com"
                         value={recipient.email}
                         onChange={(e) => updateCcRecipient(index, e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EF6855] focus:border-transparent"
+                        className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EF6855] focus:border-transparent"
                         disabled={isSending}
                       />
                       <button
@@ -668,18 +679,18 @@ export function EmailComposer({
                           }
                         }}
                         disabled={isSending}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 flex-shrink-0"
                       >
-                        <Trash2 className="w-5 h-5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   ))}
                   <button
                     onClick={addCcRecipient}
                     disabled={isSending}
-                    className="flex items-center gap-2 text-sm text-[#EF6855] hover:text-[#E5503F] font-medium disabled:opacity-50"
+                    className="flex items-center gap-1.5 text-xs sm:text-sm text-[#EF6855] hover:text-[#E5503F] font-medium disabled:opacity-50"
                   >
-                    <Plus className="w-4 h-4" />
+                    <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     Ajouter CC
                   </button>
                 </div>
@@ -688,8 +699,8 @@ export function EmailComposer({
 
             {/* BCC Recipients */}
             {showBCC && (
-              <div className="flex items-center gap-3">
-                <label className="text-sm font-semibold text-gray-700 w-16">CCI:</label>
+              <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3">
+                <label className="text-sm font-semibold text-gray-700 sm:w-16 sm:pt-2">CCI:</label>
                 <div className="flex-1 space-y-2">
                   {bccRecipients.map((recipient, index) => (
                     <div key={index} className="flex gap-2">
@@ -698,7 +709,7 @@ export function EmailComposer({
                         placeholder="email@exemple.com"
                         value={recipient.email}
                         onChange={(e) => updateBccRecipient(index, e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EF6855] focus:border-transparent"
+                        className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EF6855] focus:border-transparent"
                         disabled={isSending}
                       />
                       <button
@@ -709,19 +720,19 @@ export function EmailComposer({
                           }
                         }}
                         disabled={isSending}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 flex-shrink-0"
                       >
-                        <Trash2 className="w-5 h-5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   ))}
                   <button
                     onClick={addBccRecipient}
                     disabled={isSending}
-                    className="flex items-center gap-2 text-sm text-[#EF6855] hover:text-[#E5503F] font-medium disabled:opacity-50"
+                    className="flex items-center gap-1.5 text-xs sm:text-sm text-[#EF6855] hover:text-[#E5503F] font-medium disabled:opacity-50"
                   >
-                    <Plus className="w-4 h-4" />
-                    Ajouter BCC
+                    <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    Ajouter CCI
                   </button>
                 </div>
               </div>
@@ -729,29 +740,29 @@ export function EmailComposer({
           </div>
 
           {/* Objet */}
-          <div className="flex items-center gap-3">
-            <label className="text-sm font-semibold text-gray-700 w-16">Objet:</label>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+            <label className="text-sm font-semibold text-gray-700 sm:w-16">Objet:</label>
             <input
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder="Objet de l'email"
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EF6855] focus:border-transparent"
+              className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EF6855] focus:border-transparent"
               disabled={isSending}
               required
             />
           </div>
 
           {/* Pièces jointes */}
-          <div className="border border-gray-300 rounded-lg p-4 bg-gradient-to-br from-orange-50 to-red-50">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Paperclip className="w-5 h-5 text-[#EF6855]" />
-                <span className="text-sm font-semibold text-gray-700">
+          <div className="border border-gray-300 rounded-lg p-3 sm:p-4 bg-gradient-to-br from-orange-50 to-red-50">
+            <div className="flex items-center justify-between mb-3 gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <Paperclip className="w-4 h-4 sm:w-5 sm:h-5 text-[#EF6855] flex-shrink-0" />
+                <span className="text-xs sm:text-sm font-semibold text-gray-700 truncate">
                   Pièces jointes {attachments.length > 0 && `(${attachments.length})`}
                 </span>
               </div>
-              <label className="cursor-pointer">
+              <label className="cursor-pointer flex-shrink-0">
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -760,11 +771,11 @@ export function EmailComposer({
                   className="hidden"
                   disabled={isSending || isUploadingAttachment}
                 />
-                <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#EF6855] to-[#E5503F] text-white rounded-lg hover:from-[#E5503F] hover:to-[#D64838] transition-all font-semibold text-sm shadow-md hover:shadow-lg disabled:opacity-50">
+                <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-[#EF6855] to-[#E5503F] text-white rounded-lg hover:from-[#E5503F] hover:to-[#D64838] transition-all font-semibold text-xs sm:text-sm shadow-md hover:shadow-lg disabled:opacity-50">
                   {isUploadingAttachment ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      <span>Upload...</span>
+                      <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white"></div>
+                      <span className="hidden sm:inline">Upload...</span>
                     </>
                   ) : (
                     <>

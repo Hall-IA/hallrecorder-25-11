@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { TrendingUp, Clock, FileText, Calendar, BarChart3, Crown, Zap, AlertCircle, RefreshCw, Mail, Eye, Users, PieChart, ArrowUp, ArrowDown } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { TrendingUp, Clock, FileText, Calendar, BarChart3, Crown, Zap, AlertCircle, RefreshCw, Mail, Eye, Users, PieChart, ArrowUp, ArrowDown, CalendarDays, X } from 'lucide-react';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -78,8 +78,12 @@ export function Dashboard() {
   const [activeTab, setActiveTab] = useState<'overview' | 'statistics'>('overview');
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [periodFilter, setPeriodFilter] = useState<'today' | 'week' | 'year'>('today');
+  const [periodFilter, setPeriodFilter] = useState<'today' | 'week' | 'month' | 'year' | 'custom'>('month');
   const [appliedRange, setAppliedRange] = useState<DateRange>({});
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
+  const calendarRef = useRef<HTMLDivElement>(null);
 
   const loadStats = useCallback(async (range?: DateRange) => {
     try {
@@ -289,9 +293,9 @@ export function Dashboard() {
     }
   }, []);
 
-  // Initialiser avec le filtre "today" au premier chargement
+  // Initialiser avec le filtre "month" au premier chargement
   useEffect(() => {
-    // Si appliedRange est vide au démarrage, appliquer le filtre "today"
+    // Si appliedRange est vide au démarrage, appliquer le filtre "month"
     if (!appliedRange.start && !appliedRange.end) {
       const now = new Date();
       const formatLocalDate = (d: Date) => {
@@ -300,15 +304,28 @@ export function Dashboard() {
         const day = String(d.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
       };
-      const todayStr = formatLocalDate(now);
-      setAppliedRange({ start: todayStr, end: todayStr });
+      // Début du mois en cours
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      setAppliedRange({ start: formatLocalDate(startOfMonth), end: formatLocalDate(now) });
     } else {
       loadStats(appliedRange);
     }
   }, [appliedRange, loadStats]);
 
-  const handlePeriodFilter = (period: 'today' | 'week' | 'year') => {
+  // Fermer le calendrier quand on clique en dehors
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
+        setShowCalendar(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handlePeriodFilter = (period: 'today' | 'week' | 'month' | 'year') => {
     setPeriodFilter(period);
+    setShowCalendar(false);
     const now = new Date();
     let start: Date;
 
@@ -318,6 +335,9 @@ export function Dashboard() {
         break;
       case 'week':
         start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case 'month':
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
         break;
       case 'year':
         start = new Date(now.getFullYear(), 0, 1);
@@ -340,11 +360,29 @@ export function Dashboard() {
     setAppliedRange(range);
   };
 
+  const handleCustomDateApply = () => {
+    if (customStartDate && customEndDate) {
+      setPeriodFilter('custom');
+      setAppliedRange({ start: customStartDate, end: customEndDate });
+      setShowCalendar(false);
+    }
+  };
+
+  const formatDateRange = () => {
+    if (!appliedRange.start || !appliedRange.end) return '';
+    const start = new Date(appliedRange.start);
+    const end = new Date(appliedRange.end);
+    const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
+    return `${start.toLocaleDateString('fr-FR', options)} - ${end.toLocaleDateString('fr-FR', options)}`;
+  };
+
   const handleRefresh = () => {
-    if (periodFilter) {
+    if (periodFilter && periodFilter !== 'custom') {
       handlePeriodFilter(periodFilter);
+    } else if (periodFilter === 'custom' && appliedRange.start && appliedRange.end) {
+      loadStats(appliedRange);
     } else {
-      setAppliedRange({});
+      handlePeriodFilter('month');
     }
   };
 
@@ -394,79 +432,142 @@ export function Dashboard() {
     .reverse();
  
   return (
-    <div className="h-full bg-gray-50 p-4 md:p-8 overflow-auto">
-      <div className="max-w-7xl mx-auto">
-        {/* Header avec onglets et filtres */}
-        <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 animate-fadeInDown">
-          <div className="flex items-center gap-6">
-            <h1 className="text-2xl font-bold text-gray-900">Tableau de bord</h1>
-            {/* Onglets */}
-            <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
-              <button
-                onClick={() => setActiveTab('overview')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  activeTab === 'overview'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                <BarChart3 className="w-4 h-4" />
-                Aperçu
-              </button>
-              <button
-                onClick={() => setActiveTab('statistics')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  activeTab === 'statistics'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                <PieChart className="w-4 h-4" />
-                Statistiques
-              </button>
-            </div>
+    <div className="h-full bg-white p-4 md:p-6 lg:p-8 overflow-auto">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header - Design minimaliste */}
+        <div className="flex flex-col gap-4">
+          {/* Ligne 1: Titre et bouton statistiques */}
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl md:text-2xl font-semibold text-gray-900">Tableau de bord</h1>
+
+            {/* Lien Statistiques - Desktop uniquement */}
+            <button
+              onClick={() => setActiveTab(activeTab === 'overview' ? 'statistics' : 'overview')}
+              className="hidden md:flex text-sm text-blue-600 hover:text-blue-700 font-medium items-center gap-1"
+            >
+              <PieChart className="w-4 h-4" />
+              {activeTab === 'overview' ? 'Statistiques' : 'Aperçu'}
+            </button>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-white rounded-xl shadow-sm overflow-hidden">
+
+          {/* Ligne 2: Filtres de période - Scrollable sur mobile */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5 flex-shrink-0">
               <button
                 onClick={() => handlePeriodFilter('today')}
-                className={`px-4 py-2 text-sm font-medium transition-all duration-300 ${
+                className={`px-2.5 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
                   periodFilter === 'today'
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-600 hover:bg-gray-100'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 Aujourd'hui
               </button>
               <button
                 onClick={() => handlePeriodFilter('week')}
-                className={`px-4 py-2 text-sm font-medium transition-all duration-300 ${
+                className={`px-2.5 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
                   periodFilter === 'week'
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-600 hover:bg-gray-100'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                Cette semaine
+                Semaine
+              </button>
+              <button
+                onClick={() => handlePeriodFilter('month')}
+                className={`px-2.5 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
+                  periodFilter === 'month'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Mois
               </button>
               <button
                 onClick={() => handlePeriodFilter('year')}
-                className={`px-4 py-2 text-sm font-medium transition-all duration-300 ${
+                className={`px-2.5 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
                   periodFilter === 'year'
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-600 hover:bg-gray-100'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                Cette Année
+                Année
+              </button>
+              <button
+                onClick={() => setShowCalendar(!showCalendar)}
+                className={`px-2.5 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 whitespace-nowrap ${
+                  periodFilter === 'custom'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <CalendarDays className="w-3.5 h-3.5" />
+                <span className="hidden md:inline">{periodFilter === 'custom' ? formatDateRange() : 'Personnalisé'}</span>
               </button>
             </div>
+
+            {/* Bouton Actualiser */}
             <button
               onClick={handleRefresh}
-              className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-coral-500 to-sunset-500 text-white text-sm font-semibold rounded-xl shadow hover:shadow-lg transition-all duration-300 hover:scale-105"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 text-white text-xs font-medium rounded-lg hover:bg-orange-600 transition-colors flex-shrink-0"
             >
-              <RefreshCw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
-              Actualiser
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Actualiser</span>
             </button>
           </div>
+
+          {/* Bouton Statistiques - Mobile uniquement */}
+          <button
+            onClick={() => setActiveTab(activeTab === 'overview' ? 'statistics' : 'overview')}
+            className="md:hidden flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium rounded-lg transition-colors text-sm"
+          >
+            <PieChart className="w-4 h-4" />
+            {activeTab === 'overview' ? 'Voir les Statistiques' : 'Voir l\'Aperçu'}
+          </button>
+        </div>
+
+        {/* Dropdown calendrier - position fixe */}
+        <div className="relative" ref={calendarRef}>
+          {showCalendar && (
+            <div className="absolute right-0 top-0 bg-white rounded-xl shadow-2xl border border-gray-200 p-4 z-50 min-w-[280px]">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-semibold text-gray-900">Période personnalisée</h4>
+                <button
+                  onClick={() => setShowCalendar(false)}
+                  className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-4 h-4 text-gray-500" />
+                </button>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Date de début</label>
+                  <input
+                    type="date"
+                    value={customStartDate}
+                    onChange={(e) => setCustomStartDate(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Date de fin</label>
+                  <input
+                    type="date"
+                    value={customEndDate}
+                    onChange={(e) => setCustomEndDate(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
+                <button
+                  onClick={handleCustomDateApply}
+                  disabled={!customStartDate || !customEndDate}
+                  className="w-full py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Appliquer
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Contenu selon l'onglet actif */}
@@ -562,157 +663,125 @@ export function Dashboard() {
           </div>
         )}
 
-        {/* Cartes statistiques */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {/* Total de réunions */}
-          <div className="group bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-2 hover:border-blue-300 transition-all duration-500 ease-out animate-fadeInUp delay-100">
-            <div className="flex items-start justify-between mb-3">
-              <p className="text-sm font-medium text-gray-600 group-hover:text-blue-600 transition-colors duration-300">Total de réunions</p>
-              <div className="p-2 bg-blue-50 rounded-lg group-hover:scale-110 group-hover:bg-blue-100 transition-all duration-300">
-                <FileText className="w-5 h-5 text-blue-600" />
-              </div>
+        {/* Cartes statistiques - Design épuré */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          {/* Réunions */}
+          <div className="bg-gray-50 rounded-xl p-4 md:p-5 border border-gray-100">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-gray-500">Réunions</span>
+              <FileText className="w-4 h-4 text-gray-400" />
             </div>
-            <p className="text-3xl font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors duration-300">{stats.totalMinutes}min</p>
-            <p className="text-xs text-gray-500">Depuis le début</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.periodMeetings}</p>
+            <p className="text-xs text-gray-500 mt-1">{stats.totalMeetings} au total</p>
           </div>
 
-          {/* Minutes utilisées */}
-          <div className="group bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-2 hover:border-green-300 transition-all duration-500 ease-out animate-fadeInUp delay-150">
-            <div className="flex items-start justify-between mb-3">
-              <p className="text-sm font-medium text-gray-600 group-hover:text-green-600 transition-colors duration-300">Minutes utilisées</p>
-              <div className="p-2 bg-green-50 rounded-lg group-hover:scale-110 group-hover:bg-green-100 transition-all duration-300">
-                <Clock className="w-5 h-5 text-green-600" />
-              </div>
+          {/* Temps enregistré */}
+          <div className="bg-gray-50 rounded-xl p-4 md:p-5 border border-gray-100">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-gray-500">Temps enregistré</span>
+              <Clock className="w-4 h-4 text-gray-400" />
             </div>
-            <p className="text-3xl font-bold text-gray-900 mb-1 group-hover:text-green-600 transition-colors duration-300">{stats.periodMeetings}</p>
-            <p className="text-xs text-gray-500">Depuis le début</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.periodMinutes} min</p>
+            <p className="text-xs text-gray-500 mt-1">{stats.totalMinutes} min au total</p>
           </div>
 
-          {/* Réunions période */}
-          <div className="group bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-2 hover:border-red-300 transition-all duration-500 ease-out animate-fadeInUp delay-200">
-            <div className="flex items-start justify-between mb-3">
-              <p className="text-sm font-medium text-gray-600 group-hover:text-red-600 transition-colors duration-300">Réunions</p>
-              <div className="p-2 bg-red-50 rounded-lg group-hover:scale-110 group-hover:bg-red-100 transition-all duration-300">
-                <Calendar className="w-5 h-5 text-red-600" />
-              </div>
+          {/* Emails envoyés */}
+          <div className="bg-gray-50 rounded-xl p-4 md:p-5 border border-gray-100">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-gray-500">Emails envoyés</span>
+              <Mail className="w-4 h-4 text-gray-400" />
             </div>
-            <p className="text-3xl font-bold text-gray-900 mb-1 group-hover:text-red-600 transition-colors duration-300">{stats.periodMeetings}</p>
-            <p className="text-xs text-gray-500">{stats.periodMinutes} minutes sur la période</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.emailsSent}</p>
+            <p className="text-xs text-gray-500 mt-1">{stats.emailsOpened} ouvert{stats.emailsOpened > 1 ? 's' : ''}</p>
           </div>
 
           {/* Durée moyenne */}
-          <div className="group bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-2 hover:border-purple-300 transition-all duration-500 ease-out animate-fadeInUp delay-250">
-            <div className="flex items-start justify-between mb-3">
-              <p className="text-sm font-medium text-gray-600 group-hover:text-purple-600 transition-colors duration-300">Durée moyenne</p>
-              <div className="p-2 bg-purple-50 rounded-lg group-hover:scale-110 group-hover:bg-purple-100 transition-all duration-300">
-                <BarChart3 className="w-5 h-5 text-purple-600" />
-              </div>
+          <div className="bg-gray-50 rounded-xl p-4 md:p-5 border border-gray-100">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-gray-500">Durée moyenne</span>
+              <TrendingUp className="w-4 h-4 text-gray-400" />
             </div>
-            <p className="text-3xl font-bold text-gray-900 mb-1 group-hover:text-purple-600 transition-colors duration-300">{stats.averageDuration}</p>
-            <p className="text-xs text-gray-500">minutes par réunion</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.averageDuration} min</p>
+            <p className="text-xs text-gray-500 mt-1">par réunion</p>
           </div>
         </div>
 
         {/* Section inférieure */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
           {/* Activité récente */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 animate-fadeInLeft delay-300">
-            <h2 className="text-base font-semibold text-gray-900 mb-1">
-              Activité récente (7 derniers jours)
-            </h2>
-            <p className="text-2xl font-bold text-gray-900 mb-1">{stats.totalMinutes}min</p>
-            <p className="text-xs text-gray-500 mb-6">
-              {stats.emailsSent > 0 ? (
-                <>
-                  {stats.emailsSent} email{stats.emailsSent > 1 ? 's' : ''} envoyé{stats.emailsSent > 1 ? 's' : ''}
-                  {stats.emailsOpened > 0 && (
-                    <span className="text-emerald-600 font-medium"> • {stats.emailsOpened} ouvert{stats.emailsOpened > 1 ? 's' : ''}</span>
-                  )}
-                </>
-              ) : (
-                'Aucun email envoyé'
-              )}
-            </p>
+          <div className="bg-gray-50 rounded-xl p-4 md:p-5 border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-medium text-gray-700">Activité récente</h2>
+              <span className="text-xs text-gray-400">
+                {periodFilter === 'today' ? "Aujourd'hui" :
+                 periodFilter === 'week' ? '7 derniers jours' :
+                 periodFilter === 'month' ? 'Ce mois-ci' :
+                 periodFilter === 'year' ? 'Cette année' :
+                 formatDateRange()}
+              </span>
+            </div>
 
             {stats.recentActivity.length === 0 ? (
-              <p className="text-gray-400 text-center py-8">Aucune activité récente</p>
+              <div className="text-center py-6">
+                <Calendar className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                <p className="text-sm text-gray-400">Aucune activité</p>
+              </div>
             ) : (
-              <div className="space-y-3">
-                {stats.recentActivity.slice(0, 3).map((activity, index) => (
-                  <div key={index} className="group flex items-center justify-between py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 hover:scale-105 transition-all duration-200 rounded-lg px-2 -mx-2">
+              <div className="space-y-1">
+                {stats.recentActivity.slice(0, 5).map((activity, index) => (
+                  <div key={index} className="flex items-center justify-between py-2.5 px-3 hover:bg-white rounded-lg transition-colors">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center group-hover:bg-blue-100 transition-colors duration-200">
-                        <FileText className="w-5 h-5 text-gray-600 group-hover:text-blue-600 transition-colors duration-200" />
+                      <div className="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center">
+                        <FileText className="w-4 h-4 text-gray-400" />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900 text-sm">{formatDate(activity.date)}</p>
-                        <p className="text-xs text-gray-500">{activity.meetings} réunion{activity.meetings > 1 ? 's' : ''}</p>
+                        <p className="text-sm font-medium text-gray-900">{formatDate(activity.date)}</p>
+                        <p className="text-xs text-gray-400">{activity.meetings} réunion{activity.meetings > 1 ? 's' : ''}</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-sm text-orange-600">{activity.minutes} minutes</p>
-                    </div>
+                    <span className="text-sm font-medium text-gray-600">{activity.minutes} min</span>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Statistiques d'utilisation */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 animate-fadeInRight delay-350">
-            <h2 className="text-base font-semibold text-gray-900 mb-1">
-              Statistiques d'utilisation
-            </h2>
-
-            <div className="mb-6">
-              <p className="text-xs text-gray-500 mb-2">Minutes ce mois</p>
-              <div className="flex items-baseline gap-2 mb-3">
-                <span className="text-2xl font-bold text-orange-600">{subscription?.minutes_used_this_month || 0}</span>
-                {subscription?.plan_type === 'starter' && subscription?.minutes_quota && (
-                  <span className="text-sm text-gray-500">/ {subscription.minutes_quota} min</span>
-                )}
-                {subscription?.plan_type === 'unlimited' && (
-                  <span className="text-sm text-gray-500">min</span>
-                )}
-              </div>
-              {subscription?.plan_type === 'starter' && subscription?.minutes_quota && (
-                <div className="w-full bg-gray-100 rounded-full h-2">
-                  <div
-                    className="bg-gradient-to-r from-orange-500 to-orange-600 h-2 rounded-full transition-all duration-500"
-                    style={{ width: `${Math.min(((subscription?.minutes_used_this_month || 0) / subscription.minutes_quota) * 100, 100)}%` }}
-                  />
-                </div>
-              )}
-              <p className="text-xs text-gray-400 mt-2">Facturation basée sur l'utilisation</p>
+          {/* Graphique d'évolution */}
+          <div className="bg-gray-50 rounded-xl p-4 md:p-5 border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-medium text-gray-700">Évolution</h2>
+              <span className="text-xs text-gray-400">Minutes par jour</span>
             </div>
 
             <div>
               {usageChartData.length === 0 ? (
-                <p className="text-xs text-gray-400 text-center py-8">Aucune donnée récente</p>
+                <div className="text-center py-6">
+                  <BarChart3 className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                  <p className="text-sm text-gray-400">Aucune donnée</p>
+                </div>
               ) : (
-                <div className="h-48">
+                <div className="h-44">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={usageChartData} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
                       <defs>
                         <linearGradient id="minutesGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#f97316" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
+                          <stop offset="5%" stopColor="#9ca3af" stopOpacity={0.2} />
+                          <stop offset="95%" stopColor="#9ca3af" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-                      <XAxis dataKey="date" stroke="#9ca3af" fontSize={11} tickLine={false} axisLine={false} />
-                      <YAxis yAxisId="minutes" orientation="right" stroke="#9ca3af" fontSize={11} tickLine={false} axisLine={false} width={40} />
+                      <XAxis dataKey="date" stroke="#9ca3af" fontSize={10} tickLine={false} axisLine={false} />
+                      <YAxis yAxisId="minutes" orientation="right" stroke="#9ca3af" fontSize={10} tickLine={false} axisLine={false} width={35} />
                       <Tooltip
-                        contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
-                        labelStyle={{ color: '#374151', fontWeight: 600, fontSize: '12px' }}
-                        itemStyle={{ fontSize: '12px' }}
+                        contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', fontSize: '12px' }}
+                        labelStyle={{ color: '#374151', fontWeight: 500 }}
                         formatter={(value, name) => [name === 'minutes' ? `${value} min` : `${value} réunion${Number(value) > 1 ? 's' : ''}`, name === 'minutes' ? 'Minutes' : 'Réunions']}
                       />
                       <Area
                         type="monotone"
                         dataKey="minutes"
-                        stroke="#f97316"
-                        strokeWidth={2}
+                        stroke="#6b7280"
+                        strokeWidth={1.5}
                         fill="url(#minutesGradient)"
                         yAxisId="minutes"
                       />

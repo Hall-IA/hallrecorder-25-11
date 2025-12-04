@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Upload, X, Mail, BookOpen, Plus, Trash2, Sparkles, Eye, Search } from 'lucide-react';
+import { Save, Upload, X, Mail, BookOpen, Plus, Trash2, Sparkles, Eye, Search, Users } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { SummaryMode } from '../services/transcription';
 import { invalidateDictionaryCache } from '../services/dictionaryCorrection';
@@ -34,6 +34,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
   const [hasExistingPassword, setHasExistingPassword] = useState(false);
   const [isTestingSmtp, setIsTestingSmtp] = useState(false);
   const [smtpTestResult, setSmtpTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [isEditingSmtp, setIsEditingSmtp] = useState(false);
   const [gmailConnected, setGmailConnected] = useState(false);
   const [gmailEmail, setGmailEmail] = useState('');
   const [isConnectingGmail, setIsConnectingGmail] = useState(false);
@@ -587,14 +588,15 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
   };
 
   // Fonctions de sauvegarde individuelles
-  const handleSaveSummaryMode = async () => {
+  const handleSelectSummaryMode = async (mode: SummaryMode) => {
+    setDefaultSummaryMode(mode);
     setIsSavingSummaryMode(true);
     try {
       const { error } = await supabase
         .from('user_settings')
         .upsert({
           user_id: userId,
-          default_summary_mode: defaultSummaryMode || null,
+          default_summary_mode: mode,
           updated_at: new Date().toISOString(),
         }, {
           onConflict: 'user_id'
@@ -602,13 +604,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
 
       if (error) throw error;
 
-      onDefaultSummaryModeChange?.(defaultSummaryMode ? (defaultSummaryMode as SummaryMode) : null);
-      
-      await showAlert({
-        title: 'Sauvegardé !',
-        message: 'Le mode de résumé par défaut a été enregistré',
-        variant: 'success',
-      });
+      onDefaultSummaryModeChange?.(mode);
     } catch (error) {
       console.error('Erreur:', error);
       await showAlert({
@@ -735,9 +731,9 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
   // Supprimer l'affichage du récapitulatif séparé - tout sera affiché dans le mode édition
 
   return (
-    <div className="h-full bg-gradient-to-br from-peach-50 via-white to-coral-50 p-4 md:p-8 overflow-auto">
+    <div className="h-full bg-gradient-to-br from-peach-50 via-white to-coral-50 p-3 md:p-6 lg:p-8 overflow-auto">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-3xl font-bold text-cocoa-900 mb-8 animate-fadeInDown">
+        <h2 className="text-2xl md:text-3xl font-bold text-cocoa-900 mb-6 md:mb-8 animate-fadeInDown">
           Paramètres
         </h2>
 
@@ -764,838 +760,920 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
           </div>
         )}
 
-      <div className="space-y-6">
-        {/* Résumé par défaut */}
-        <div className="bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6 animate-fadeInUp delay-200">
-          <div className="flex items-center justify-between flex-wrap gap-3 mb-5">
-            <div>
-              <h3 className="text-xl font-bold text-cocoa-900 mb-1">Mode de résumé par défaut</h3>
-              <p className="text-sm text-cocoa-600">
-                Choisissez la version générée automatiquement quand l&apos;enregistrement s&apos;arrête.
-              </p>
+        <div className="space-y-4 md:space-y-6">
+        {/* Résumé par défaut - Design PRO */}
+        <div className="bg-[#FAFAFA] rounded-2xl shadow-sm border border-gray-200 p-4 md:p-6 animate-fadeInUp delay-200">
+          {/* Header */}
+          <div className="flex items-center gap-3 mb-4 md:mb-6">
+            <div className="p-2 md:p-2.5 bg-gradient-to-br from-coral-500 to-sunset-500 rounded-xl shadow-md flex-shrink-0">
+              <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-white" />
             </div>
-            <div className="flex items-center gap-2">
-              {!defaultSummaryMode && (
-                <span className="px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold">
-                  Aucun mode sélectionné
-                </span>
-              )}
-              <button
-                onClick={handleSaveSummaryMode}
-                disabled={isSavingSummaryMode}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-coral-500 to-sunset-500 text-white rounded-xl font-semibold hover:from-coral-600 hover:to-sunset-600 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSavingSummaryMode ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span className="text-sm">Sauvegarde...</span>
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4" />
-                    <span className="text-sm">Sauvegarder</span>
-                  </>
-                )}
-              </button>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base md:text-lg font-bold text-gray-900">Mode de résumé par défaut</h3>
+              <p className="text-xs md:text-sm text-gray-500">Choisissez la version générée automatiquement</p>
             </div>
+            {isSavingSummaryMode && (
+              <div className="hidden md:flex items-center gap-2 text-sm text-gray-500">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-coral-500 border-t-transparent"></div>
+                <span className="hidden lg:inline">Sauvegarde...</span>
+              </div>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+          {/* Cards selection */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
               type="button"
-              onClick={() => setDefaultSummaryMode('detailed')}
-              className={`text-left p-5 rounded-2xl border-2 transition-all ${defaultSummaryMode === 'detailed'
-                ? 'border-coral-400 bg-gradient-to-br from-coral-50 to-orange-50 shadow-lg'
-                : 'border-cocoa-100 bg-white hover:border-coral-200'}`}
+              onClick={() => handleSelectSummaryMode('detailed')}
+              disabled={isSavingSummaryMode}
+              className={`relative text-left p-5 rounded-xl border-2 transition-all duration-200 ${
+                defaultSummaryMode === 'detailed'
+                  ? 'border-coral-400 bg-white shadow-lg'
+                  : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
+              }`}
             >
-              <div className="flex items-center gap-3 mb-2">
-                <Sparkles className="w-5 h-5 text-coral-500" />
-                <span className="font-semibold text-cocoa-900">Résumé détaillé</span>
+              {defaultSummaryMode === 'detailed' && (
+                <div className="absolute top-3 right-3">
+                  <div className="w-6 h-6 bg-coral-500 rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+              )}
+              <div className="flex items-center gap-3 mb-3">
+                <div className={`p-2 rounded-lg ${defaultSummaryMode === 'detailed' ? 'bg-coral-100' : 'bg-gray-100'}`}>
+                  <Sparkles className={`w-5 h-5 ${defaultSummaryMode === 'detailed' ? 'text-coral-600' : 'text-gray-500'}`} />
+                </div>
+                <span className="font-semibold text-gray-900">Résumé détaillé</span>
               </div>
-              <p className="text-sm text-cocoa-600">
-                Compte-rendu complet avec tous les détails importants de votre réunion.
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Rapport complet avec l'ensemble des détails importants de votre réunion.
               </p>
             </button>
+
             <button
               type="button"
-              onClick={() => setDefaultSummaryMode('short')}
-              className={`text-left p-5 rounded-2xl border-2 transition-all ${defaultSummaryMode === 'short'
-                ? 'border-orange-400 bg-gradient-to-br from-orange-50 to-amber-50 shadow-lg'
-                : 'border-cocoa-100 bg-white hover:border-orange-200'}`}
+              onClick={() => handleSelectSummaryMode('short')}
+              disabled={isSavingSummaryMode}
+              className={`relative text-left p-5 rounded-xl border-2 transition-all duration-200 ${
+                defaultSummaryMode === 'short'
+                  ? 'border-orange-400 bg-white shadow-lg'
+                  : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
+              }`}
             >
-              <div className="flex items-center gap-3 mb-2">
-                <Sparkles className="w-5 h-5 text-orange-500" />
-                <span className="font-semibold text-cocoa-900">Résumé court</span>
+              {defaultSummaryMode === 'short' && (
+                <div className="absolute top-3 right-3">
+                  <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+              )}
+              <div className="flex items-center gap-3 mb-3">
+                <div className={`p-2 rounded-lg ${defaultSummaryMode === 'short' ? 'bg-orange-100' : 'bg-gray-100'}`}>
+                  <Sparkles className={`w-5 h-5 ${defaultSummaryMode === 'short' ? 'text-orange-600' : 'text-gray-500'}`} />
+                </div>
+                <span className="font-semibold text-gray-900">Résumé court</span>
               </div>
-              <p className="text-sm text-cocoa-600">
-                L'essentiel en quelques lignes, parfait pour les réunions courtes ou un aperçu rapide.
+              <p className="text-sm text-gray-600 leading-relaxed">
+                L'essentiel en quelques lignes, idéal pour les réunions courtes ou un aperçu rapide.
               </p>
             </button>
           </div>
         </div>
 
-        {/* Choix de la méthode d'envoi email */}
-        <div className="bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6 animate-fadeInUp delay-300">
-          <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
-            <div>
-              <h3 className="text-xl font-bold text-cocoa-900 mb-1">Méthode d'envoi email</h3>
-              <p className="text-sm text-cocoa-600">
-                Choisissez comment vous souhaitez envoyer vos emails de compte-rendu
-              </p>
+        {/* Choix de la méthode d'envoi email - Design PRO */}
+        <div className="bg-[#FAFAFA] rounded-2xl shadow-sm border border-gray-200 p-6 animate-fadeInUp delay-300">
+          {/* Header */}
+          <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl shadow-md shadow-orange-200/50">
+                <Mail className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Méthode d'envoi email</h3>
+                <p className="text-sm text-gray-500">Configurez l'envoi de vos comptes-rendus</p>
+              </div>
             </div>
             <button
               onClick={handleSaveEmailMethod}
               disabled={isSavingEmailMethod}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-coral-500 to-sunset-500 text-white rounded-xl font-semibold hover:from-coral-600 hover:to-sunset-600 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-lg font-medium hover:from-orange-600 hover:to-amber-600 transition-all shadow-md shadow-orange-200/50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSavingEmailMethod ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <span className="text-sm">Sauvegarde...</span>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                  <span>Sauvegarde...</span>
                 </>
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  <span className="text-sm">Sauvegarder</span>
+                  <span>Sauvegarder</span>
                 </>
               )}
             </button>
           </div>
-          
-          <div className="space-y-3">
-            <label className="flex items-start gap-3 p-4 bg-gradient-to-br from-peach-50 to-coral-50 rounded-xl border-2 border-coral-200 cursor-pointer hover:border-coral-300 transition-all">
-              <input
-                type="radio"
-                name="emailMethod"
-                value="gmail"
-                checked={emailMethod === 'gmail'}
-                onChange={(e) => setEmailMethod(e.target.value as 'gmail' | 'local' | 'smtp')}
-                className="mt-1 w-5 h-5 text-coral-600 border-gray-300 focus:ring-coral-500"
-              />
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                    <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="#EA4335"/>
-                  </svg>
-                  <span className="font-semibold text-cocoa-800">Mon compte Gmail</span>
-                  <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium">Recommandé</span>
-                </div>
-                <p className="text-sm text-cocoa-600 mt-1">
-                  Envoi automatique depuis votre compte Gmail
-                </p>
-                {gmailConnected && (
-                  <div className="mt-2 flex items-center gap-2 text-xs">
-                    <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full font-medium">✓ Connecté</span>
-                    <span className="text-cocoa-600">{gmailEmail}</span>
-                  </div>
-                )}
-              </div>
-            </label>
 
-            <label className="flex items-start gap-3 p-4 bg-gradient-to-br from-peach-50 to-coral-50 rounded-xl border-2 border-coral-200 cursor-pointer hover:border-coral-300 transition-all">
-              <input
-                type="radio"
-                name="emailMethod"
-                value="local"
-                checked={emailMethod === 'local'}
-                onChange={(e) => setEmailMethod(e.target.value as 'gmail' | 'local' | 'smtp')}
-                className="mt-1 w-5 h-5 text-coral-600 border-gray-300 focus:ring-coral-500"
-              />
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <Mail className="w-5 h-5 text-blue-600" />
-                  <span className="font-semibold text-cocoa-800">Mon application email</span>
-                </div>
-                <p className="text-sm text-cocoa-600 mt-1">
-                  Ouvre Outlook, Thunderbird ou votre application habituelle
-                </p>
-              </div>
-            </label>
-
-            <label className="flex items-start gap-3 p-4 bg-gradient-to-br from-peach-50 to-coral-50 rounded-xl border-2 border-coral-200 cursor-pointer hover:border-coral-300 transition-all">
-              <input
-                type="radio"
-                name="emailMethod"
-                value="smtp"
-                checked={emailMethod === 'smtp'}
-                onChange={(e) => setEmailMethod(e.target.value as 'gmail' | 'local' | 'smtp')}
-                className="mt-1 w-5 h-5 text-coral-600 border-gray-300 focus:ring-coral-500"
-              />
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                  </svg>
-                  <span className="font-semibold text-cocoa-800">Autre messagerie</span>
-                  <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">Avancé</span>
-                </div>
-                <p className="text-sm text-cocoa-600 mt-1">
-                  Utilisez Outlook professionnel, Yahoo Mail ou une autre messagerie
-                </p>
-              </div>
-            </label>
-          </div>
-
-          {/* Configuration Gmail */}
-          {emailMethod === 'gmail' && !gmailConnected && (
-            <div className="mt-4 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200 space-y-4">
-              <div className="flex items-center gap-3">
-                <svg className="w-6 h-6 text-blue-600" viewBox="0 0 24 24" fill="none">
-                  <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="#EA4335"/>
-                </svg>
-                <h4 className="font-bold text-cocoa-900">Connecter votre compte Gmail</h4>
-              </div>
-              <p className="text-sm text-cocoa-700">
-                Pour utiliser l'envoi direct via Gmail, vous devez d'abord connecter votre compte Gmail.
-                Vos emails seront envoyés directement depuis votre compte Gmail sans limite de longueur.
-              </p>
-              <button
-                onClick={async () => {
-                  setIsConnectingGmail(true);
-                  try {
-                    // Récupérer le token d'accès de la session Supabase
-                    const { data: { session } } = await supabase.auth.getSession();
-                    if (!session) {
-                      throw new Error('Session non trouvée');
-                    }
-
-                    // Stocker le token dans une variable globale accessible par la popup
-                    (window as any).__gmailAuthToken = session.access_token;
-
-                    const clientId = import.meta.env.VITE_GMAIL_CLIENT_ID;
-                    const redirectUri = `${window.location.origin}/gmail-callback`;
-                    const scope = 'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email';
-
-                    // Encoder le token dans le state
-                    const state = btoa(JSON.stringify({ token: session.access_token }));
-
-                    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent&state=${encodeURIComponent(state)}`;
-
-                    window.open(authUrl, '_blank', 'width=500,height=600');
-                  } catch (error) {
-                    console.error('Erreur lors de la connexion Gmail:', error);
-                    await showAlert({
-                      title: 'Erreur de connexion Gmail',
-                      message: 'Erreur lors de la connexion Gmail',
-                      variant: 'danger',
-                    });
-                  } finally {
-                    setIsConnectingGmail(false);
-                  }
-                }}
-                disabled={isConnectingGmail}
-                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-600 transition-all shadow-md hover:shadow-lg disabled:opacity-50"
-              >
-                {isConnectingGmail ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    Connexion...
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                      <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="white"/>
-                    </svg>
-                    Connecter mon compte Gmail
-                  </>
-                )}
-              </button>
-            </div>
-          )}
-
-          {emailMethod === 'gmail' && gmailConnected && (
-            <div className="mt-4 p-5 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border-2 border-green-200 space-y-3">
-              <div className="flex items-center gap-3">
-                <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <h4 className="font-bold text-cocoa-900">Gmail connecté</h4>
-              </div>
-              <p className="text-sm text-cocoa-700">
-                Votre compte Gmail <strong>{gmailEmail}</strong> est connecté. Vos emails seront envoyés directement via Gmail.
-              </p>
-              <button
-                onClick={async () => {
-                  const confirmed = await showConfirm({
-                    title: 'Déconnecter Gmail',
-                    message: 'Voulez-vous vraiment déconnecter votre compte Gmail ?',
-                    confirmLabel: 'Déconnecter',
-                    variant: 'warning',
-                  });
-                  if (!confirmed) return;
-
-                  await supabase
-                    .from('user_settings')
-                    .update({
-                      gmail_connected: false,
-                      gmail_email: null,
-                      gmail_access_token: null,
-                      gmail_refresh_token: null,
-                      gmail_token_expiry: null,
-                    })
-                    .eq('user_id', userId);
-
-                  setGmailConnected(false);
-                  setGmailEmail('');
-                  await showAlert({
-                    title: 'Gmail déconnecté',
-                    message: 'Compte Gmail déconnecté',
-                    variant: 'info',
-                  });
-                }}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition-all text-sm"
-              >
-                Déconnecter Gmail
-              </button>
-            </div>
-          )}
-
-          {emailMethod === 'smtp' && (
-            <div className="mt-4 p-5 bg-gradient-to-br from-peach-50 to-coral-50 rounded-xl border-2 border-coral-200 space-y-4">
-              <h4 className="font-bold text-cocoa-900 mb-3 flex items-center gap-2">
-                <svg className="w-5 h-5 text-coral-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-                </svg>
-                Configuration de votre messagerie
-              </h4>
-              <p className="text-sm text-cocoa-600 mb-3">
-                Entrez les paramètres de votre compte email professionnel ou personnel
-              </p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-cocoa-700 mb-2">
-                    Serveur email *
-                  </label>
-                  <input
-                    type="text"
-                    value={smtpHost}
-                    onChange={(e) => setSmtpHost(e.target.value)}
-                    placeholder="smtp.gmail.com"
-                    className="w-full px-4 py-2 border-2 border-coral-200 rounded-xl focus:ring-2 focus:ring-coral-500 focus:border-coral-500 bg-white text-cocoa-800"
-                  />
-                  <p className="text-xs text-cocoa-500 mt-1">Ex: smtp.gmail.com, smtp.office365.com</p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-cocoa-700 mb-2">
-                    Port *
-                  </label>
-                  <input
-                    type="number"
-                    value={smtpPort}
-                    onChange={(e) => setSmtpPort(parseInt(e.target.value) || 587)}
-                    placeholder="587"
-                    className="w-full px-4 py-2 border-2 border-coral-200 rounded-xl focus:ring-2 focus:ring-coral-500 focus:border-coral-500 bg-white text-cocoa-800"
-                  />
-                  <p className="text-xs text-cocoa-500 mt-1">Généralement 587 ou 465</p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-cocoa-700 mb-2">
-                    Email / Utilisateur *
-                  </label>
-                  <input
-                    type="email"
-                    value={smtpUser}
-                    onChange={(e) => setSmtpUser(e.target.value)}
-                    placeholder="votre@email.com"
-                    className="w-full px-4 py-2 border-2 border-coral-200 rounded-xl focus:ring-2 focus:ring-coral-500 focus:border-coral-500 bg-white text-cocoa-800"
-                  />
-                </div>
-
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <label className="text-sm font-semibold text-cocoa-700">
-                      Mot de passe *
-                    </label>
-                    {hasExistingPassword && !isPasswordModified && (
-                      <span className="text-xs text-green-600 flex items-center gap-1">
-                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                        Enregistré
-                      </span>
-                    )}
-                  </div>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={smtpPassword}
-                      onChange={(e) => {
-                        setSmtpPassword(e.target.value);
-                        setIsPasswordModified(true);
-                      }}
-                      onFocus={() => {
-                        // Vider le placeholder au focus si mot de passe existe
-                        if (hasExistingPassword && !isPasswordModified) {
-                          setSmtpPassword('');
-                        }
-                      }}
-                      placeholder={hasExistingPassword && !isPasswordModified ? "••••••••••••" : "Nouveau mot de passe"}
-                      autoComplete="new-password"
-                      data-form-type="other"
-                      className="w-full px-4 py-2 pr-12 border-2 border-coral-200 rounded-xl focus:ring-2 focus:ring-coral-500 focus:border-coral-500 bg-white text-cocoa-800"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-cocoa-400 hover:text-cocoa-600 transition-colors"
-                      title={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
-                    >
-                      {showPassword ? (
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                        </svg>
-                      ) : (
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-                  <p className="text-xs text-cocoa-500 mt-1">
-                    Pour Gmail: utilisez un mot de passe d'application
-                  </p>
-                </div>
-              </div>
-
-              {/* Nom de l'expéditeur */}
-              <div className="mt-4 p-4 bg-white rounded-xl border-2 border-blue-200">
-                <label className="block text-sm font-semibold text-cocoa-700 mb-2">
-                  Nom de l'expéditeur (optionnel)
-                </label>
-                <input
-                  type="text"
-                  value={senderName}
-                  onChange={(e) => setSenderName(e.target.value)}
-                  placeholder="Ex: Mon Entreprise, Support Client..."
-                  className="w-full px-4 py-2 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-cocoa-800"
-                />
-                <p className="text-xs text-cocoa-500 mt-2">
-                  📧 Ce nom sera affiché aux destinataires. Si vide, seule votre adresse email sera visible.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2 p-3 bg-gradient-to-br from-peach-50 to-coral-50 rounded-lg border border-coral-200">
-                <input
-                  type="checkbox"
-                  id="smtp-secure"
-                  checked={smtpSecure}
-                  onChange={(e) => setSmtpSecure(e.target.checked)}
-                  className="w-4 h-4 text-coral-600 border-gray-300 rounded focus:ring-coral-500"
-                />
-                <label htmlFor="smtp-secure" className="text-sm text-cocoa-700 cursor-pointer">
-                  Utiliser une connexion sécurisée (TLS/SSL) - Recommandé
-                </label>
-              </div>
-
-              {/* Bouton Tester la connexion */}
-              <div className="mt-4 flex flex-col gap-3">
-                <button
-                  type="button"
-                  onClick={handleTestSmtpConnection}
-                  disabled={isTestingSmtp || !smtpHost || !smtpUser}
-                  className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
-                    isTestingSmtp
-                      ? 'bg-gray-400 text-white cursor-wait'
-                      : !smtpHost || !smtpUser
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-blue-500 text-white hover:bg-blue-600 shadow-md hover:shadow-lg'
-                  }`}
-                >
-                  {isTestingSmtp ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Test en cours...</span>
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                      <span>Tester la connexion SMTP</span>
-                    </>
-                  )}
-                </button>
-
-                {/* Résultat du test */}
-                {smtpTestResult && (
-                  <div className={`p-4 rounded-xl border-2 ${
-                    smtpTestResult.success
-                      ? 'bg-green-50 border-green-300 text-green-800'
-                      : 'bg-red-50 border-red-300 text-red-800'
-                  }`}>
-                    <p className="font-semibold">{smtpTestResult.message}</p>
-                    {smtpTestResult.success && (
-                      <p className="text-sm mt-1">Vous pouvez maintenant enregistrer vos paramètres.</p>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className="p-3 bg-gradient-to-br from-amber-50 to-yellow-50 border-2 border-amber-300 rounded-lg">
-                <p className="text-xs text-amber-800">
-                  <strong>⚠️ Important:</strong> Pour Gmail, vous devez créer un "Mot de passe d'application" 
-                  dans les paramètres de sécurité de votre compte Google. Les mots de passe normaux ne fonctionnent pas.
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6 animate-fadeInUp delay-300">
-          <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
-            <div>
-              <h3 className="text-xl font-bold text-cocoa-900 mb-1">Signature Email</h3>
-              <p className="text-sm text-cocoa-600">
-                Cette signature sera ajoutée automatiquement en bas de tous les emails de compte-rendu
-              </p>
-            </div>
+          {/* Segmented Control */}
+          <div className="bg-gray-100 p-1 rounded-lg inline-flex w-full md:w-auto mb-6">
             <button
-              onClick={handleSaveSignature}
-              disabled={isSavingSignature}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-coral-500 to-sunset-500 text-white rounded-xl font-semibold hover:from-coral-600 hover:to-sunset-600 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              type="button"
+              onClick={() => setEmailMethod('gmail')}
+              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all ${
+                emailMethod === 'gmail'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
             >
-              {isSavingSignature ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <span className="text-sm">Sauvegarde...</span>
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4" />
-                  <span className="text-sm">Sauvegarder</span>
-                </>
-              )}
+              {/* Logo Gmail moderne - M coloré */}
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 010 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z" fill="#EA4335"/>
+                <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 010 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z" fill="url(#gmail-gradient)"/>
+                <defs>
+                  <linearGradient id="gmail-gradient" x1="0" y1="12" x2="24" y2="12" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#EA4335"/>
+                    <stop offset="0.25" stopColor="#FBBC05"/>
+                    <stop offset="0.5" stopColor="#34A853"/>
+                    <stop offset="0.75" stopColor="#4285F4"/>
+                    <stop offset="1" stopColor="#EA4335"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <span>Gmail</span>
+              {gmailConnected && <span className="w-2 h-2 bg-green-500 rounded-full"></span>}
+            </button>
+            <button
+              type="button"
+              onClick={() => setEmailMethod('local')}
+              className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 md:gap-2 px-2 md:px-4 py-2.5 rounded-md text-xs md:text-sm font-medium transition-all ${
+                emailMethod === 'local'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <Mail className="w-4 h-4 flex-shrink-0" />
+              <span className="hidden sm:inline">Application email</span>
+              <span className="sm:hidden">App mail</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setEmailMethod('smtp')}
+              className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 md:gap-2 px-2 md:px-4 py-2.5 rounded-md text-xs md:text-sm font-medium transition-all ${
+                emailMethod === 'smtp'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              {/* Icône SMTP - Serveur technique */}
+              <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm14 1a1 1 0 11-2 0 1 1 0 012 0zM2 13a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 01-2 2H4a2 2 0 01-2-2v-2zm14 1a1 1 0 11-2 0 1 1 0 012 0z"/>
+              </svg>
+              <span className="hidden sm:inline">SMTP avancé</span>
+              <span className="sm:hidden">SMTP</span>
             </button>
           </div>
 
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-semibold text-cocoa-700 mb-2">
-                Logo de signature (optionnel)
-              </label>
-              <div className="flex items-start gap-4">
-                {logoPreview ? (
-                  <div className="relative">
-                    <img
-                      src={logoPreview}
-                      alt="Aperçu du logo"
-                      className="w-32 h-32 object-contain rounded-lg border-2 border-coral-200 bg-white p-2"
-                    />
-                    <button
-                      onClick={handleRemoveLogo}
-                      className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ) : null}
-                <label className="inline-block">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoChange}
-                    className="hidden"
-                  />
-                  <div className="inline-flex min-w-[180px] items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-coral-500 to-sunset-500 text-white rounded-xl hover:from-coral-600 hover:to-sunset-600 transition-all cursor-pointer font-semibold shadow-md hover:shadow-lg">
-                    <Upload className="w-5 h-5" />
-                    {logoPreview ? 'Changer le logo' : 'Ajouter un logo'}
-                  </div>
-                </label>
-              </div>
-              <p className="text-xs text-cocoa-600 mt-2">
-                Le logo sera affiché dans votre signature email (formats acceptés : PNG, JPG, SVG)
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-cocoa-700 mb-2">
-                Informations de signature
-              </label>
-              <textarea
-                value={signatureText}
-                onChange={(e) => setSignatureText(e.target.value)}
-                placeholder="Jean Dupont&#10;Directeur Commercial&#10;Mon Entreprise SA&#10;Tél : +33 1 23 45 67 89&#10;www.exemple.com"
-                rows={6}
-                className="w-full px-4 py-3 border-2 border-orange-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-coral-500 focus:border-coral-500 text-cocoa-800 resize-none font-mono text-sm"
-              />
-              <p className="text-xs text-cocoa-600 mt-2">
-                Saisissez toutes les informations que vous souhaitez voir apparaître dans votre signature (nom, poste, entreprise, téléphone, site web, etc.). Les retours à la ligne seront préservés.
-              </p>
-
-              {/* Aperçu de la signature */}
-              {(signatureText || logoPreview) && (
-                <div className="mt-4">
-                  <label className="block text-sm font-semibold text-cocoa-700 mb-2">
-                    Aperçu de la signature
-                  </label>
-                  <div className="bg-gradient-to-br from-peach-50 to-coral-50 rounded-lg p-4 border-2 border-coral-200">
-                    {signatureText && (
-                      <pre className="whitespace-pre-wrap text-cocoa-800 font-sans text-sm mb-3">{signatureText}</pre>
-                    )}
-                    {logoPreview && (
-                      <div className="mt-3 pt-3 border-t border-coral-200">
-                        <img 
-                          src={logoPreview} 
-                          alt="Logo de signature" 
-                          className="max-w-[80px] h-auto"
-                          style={{ maxWidth: '80px', height: 'auto' }}
-                        />
+          {/* Content based on selection */}
+          <div className="transition-all duration-300 ease-in-out">
+            {/* Gmail Content */}
+            {emailMethod === 'gmail' && (
+              <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                {!gmailConnected ? (
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-red-50 rounded-lg">
+                        {/* Logo Gmail moderne - M coloré */}
+                        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
+                          <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 010 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z" fill="#EA4335"/>
+                          <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 010 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z" fill="url(#gmail-icon-gradient)"/>
+                          <defs>
+                            <linearGradient id="gmail-icon-gradient" x1="0" y1="12" x2="24" y2="12" gradientUnits="userSpaceOnUse">
+                              <stop stopColor="#EA4335"/>
+                              <stop offset="0.25" stopColor="#FBBC05"/>
+                              <stop offset="0.5" stopColor="#34A853"/>
+                              <stop offset="0.75" stopColor="#4285F4"/>
+                              <stop offset="1" stopColor="#EA4335"/>
+                            </linearGradient>
+                          </defs>
+                        </svg>
                       </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Dictionnaire personnalisé */}
-        <div className="bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6 animate-fadeInUp delay-300">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-md">
-              <BookOpen className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-cocoa-900">Dictionnaire personnalisé</h3>
-              <p className="text-sm text-cocoa-600">Enregistrez les termes spécifiques à corriger automatiquement</p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border-2 border-blue-200">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                <div>
-                  <label className="block text-sm font-semibold text-cocoa-700 mb-2">
-                    Mot incorrect
-                  </label>
-                  <input
-                    type="text"
-                    value={newIncorrectWord}
-                    onChange={(e) => setNewIncorrectWord(e.target.value)}
-                    placeholder="ex: hallia, olia"
-                    className="w-full px-4 py-2 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-cocoa-800"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-cocoa-700 mb-2">
-                    Correction
-                  </label>
-                  <input
-                    type="text"
-                    value={newCorrectWord}
-                    onChange={(e) => setNewCorrectWord(e.target.value)}
-                    placeholder="ex: Hallia, OLIA"
-                    className="w-full px-4 py-2 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-cocoa-800"
-                  />
-                </div>
-              </div>
-              <button
-                onClick={handleAddWord}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all font-semibold shadow-md hover:shadow-lg"
-              >
-                <Plus className="w-5 h-5" />
-                Ajouter au dictionnaire
-              </button>
-            </div>
-
-            {/* Bouton pour voir les mots */}
-            <button
-              onClick={() => setShowDictionaryModal(true)}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all group"
-            >
-              <Eye className="w-5 h-5 text-blue-600" />
-              <span className="font-semibold text-blue-700">
-                Voir le dictionnaire
-              </span>
-              {customDictionary.length > 0 && (
-                <span className="px-2.5 py-0.5 bg-blue-500 text-white text-sm font-bold rounded-full">
-                  {customDictionary.length}
-                </span>
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Groupes de destinataires */}
-        <div className="bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6 animate-fadeInUp delay-400">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-md">
-                <Mail className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-cocoa-900">Groupes de destinataires</h3>
-                <p className="text-sm text-cocoa-600">Créez des groupes de contacts pour envoyer vos emails rapidement</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setIsCreatingGroup(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl font-semibold hover:from-purple-600 hover:to-purple-700 transition-all shadow-md"
-            >
-              <Plus className="w-5 h-5" />
-              Nouveau groupe
-            </button>
-          </div>
-
-          {/* Formulaire de création de groupe */}
-          {isCreatingGroup && (
-            <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border-2 border-purple-200 mb-4">
-              <h4 className="font-semibold text-cocoa-900 mb-3">Créer un nouveau groupe</h4>
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-semibold text-cocoa-700 mb-2">
-                    Nom du groupe *
-                  </label>
-                  <input
-                    type="text"
-                    value={newGroupName}
-                    onChange={(e) => setNewGroupName(e.target.value)}
-                    placeholder="Ex: Équipe commerciale"
-                    className="w-full px-4 py-2 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-cocoa-700 mb-2">
-                    Description (optionnel)
-                  </label>
-                  <input
-                    type="text"
-                    value={newGroupDescription}
-                    onChange={(e) => setNewGroupDescription(e.target.value)}
-                    placeholder="Ex: Tous les membres de l'équipe commerciale"
-                    className="w-full px-4 py-2 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                  />
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleCreateGroup}
-                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl font-semibold hover:from-purple-600 hover:to-purple-700 transition-all"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Créer le groupe
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsCreatingGroup(false);
-                      setNewGroupName('');
-                      setNewGroupDescription('');
-                    }}
-                    className="px-4 py-2 bg-gray-200 text-cocoa-700 rounded-xl font-semibold hover:bg-gray-300 transition-all"
-                  >
-                    Annuler
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Liste des groupes */}
-          <div className="space-y-4">
-            {contactGroups.length > 0 ? (
-              contactGroups.map((group) => (
-                <div key={group.id} className="border-2 border-purple-200 rounded-xl p-4 bg-gradient-to-br from-white to-purple-50">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <h4 className="font-bold text-cocoa-900 text-lg">{group.name}</h4>
-                      {group.description && (
-                        <p className="text-sm text-cocoa-600 mt-1">{group.description}</p>
-                      )}
-                      <p className="text-xs text-cocoa-500 mt-1">
-                        {group.contacts.length} contact{group.contacts.length > 1 ? 's' : ''}
-                      </p>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-900">Connectez votre compte Gmail</h4>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Envoi automatique et direct depuis votre boîte Gmail. Aucune configuration technique requise.
+                        </p>
+                      </div>
+                      <span className="px-2.5 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">Recommandé</span>
                     </div>
                     <button
-                      onClick={() => handleDeleteGroup(group.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      title="Supprimer le groupe"
+                      onClick={async () => {
+                        setIsConnectingGmail(true);
+                        try {
+                          const { data: { session } } = await supabase.auth.getSession();
+                          if (!session) throw new Error('Session non trouvée');
+                          (window as any).__gmailAuthToken = session.access_token;
+                          const clientId = import.meta.env.VITE_GMAIL_CLIENT_ID;
+                          const redirectUri = `${window.location.origin}/gmail-callback`;
+                          const scope = 'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email';
+                          const state = btoa(JSON.stringify({ token: session.access_token }));
+                          const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent&state=${encodeURIComponent(state)}`;
+                          window.open(authUrl, '_blank', 'width=500,height=600');
+                        } catch (error) {
+                          console.error('Erreur lors de la connexion Gmail:', error);
+                          await showAlert({ title: 'Erreur de connexion Gmail', message: 'Erreur lors de la connexion Gmail', variant: 'danger' });
+                        } finally {
+                          setIsConnectingGmail(false);
+                        }
+                      }}
+                      disabled={isConnectingGmail}
+                      className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-[#2563EB] text-white rounded-lg font-medium hover:bg-[#1D4ED8] transition-all disabled:opacity-50"
                     >
-                      <Trash2 className="w-5 h-5" />
+                      {isConnectingGmail ? (
+                        <>
+                          <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                          <span>Connexion en cours...</span>
+                        </>
+                      ) : (
+                        <>
+                          {/* Logo Gmail moderne - M coloré (blanc) */}
+                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                            <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 010 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z" fill="white"/>
+                          </svg>
+                          <span>Connecter mon compte Gmail</span>
+                        </>
+                      )}
                     </button>
                   </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                      <div className="p-1.5 bg-green-500 rounded-full">
+                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-green-800">Gmail connecté</p>
+                        <p className="text-sm text-green-700">{gmailEmail}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        const confirmed = await showConfirm({ title: 'Déconnecter Gmail', message: 'Voulez-vous vraiment déconnecter votre compte Gmail ?', confirmLabel: 'Déconnecter', variant: 'warning' });
+                        if (!confirmed) return;
+                        await supabase.from('user_settings').update({ gmail_connected: false, gmail_email: null, gmail_access_token: null, gmail_refresh_token: null, gmail_token_expiry: null }).eq('user_id', userId);
+                        setGmailConnected(false);
+                        setGmailEmail('');
+                        await showAlert({ title: 'Gmail déconnecté', message: 'Compte Gmail déconnecté', variant: 'info' });
+                      }}
+                      className="text-sm text-red-600 hover:text-red-700 font-medium"
+                    >
+                      Déconnecter le compte
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
-                  {/* Liste des contacts du groupe */}
-                  {selectedGroup === group.id ? (
-                    <div className="mt-4 space-y-3">
-                      <div className="bg-white rounded-lg p-3 border border-purple-200">
-                        <h5 className="font-semibold text-cocoa-900 mb-3 text-sm">Contacts du groupe</h5>
-                        {group.contacts.length > 0 ? (
-                          <div className="space-y-2 mb-3">
-                            {group.contacts.map((contact) => (
-                              <div key={contact.id} className="flex items-center justify-between p-2 bg-purple-50 rounded-lg">
-                                <div className="flex-1">
-                                  <p className="font-medium text-cocoa-900 text-sm">{contact.name || 'Sans nom'}</p>
-                                  <p className="text-xs text-cocoa-600">{contact.email}</p>
-                                </div>
-                                <button
-                                  onClick={() => handleDeleteContact(contact.id)}
-                                  className="p-1 text-red-600 hover:bg-red-100 rounded transition-colors"
-                                  title="Supprimer"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-sm text-cocoa-500 italic mb-3">Aucun contact dans ce groupe</p>
-                        )}
+            {/* Local Email Content */}
+            {emailMethod === 'local' && (
+              <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-blue-50 rounded-lg">
+                    <Mail className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Application email locale</h4>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Ouvre automatiquement votre application email (Outlook, Thunderbird, Mail...) avec le compte-rendu pré-rempli. Vous gardez le contrôle avant l'envoi.
+                    </p>
+                    <div className="mt-3 flex items-center gap-2 text-xs text-gray-500">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>Aucune configuration requise</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
-                        <div className="space-y-2">
-                          <input
-                            type="text"
-                            value={newContactName}
-                            onChange={(e) => setNewContactName(e.target.value)}
-                            placeholder="Nom (optionnel)"
-                            className="w-full px-3 py-2 text-sm border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                          />
-                          <input
-                            type="email"
-                            value={newContactEmail}
-                            onChange={(e) => setNewContactEmail(e.target.value)}
-                            placeholder="Email *"
-                            className="w-full px-3 py-2 text-sm border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                          />
-                          <button
-                            onClick={() => handleAddContact(group.id)}
-                            className="flex items-center gap-2 px-3 py-2 text-sm bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg font-semibold hover:from-purple-600 hover:to-purple-700 transition-all"
-                          >
-                            <Plus className="w-4 h-4" />
-                            Ajouter un contact
-                          </button>
+            {/* SMTP Content */}
+            {emailMethod === 'smtp' && (
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                {/* Mode compact (SMTP configuré et pas en édition) */}
+                {smtpHost && smtpUser && hasExistingPassword && !isEditingSmtp ? (
+                  <div className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-green-100 rounded-lg">
+                          <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">SMTP configuré</p>
+                          <p className="text-xs text-gray-500">
+                            {smtpHost}:{smtpPort} ({smtpUser})
+                          </p>
                         </div>
                       </div>
                       <button
-                        onClick={() => setSelectedGroup(null)}
-                        className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                        onClick={() => setIsEditingSmtp(true)}
+                        className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                       >
-                        Fermer
+                        Modifier
                       </button>
                     </div>
-                  ) : (
-                    <button
-                      onClick={() => setSelectedGroup(group.id)}
-                      className="mt-2 text-sm text-purple-600 hover:text-purple-700 font-medium"
-                    >
-                      Gérer les contacts ({group.contacts.length})
-                    </button>
-                  )}
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-8 text-cocoa-500">
-                <Mail className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p className="text-sm">Aucun groupe de destinataires</p>
-                <p className="text-xs mt-1">Créez votre premier groupe pour organiser vos contacts</p>
+                  </div>
+                ) : (
+                  /* Mode édition (formulaire complet) */
+                  <div className="p-5 space-y-5">
+                    {/* SMTP Form - 2 columns */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                          Serveur SMTP
+                        </label>
+                        <input
+                          type="text"
+                          value={smtpHost}
+                          onChange={(e) => setSmtpHost(e.target.value)}
+                          placeholder="smtp.example.com"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                          Port
+                        </label>
+                        <input
+                          type="number"
+                          value={smtpPort}
+                          onChange={(e) => setSmtpPort(parseInt(e.target.value) || 587)}
+                          placeholder="587"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                          Email / Identifiant
+                        </label>
+                        <input
+                          type="email"
+                          value={smtpUser}
+                          onChange={(e) => setSmtpUser(e.target.value)}
+                          placeholder="votre@email.com"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <label className="text-sm font-medium text-gray-700">Mot de passe</label>
+                          {hasExistingPassword && !isPasswordModified && (
+                            <span className="text-xs text-green-600 flex items-center gap-1">
+                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                              Enregistré
+                            </span>
+                          )}
+                        </div>
+                        <div className="relative">
+                          <input
+                            type={showPassword ? "text" : "password"}
+                            value={smtpPassword}
+                            onChange={(e) => { setSmtpPassword(e.target.value); setIsPasswordModified(true); }}
+                            onFocus={() => { if (hasExistingPassword && !isPasswordModified) setSmtpPassword(''); }}
+                            placeholder={hasExistingPassword && !isPasswordModified ? "••••••••" : "Mot de passe"}
+                            autoComplete="new-password"
+                            className="w-full px-3.5 py-2.5 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                          Nom d'expéditeur <span className="text-gray-400 font-normal">(optionnel)</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={senderName}
+                          onChange={(e) => setSenderName(e.target.value)}
+                          placeholder="Mon Entreprise"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
+                        />
+                      </div>
+                    </div>
+
+                    {/* TLS/SSL Checkbox */}
+                    <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
+                      <input
+                        type="checkbox"
+                        id="smtp-secure"
+                        checked={smtpSecure}
+                        onChange={(e) => setSmtpSecure(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <div>
+                        <span className="text-sm font-medium text-gray-900">Connexion sécurisée (TLS/SSL)</span>
+                        <p className="text-xs text-gray-500">Recommandé pour la sécurité de vos données</p>
+                      </div>
+                    </label>
+
+                    {/* Test Button */}
+                    <div className="pt-2 border-t border-gray-100">
+                      <button
+                        type="button"
+                        onClick={handleTestSmtpConnection}
+                        disabled={isTestingSmtp || !smtpHost || !smtpUser}
+                        className={`w-full flex items-center justify-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${
+                          isTestingSmtp
+                            ? 'bg-gray-200 text-gray-500 cursor-wait'
+                            : !smtpHost || !smtpUser
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-gray-900 text-white hover:bg-gray-800'
+                        }`}
+                      >
+                        {isTestingSmtp ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                            <span>Test en cours...</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            <span>Tester la connexion SMTP</span>
+                          </>
+                        )}
+                      </button>
+
+                      {/* Test Result */}
+                      {smtpTestResult && (
+                        <div className={`mt-3 p-3 rounded-lg text-sm ${
+                          smtpTestResult.success
+                            ? 'bg-green-50 text-green-800 border border-green-200'
+                            : 'bg-red-50 text-red-800 border border-red-200'
+                        }`}>
+                          <p className="font-medium">{smtpTestResult.message}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Info note */}
+                    <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                      <svg className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      <p className="text-xs text-amber-800">
+                        Pour Gmail, utilisez un <strong>mot de passe d'application</strong> depuis les paramètres de sécurité Google.
+                      </p>
+                    </div>
+
+                    {/* Bouton Annuler si en mode édition */}
+                    {isEditingSmtp && (
+                      <div className="flex justify-end pt-2">
+                        <button
+                          onClick={() => setIsEditingSmtp(false)}
+                          className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                          Fermer
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
         </div>
-      </div>
+
+        {/* Signature Email - Design PRO */}
+        <div className="bg-[#FAFAFA] rounded-2xl shadow-sm border border-gray-200 p-6 animate-fadeInUp delay-300">
+          {/* Header */}
+          <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl shadow-md shadow-orange-200/50">
+                <Mail className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Signature Email</h3>
+                <p className="text-sm text-gray-500">Ajoutée automatiquement à vos emails</p>
+              </div>
+            </div>
+            <button
+              onClick={handleSaveSignature}
+              disabled={isSavingSignature}
+              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-lg font-medium hover:from-orange-600 hover:to-amber-600 transition-all shadow-md shadow-orange-200/50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSavingSignature ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                  <span>Sauvegarde...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  <span>Sauvegarder</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Colonne gauche : Logo + Texte */}
+            <div className="space-y-5">
+              {/* Logo section */}
+              <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Logo de la signature <span className="text-gray-400 font-normal">(optionnel)</span>
+                </label>
+                <div className="flex items-center gap-4">
+                  {logoPreview ? (
+                    <div className="relative">
+                      <div className="w-20 h-20 rounded-lg border border-gray-200 bg-white p-2 flex items-center justify-center">
+                        <img
+                          src={logoPreview}
+                          alt="Logo"
+                          className="max-w-full max-h-full object-contain"
+                        />
+                      </div>
+                      <button
+                        onClick={handleRemoveLogo}
+                        className="absolute -top-2 -right-2 p-1 bg-gray-900 text-white rounded-full hover:bg-gray-700 transition-colors"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center">
+                      <Upload className="w-6 h-6 text-gray-400" />
+                    </div>
+                  )}
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoChange}
+                      className="hidden"
+                    />
+                    <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm">
+                      <Upload className="w-4 h-4" />
+                      {logoPreview ? 'Changer' : 'Importer'}
+                    </div>
+                  </label>
+                </div>
+                <p className="text-xs text-gray-500 mt-3">
+                  Formats acceptés : PNG, JPG, SVG
+                </p>
+              </div>
+
+              {/* Texte de signature */}
+              <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Informations de signature
+                </label>
+                <textarea
+                  value={signatureText}
+                  onChange={(e) => setSignatureText(e.target.value)}
+                  placeholder="Jean Dupont&#10;Directeur Commercial&#10;Mon Entreprise SA&#10;Tél : +33 1 23 45 67 89&#10;www.exemple.com"
+                  rows={5}
+                  className="w-full px-3.5 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 resize-none text-sm leading-relaxed"
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  Ces informations apparaîtront dans votre signature email.
+                </p>
+              </div>
+            </div>
+
+            {/* Colonne droite : Aperçu */}
+            <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Aperçu de la signature
+              </label>
+              <div className="bg-gray-50 rounded-lg p-5 border border-gray-200 min-h-[200px]">
+                {(signatureText || logoPreview) ? (
+                  <div className="space-y-4">
+                    {signatureText && (
+                      <pre className="whitespace-pre-wrap text-gray-800 font-sans text-sm leading-relaxed">{signatureText}</pre>
+                    )}
+                    {logoPreview && (
+                      <div className={signatureText ? "pt-3 border-t border-gray-200" : ""}>
+                        <img
+                          src={logoPreview}
+                          alt="Logo"
+                          className="h-12 w-auto object-contain"
+                        />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-gray-400 text-sm">
+                    <div className="text-center">
+                      <Mail className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                      <p>Votre signature apparaîtra ici</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Configuration Avancée - Design Compact Pro */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden animate-fadeInUp delay-300">
+
+          {/* Section Dictionnaire - Design Compact */}
+          <div>
+            {/* En-tête avec zone de saisie intégrée */}
+            <div className="px-4 md:px-5 py-3 md:py-4 border-b border-gray-100">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+                <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                  <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <BookOpen className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <span className="text-sm font-semibold text-gray-900">Correction automatique</span>
+                    <span className="text-xs text-gray-500 truncate">Personnalisez les mots corrigés dans les résumés</span>
+                  </div>
+                </div>
+                {customDictionary.length > 0 && (
+                  <span className="px-2 py-0.5 bg-orange-50 text-orange-600 text-xs font-medium rounded-full self-start sm:self-center">
+                    {customDictionary.length}
+                  </span>
+                )}
+              </div>
+
+              {/* Zone de saisie inline */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <input
+                  type="text"
+                  value={newIncorrectWord}
+                  onChange={(e) => setNewIncorrectWord(e.target.value)}
+                  placeholder="Mot incorrect"
+                  className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:border-orange-400 focus:ring-1 focus:ring-orange-100 transition-all"
+                />
+                <svg className="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+                <input
+                  type="text"
+                  value={newCorrectWord}
+                  onChange={(e) => setNewCorrectWord(e.target.value)}
+                  placeholder="Correction"
+                  className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:border-orange-400 focus:ring-1 focus:ring-orange-100 transition-all"
+                />
+                <button
+                  onClick={handleAddWord}
+                  disabled={!newIncorrectWord || !newCorrectWord}
+                  className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all flex-shrink-0 ${
+                    newIncorrectWord && newCorrectWord
+                      ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600'
+                      : 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                  }`}
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Liste des mots - Avec scroll interne */}
+            {customDictionary.length > 0 ? (
+              <div className="max-h-[280px] overflow-y-auto">
+                <div className="divide-y divide-gray-50">
+                  {customDictionary.map((entry) => (
+                    <div
+                      key={entry.id}
+                      className="flex items-center gap-3 px-5 py-2.5 hover:bg-gray-50 transition-colors"
+                    >
+                      <span className="text-sm text-gray-500 truncate flex-1">{entry.incorrect_word}</span>
+                      <svg className="w-3.5 h-3.5 text-orange-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      </svg>
+                      <span className="text-sm text-gray-900 font-medium truncate flex-1">{entry.correct_word}</span>
+                      <button
+                        onClick={() => handleDeleteWord(entry.id)}
+                        className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="px-5 py-6 text-center">
+                <p className="text-sm text-gray-400">Aucune correction configurée</p>
+              </div>
+            )}
+          </div>
+
+          {/* Section Groupes - Design Compact */}
+          <div className="border-t border-gray-100">
+            {/* En-tête */}
+            <div className="px-5 py-4 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5 flex-1">
+                  <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Users className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold text-gray-900">Groupes de contacts</span>
+                    <span className="text-xs text-gray-500">Créez des listes pour envoyer vos résumés rapidement</span>
+                  </div>
+                  {contactGroups.length > 0 && (
+                    <span className="px-2 py-0.5 bg-orange-50 text-orange-600 text-xs font-medium rounded-full">
+                      {contactGroups.length}
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={() => setIsCreatingGroup(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Nouveau</span>
+                </button>
+              </div>
+
+              {/* Formulaire de création inline */}
+              {isCreatingGroup && (
+                <div className="mt-4 flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={newGroupName}
+                    onChange={(e) => setNewGroupName(e.target.value)}
+                    placeholder="Nom du groupe"
+                    className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:border-orange-400 focus:ring-1 focus:ring-orange-100 transition-all"
+                  />
+                  <input
+                    type="text"
+                    value={newGroupDescription}
+                    onChange={(e) => setNewGroupDescription(e.target.value)}
+                    placeholder="Description"
+                    className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:border-orange-400 focus:ring-1 focus:ring-orange-100 transition-all"
+                  />
+                  <button
+                    onClick={handleCreateGroup}
+                    disabled={!newGroupName}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                      newGroupName
+                        ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    }`}
+                  >
+                    Créer
+                  </button>
+                  <button
+                    onClick={() => { setIsCreatingGroup(false); setNewGroupName(''); setNewGroupDescription(''); }}
+                    className="p-2 text-gray-400 hover:text-gray-600 rounded-lg transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Liste des groupes - Avec scroll interne */}
+            {contactGroups.length > 0 ? (
+              <div className="max-h-[320px] overflow-y-auto">
+                <div className="divide-y divide-gray-50">
+                  {contactGroups.map((group) => {
+                    const colors = [
+                      { bg: 'bg-blue-500', text: 'text-white' },
+                      { bg: 'bg-emerald-500', text: 'text-white' },
+                      { bg: 'bg-purple-500', text: 'text-white' },
+                      { bg: 'bg-amber-500', text: 'text-white' },
+                      { bg: 'bg-rose-500', text: 'text-white' },
+                    ];
+                    const colorIndex = group.name.charCodeAt(0) % colors.length;
+                    const color = colors[colorIndex];
+                    const initials = group.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+
+                    return (
+                      <div key={group.id}>
+                        {/* Ligne groupe */}
+                        <div className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
+                          {/* Avatar compact */}
+                          <div className={`w-8 h-8 rounded-full ${color.bg} flex items-center justify-center flex-shrink-0`}>
+                            <span className={`text-xs font-bold ${color.text}`}>{initials}</span>
+                          </div>
+                          {/* Nom + description */}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">{group.name}</p>
+                            {group.description && (
+                              <p className="text-xs text-gray-400 truncate">{group.description}</p>
+                            )}
+                          </div>
+                          {/* Badge contacts */}
+                          <span className="text-xs text-gray-500 flex-shrink-0">
+                            {group.contacts.length} contact{group.contacts.length !== 1 ? 's' : ''}
+                          </span>
+                          {/* Actions - toujours visibles */}
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => setSelectedGroup(selectedGroup === group.id ? null : group.id)}
+                              className={`p-1.5 rounded-lg transition-colors ${
+                                selectedGroup === group.id
+                                  ? 'bg-orange-100 text-orange-600'
+                                  : 'text-gray-300 hover:text-orange-600 hover:bg-orange-50'
+                              }`}
+                              title="Gérer"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteGroup(group.id)}
+                              className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Supprimer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Panel contacts (expandable) */}
+                        {selectedGroup === group.id && (
+                          <div className="px-5 pb-4 pt-2 bg-gray-50/50 border-t border-gray-100">
+                            {/* Liste contacts avec scroll */}
+                            {group.contacts.length > 0 && (
+                              <div className="space-y-1 mb-3 max-h-[150px] overflow-y-auto">
+                                {group.contacts.map((contact) => (
+                                  <div key={contact.id} className="flex items-center gap-2 py-1.5 px-3 bg-white rounded-lg hover:bg-gray-50 transition-colors">
+                                    <div className="flex-1 min-w-0">
+                                      <span className="text-sm text-gray-700 truncate block">{contact.name || contact.email}</span>
+                                      {contact.name && <span className="text-xs text-gray-400 truncate block">{contact.email}</span>}
+                                    </div>
+                                    <button
+                                      onClick={() => handleDeleteContact(contact.id)}
+                                      className="p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                                    >
+                                      <Trash2 className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Ajouter contact inline */}
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                value={newContactName}
+                                onChange={(e) => setNewContactName(e.target.value)}
+                                placeholder="Nom"
+                                className="flex-1 px-2.5 py-1.5 bg-white border border-gray-200 rounded text-sm placeholder-gray-400 focus:border-orange-400 focus:ring-1 focus:ring-orange-100"
+                              />
+                              <input
+                                type="email"
+                                value={newContactEmail}
+                                onChange={(e) => setNewContactEmail(e.target.value)}
+                                placeholder="Email"
+                                className="flex-1 px-2.5 py-1.5 bg-white border border-gray-200 rounded text-sm placeholder-gray-400 focus:border-orange-400 focus:ring-1 focus:ring-orange-100"
+                              />
+                              <button
+                                onClick={() => handleAddContact(group.id)}
+                                disabled={!newContactEmail}
+                                className={`w-8 h-8 rounded flex items-center justify-center transition-all flex-shrink-0 ${
+                                  newContactEmail
+                                    ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600'
+                                    : 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                                }`}
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="px-5 py-8 text-center">
+                <p className="text-sm text-gray-400 mb-3">Aucun groupe</p>
+                <button
+                  onClick={() => setIsCreatingGroup(true)}
+                  className="text-sm text-orange-600 hover:text-orange-700 font-medium"
+                >
+                  + Créer un groupe
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+        </div>
       </div>
 
       {/* Modal du dictionnaire */}

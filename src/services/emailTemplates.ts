@@ -198,9 +198,9 @@ export const generateEmailBody = async (data: EmailTemplateData): Promise<string
   }
 
   let htmlBody = `
-<p>${greeting},</p>
+<p>Bonjour,</p>
 
-<p>J'espère que vous allez bien. Suite à notre réunion, je vous transmets le compte-rendu détaillé avec les points clés abordés et les décisions prises.</p>
+<p>À la suite de notre réunion, vous trouverez ci-joint le compte rendu détaillé reprenant les points essentiels abordés, les décisions prises et les actions à mettre en œuvre.</p>
 
 <hr style="border: none; border-top: 1px solid #ccc; margin: 20px 0;">
 
@@ -240,9 +240,9 @@ ${markdownToHtml(summary)}
 
   // Pied de page
   htmlBody += `
-<p>Je reste à votre disposition pour toute question, clarification ou complément d'information concernant ce compte-rendu.</p>
+<p>Je reste à votre disposition pour toute demande ou précision complémentaire.</p>
 
-<p>Excellente continuation à vous,</p>
+<p>Je vous souhaite une excellente journée,</p>
 
 <p><strong>Cordialement,</strong></p>
 `;

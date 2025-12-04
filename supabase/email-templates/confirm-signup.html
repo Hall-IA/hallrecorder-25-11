@@ -1,0 +1,98 @@
+<!--
+  Template d'email de confirmation pour Supabase
+  À copier dans : Supabase Dashboard → Authentication → Email Templates → Confirm signup
+-->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirmez votre email - HALL Recorder</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #FFF7ED 0%, #FED7AA 100%);">
+  <table role="presentation" style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td align="center" style="padding: 40px 0;">
+        <table role="presentation" style="width: 600px; max-width: 90%; background: white; border-radius: 24px; box-shadow: 0 10px 40px rgba(251, 146, 60, 0.15); overflow: hidden;">
+
+          <!-- Header avec dégradé -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #FB923C 0%, #F97316 100%); padding: 48px 40px; text-align: center;">
+              <h1 style="color: white; font-size: 32px; margin: 0 0 12px 0; font-weight: 700;">
+                🎉 Bienvenue sur HALL Recorder !
+              </h1>
+              <p style="color: rgba(255, 255, 255, 0.9); font-size: 16px; margin: 0; font-weight: 500;">
+                Dernière étape : confirmez votre email
+              </p>
+            </td>
+          </tr>
+
+          <!-- Corps du message -->
+          <tr>
+            <td style="padding: 48px 40px;">
+              <p style="color: #78350F; font-size: 18px; line-height: 1.6; margin: 0 0 24px 0; font-weight: 500;">
+                Bonjour,
+              </p>
+
+              <p style="color: #92400E; font-size: 16px; line-height: 1.6; margin: 0 0 32px 0;">
+                Merci de vous être inscrit sur HALL Recorder ! Pour finaliser votre inscription et commencer à enregistrer vos réunions, veuillez confirmer votre adresse email.
+              </p>
+
+              <!-- Bouton de confirmation -->
+              <table role="presentation" style="width: 100%; margin: 0 0 32px 0;">
+                <tr>
+                  <td align="center">
+                    <a href="{{ .ConfirmationURL }}"
+                       style="display: inline-block; background: linear-gradient(135deg, #FB923C 0%, #F97316 100%); color: white; text-decoration: none; padding: 16px 48px; border-radius: 12px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 12px rgba(251, 146, 60, 0.3);">
+                      ✅ Confirmer mon email
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Lien alternatif -->
+              <p style="color: #92400E; font-size: 14px; line-height: 1.6; margin: 0 0 24px 0; text-align: center;">
+                Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :
+              </p>
+              <p style="color: #F97316; font-size: 12px; line-height: 1.6; margin: 0 0 32px 0; text-align: center; word-break: break-all;">
+                {{ .ConfirmationURL }}
+              </p>
+
+              <!-- Informations importantes -->
+              <div style="background: #FFF7ED; border-left: 4px solid #FB923C; border-radius: 8px; padding: 20px 24px; margin: 0 0 32px 0;">
+                <p style="color: #92400E; font-size: 14px; line-height: 1.6; margin: 0 0 12px 0;">
+                  ⏱️ <strong>Ce lien expire dans 24 heures</strong>
+                </p>
+                <p style="color: #92400E; font-size: 14px; line-height: 1.6; margin: 0;">
+                  🔒 <strong>Sécurité</strong> - Si vous n'avez pas créé de compte, ignorez cet email
+                </p>
+              </div>
+
+              <p style="color: #92400E; font-size: 16px; line-height: 1.6; margin: 0;">
+                Une fois votre email confirmé, vous pourrez accéder à toutes les fonctionnalités de HALL Recorder pour enregistrer et transcrire vos réunions.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background: #FFF7ED; padding: 32px 40px; border-top: 2px solid #FFEDD5;">
+              <p style="color: #92400E; font-size: 14px; line-height: 1.6; margin: 0 0 16px 0; text-align: center;">
+                Besoin d'aide ? Contactez-nous à
+                <a href="mailto:support@help.hallia.ai" style="color: #F97316; text-decoration: none; font-weight: 600;">
+                  support@help.hallia.ai
+                </a>
+              </p>
+              <p style="color: #A8A29E; font-size: 12px; margin: 0; text-align: center;">
+                © 2025 HALL Recorder - Tous droits réservés
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

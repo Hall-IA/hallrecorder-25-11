@@ -79,7 +79,9 @@ Deno.serve(async (req) => {
     const ipAddress = getClientIp(req);
     const userAgent = req.headers.get("user-agent") ?? null;
 
-    // Filtrer les bots et scanners connus (liste étendue pour meilleure détection)
+    // Filtrer les bots et scanners connus
+    // Note: On n'inclut PAS googleimageproxy/gmail car Gmail charge toujours les images via proxy
+    // même pour les vrais utilisateurs. On se base sur les autres détections (vieux navigateurs, timing, etc.)
     const suspiciousPatterns = [
       /bot/i,
       /crawler/i,
@@ -91,13 +93,7 @@ Deno.serve(async (req) => {
       /prerender/i,
       /validator/i,
       /fetcher/i,
-      /googleimageproxy/i,      // Gmail proxy d'images
-      /google-proxy/i,
       /yahoo.*slurp/i,
-      /outlook/i,               // Outlook preview
-      /microsoft.*office/i,
-      /ms-office/i,
-      /windows-mail/i,
       /mailchimp/i,
       /sendgrid/i,
       /mailgun/i,
@@ -120,40 +116,72 @@ Deno.serve(async (req) => {
       /safelinks\.protection/i, // Microsoft SafeLinks
       /url-protection/i,
       /link-protection/i,
+      /python-requests/i,       // Scripts automatiques
+      /curl/i,
+      /wget/i,
+      /libwww/i,
+      /java/i,
+      /okhttp/i,
     ];
 
     const isSuspicious = userAgent && suspiciousPatterns.some(pattern => pattern.test(userAgent));
 
+    // Détecter les IPs de datacenter pour scripts automatisés
+    // Note: On n'inclut PAS les IPs Google ni Apple car Gmail/Apple Mail utilisent ces IPs
+    // même pour les vrais utilisateurs (proxy de confidentialité)
+    const datacenterIpPatterns = [
+      /^13\.\d+\./,          // AWS
+      /^54\.\d+\./,          // AWS
+      /^52\.\d+\./,          // AWS
+    ];
+
+    const isDatacenterIp = ipAddress && datacenterIpPatterns.some(pattern => pattern.test(ipAddress));
+
     // Vérifier le délai depuis l'envoi
-    // Réduit à 5 secondes car la détection par user-agent est maintenant plus robuste
-    // Les vrais humains prennent au moins quelques secondes pour ouvrir un email
     const sentAt = history.sent_at ? new Date(history.sent_at).getTime() : 0;
     const now = Date.now();
     const timeSinceSent = (now - sentAt) / 1000; // en secondes
-    const MIN_DELAY_SECONDS = 5;
 
-    // Ouverture suspecte = trop rapide ET pas de user-agent reconnaissable comme navigateur
-    const isKnownBrowser = userAgent && (
-      /chrome/i.test(userAgent) ||
-      /firefox/i.test(userAgent) ||
-      /safari/i.test(userAgent) ||
-      /edge/i.test(userAgent) ||
-      /opera/i.test(userAgent) ||
-      /mobile/i.test(userAgent)
+    // Détecter Gmail ImageProxy (ce sont de vrais utilisateurs)
+    const isGmailImageProxy = userAgent && /googleimageproxy|ggpht\.com/i.test(userAgent);
+
+    // Pour Gmail, on accepte toutes les ouvertures (pas de limite de temps)
+    // Pour les autres, on bloque les vieux navigateurs (scanners SMTP)
+    const isOldBrowser = userAgent && !isGmailImageProxy && (
+      /Chrome\/([0-9]+)/.test(userAgent) && parseInt(userAgent.match(/Chrome\/([0-9]+)/)?.[1] || '0') < 90 ||
+      /Firefox\/([0-9]+)/.test(userAgent) && parseInt(userAgent.match(/Firefox\/([0-9]+)/)?.[1] || '0') < 80 ||
+      /Safari\/([0-9]+)/.test(userAgent) && parseInt(userAgent.match(/Safari\/([0-9]+)/)?.[1] || '0') < 600
     );
 
-    // On ignore seulement si:
-    // 1. C'est un bot/scanner connu
-    // 2. OU c'est trop rapide ET ce n'est pas un navigateur connu
-    const isTooEarly = sentAt > 0 && timeSinceSent < MIN_DELAY_SECONDS && !isKnownBrowser;
+    // Détecter les comportements suspects typiques des scanners SMTP
+    const hasHeadlessIndicators = userAgent && (
+      /headless/i.test(userAgent) ||
+      /phantom/i.test(userAgent) ||
+      /selenium/i.test(userAgent) ||
+      /webdriver/i.test(userAgent) ||
+      /jsdom/i.test(userAgent) ||
+      /node/i.test(userAgent)
+    );
+
+    // Détection des scanners SMTP :
+    // 1. Vieux navigateur (Chrome < 90, Firefox < 80, Safari < 600) SAUF Gmail ImageProxy
+    // 2. Indicateurs headless (phantom, selenium, etc.)
+    // On NE SE BASE PLUS sur le timing car les scanners peuvent ouvrir après plusieurs minutes
+    const isLikelySMTPScanner = isOldBrowser || hasHeadlessIndicators;
 
     if (isSuspicious) {
       console.log(`🤖 Suspicious user agent ignored: ${userAgent}`);
       return new Response(PIXEL_DATA, { status: 200, headers });
     }
 
-    if (isTooEarly) {
-      console.log(`⏰ Email opened too soon (${timeSinceSent.toFixed(1)}s) with unknown agent, likely a scanner`);
+    if (isDatacenterIp) {
+      console.log(`🔒 Datacenter IP ignored: ${ipAddress}`);
+      return new Response(PIXEL_DATA, { status: 200, headers });
+    }
+
+    if (isLikelySMTPScanner) {
+      const reason = isOldBrowser ? 'old browser' : hasHeadlessIndicators ? 'headless' : 'too fast + no referer';
+      console.log(`📧 SMTP scanner ignored (${reason}, ${timeSinceSent.toFixed(1)}s): ${userAgent}`);
       return new Response(PIXEL_DATA, { status: 200, headers });
     }
 
@@ -170,7 +198,7 @@ Deno.serve(async (req) => {
 
     // Enregistrer CHAQUE ouverture (comme Mailtrack)
     // On enregistre toutes les ouvertures pour avoir un historique complet
-    if (!isSuspicious && !isTooEarly) {
+    if (!isSuspicious && !isDatacenterIp && !isLikelySMTPScanner) {
       console.log(`📬 Recording open event for ${normalizedRecipient || 'unknown'}`);
       await supabase.from("email_open_events").insert({
         email_history_id: history.id,

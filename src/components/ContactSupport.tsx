@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Mail, Upload, Send, CheckCircle, AlertCircle, Loader2, X, Image as ImageIcon, PartyPopper } from 'lucide-react';
+import { Mail, Upload, Send, CheckCircle, AlertCircle, Loader2, X, Image as ImageIcon, PartyPopper, HelpCircle, XCircle, Sparkles, MessageCircle, Lightbulb } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useDialog } from '../context/DialogContext';
 
@@ -134,10 +134,10 @@ export const ContactSupport = ({ userId, userEmail }: ContactSupportProps) => {
   }, [screenshots]);
 
   const categories = [
-    { id: 'question' as const, label: 'Question', icon: '❓' },
-    { id: 'bug' as const, label: 'Bug / Problème technique', icon: '🐛' },
-    { id: 'feature' as const, label: 'Demande de fonctionnalité', icon: '✨' },
-    { id: 'other' as const, label: 'Autre', icon: '💬' },
+    { id: 'question' as const, label: 'Question', IconComponent: HelpCircle },
+    { id: 'bug' as const, label: 'Bug / Problème technique', IconComponent: XCircle },
+    { id: 'feature' as const, label: 'Demande de fonctionnalité', IconComponent: Sparkles },
+    { id: 'other' as const, label: 'Autre', IconComponent: MessageCircle },
   ];
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -374,24 +374,27 @@ export const ContactSupport = ({ userId, userEmail }: ContactSupportProps) => {
             Catégorie <span className="text-red-500">*</span>
           </label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setCategory(cat.id)}
-                disabled={isSending}
-                className={`p-3 rounded-xl border-2 transition-all text-left ${
-                  category === cat.id
-                    ? 'border-coral-500 bg-coral-50 shadow-md'
-                    : 'border-gray-200 bg-white hover:border-coral-300'
-                }`}
-              >
-                <div className="flex flex-col items-center gap-2 text-center">
-                  <span className="text-2xl">{cat.icon}</span>
-                  <span className="text-xs font-medium text-cocoa-800">{cat.label}</span>
-                </div>
-              </button>
-            ))}
+            {categories.map((cat) => {
+              const Icon = cat.IconComponent;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setCategory(cat.id)}
+                  disabled={isSending}
+                  className={`p-3 rounded-xl border-2 transition-all text-left ${
+                    category === cat.id
+                      ? 'border-coral-500 bg-coral-50 shadow-md'
+                      : 'border-gray-200 bg-white hover:border-coral-300'
+                  }`}
+                >
+                  <div className="flex flex-col items-center gap-2 text-center">
+                    <Icon className={`w-7 h-7 ${category === cat.id ? 'text-coral-600' : 'text-gray-400'}`} />
+                    <span className="text-xs font-medium text-cocoa-800">{cat.label}</span>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -513,11 +516,11 @@ export const ContactSupport = ({ userId, userEmail }: ContactSupportProps) => {
         </div>
 
         {/* Info */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
           <div className="flex gap-3">
-            <ImageIcon className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-blue-800">
-              <p className="font-semibold">💡 Conseil</p>
+            <Lightbulb className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-gray-800">
+              <p className="font-semibold">Conseil</p>
               <p className="mt-1">
                 Les captures d'écran nous aident à mieux comprendre votre problème et à le résoudre plus rapidement.
               </p>

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Mail, Lock, X, CheckCircle, ArrowLeft } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Mail, Lock, X, CheckCircle, ArrowLeft, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface PasswordResetModalProps {
@@ -15,6 +15,18 @@ export const PasswordResetModal = ({ onClose }: PasswordResetModalProps) => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [isResending, setIsResending] = useState(false);
+
+  // Timer pour le cooldown de renvoi
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => {
+        setResendCooldown(resendCooldown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCooldown]);
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,10 +48,37 @@ export const PasswordResetModal = ({ onClose }: PasswordResetModalProps) => {
 
       setMessage('Un code de vérification a été envoyé à votre adresse email.');
       setStep('code');
+      setResendCooldown(60); // 60 secondes de cooldown
     } catch (error: any) {
       setError(error.message || 'Une erreur est survenue');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    setIsResending(true);
+    setMessage('');
+    setError('');
+
+    try {
+      const { data, error } = await supabase.functions.invoke('send-password-reset-code', {
+        body: { email },
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        setError(data.error);
+        return;
+      }
+
+      setMessage('Un nouveau code a été envoyé à votre adresse email.');
+      setResendCooldown(60); // 60 secondes de cooldown
+    } catch (error: any) {
+      setError(error.message || 'Une erreur est survenue lors du renvoi');
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -202,6 +241,30 @@ export const PasswordResetModal = ({ onClose }: PasswordResetModalProps) => {
                 className="w-full px-4 py-3 border-2 border-orange-200 rounded-xl focus:outline-none focus:border-coral-500 focus:ring-4 focus:ring-coral-500/20 transition-all text-center text-2xl font-bold tracking-widest"
               />
               <p className="mt-2 text-xs text-cocoa-500">Le code expire dans 15 minutes</p>
+
+              <button
+                type="button"
+                onClick={handleResendCode}
+                disabled={resendCooldown > 0 || isResending}
+                className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-coral-600 hover:text-coral-700 hover:bg-coral-50 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isResending ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-coral-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span>Envoi en cours...</span>
+                  </>
+                ) : resendCooldown > 0 ? (
+                  <>
+                    <RefreshCw className="w-4 h-4" />
+                    <span>Renvoyer dans {resendCooldown}s</span>
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-4 h-4" />
+                    <span>Renvoyer le code</span>
+                  </>
+                )}
+              </button>
             </div>
 
             <div>
