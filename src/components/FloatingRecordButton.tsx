@@ -32,6 +32,14 @@ export const FloatingRecordButton = ({
   });
   const [isDragging, setIsDragging] = useState(false);
   const [showDragHint, setShowDragHint] = useState(false);
+  const [mobileIndicatorPosition, setMobileIndicatorPosition] = useState<{ x: number; y: number }>(() => {
+    if (typeof window === 'undefined') return { x: 0, y: 0 };
+    return { x: window.innerWidth - 80, y: 80 }; // Position par défaut : haut droite
+  });
+  const [isMobileExpanded, setIsMobileExpanded] = useState(true); // Mode étendu par défaut
+  const [isMobileDragging, setIsMobileDragging] = useState(false);
+  const mobileIndicatorRef = useRef<HTMLDivElement>(null);
+  const mobileDragOffsetRef = useRef({ x: 0, y: 0, isDragging: false });
 
   const formatTime = (seconds: number) => {
     const hrs = Math.floor(seconds / 3600);
@@ -195,55 +203,215 @@ export const FloatingRecordButton = ({
     return () => window.clearTimeout(timer);
   }, [isRecording]);
 
+  // Gestion du drag pour l'indicateur mobile
+  const handleMobileIndicatorPointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!mobileIndicatorRef.current) return;
+    
+    // Ne pas démarrer le drag si on clique sur un bouton
+    const target = event.target as HTMLElement;
+    if (target.closest('button')) {
+      return; // Laisser le bouton gérer son propre événement
+    }
+    
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    
+    const startX = event.clientX;
+    const startY = event.clientY;
+    let hasMoved = false;
+    
+    mobileDragOffsetRef.current = {
+      x: event.clientX - mobileIndicatorPosition.x,
+      y: event.clientY - mobileIndicatorPosition.y,
+      isDragging: false,
+    };
+    setIsMobileDragging(true);
+    
+    // Détecter si c'est un drag ou un clic simple
+    const handleMove = (e: PointerEvent) => {
+      const deltaX = Math.abs(e.clientX - startX);
+      const deltaY = Math.abs(e.clientY - startY);
+      // Si le mouvement est significatif (> 5px), c'est un drag
+      if (deltaX > 5 || deltaY > 5) {
+        hasMoved = true;
+        mobileDragOffsetRef.current.isDragging = true;
+        
+        // Déplacer l'indicateur
+        const nextX = e.clientX - mobileDragOffsetRef.current.x;
+        const nextY = e.clientY - mobileDragOffsetRef.current.y;
+        
+        // Limiter aux bords de l'écran
+        const maxX = window.innerWidth - 80;
+        const maxY = window.innerHeight - 100;
+        const minX = 8;
+        const minY = 80;
+        
+        setMobileIndicatorPosition({
+          x: Math.max(minX, Math.min(maxX, nextX)),
+          y: Math.max(minY, Math.min(maxY, nextY)),
+        });
+      }
+    };
+    
+    const handleUp = () => {
+      document.removeEventListener('pointermove', handleMove);
+      document.removeEventListener('pointerup', handleUp);
+      
+      // Si ce n'était pas un drag, c'est un clic simple
+      if (!hasMoved) {
+        // Toggle entre mode étendu et compact
+        setIsMobileExpanded(prev => !prev);
+      }
+      
+      setIsMobileDragging(false);
+      mobileDragOffsetRef.current.isDragging = false;
+    };
+    
+    document.addEventListener('pointermove', handleMove);
+    document.addEventListener('pointerup', handleUp);
+  }, [mobileIndicatorPosition, isMobileExpanded]);
+
+  const handleMobileIndicatorPointerMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!isMobileDragging) return;
+    // Si on n'a pas encore détecté de mouvement significatif, ne pas déplacer
+    if (!mobileDragOffsetRef.current.isDragging) return;
+    
+    event.preventDefault();
+    
+    const nextX = event.clientX - mobileDragOffsetRef.current.x;
+    const nextY = event.clientY - mobileDragOffsetRef.current.y;
+    
+    // Limiter aux bords de l'écran
+    const maxX = window.innerWidth - 80; // Largeur approximative de l'indicateur
+    const maxY = window.innerHeight - 100; // Hauteur approximative
+    const minX = 8;
+    const minY = 80; // En dessous de la navbar
+    
+    setMobileIndicatorPosition({
+      x: Math.max(minX, Math.min(maxX, nextX)),
+      y: Math.max(minY, Math.min(maxY, nextY)),
+    });
+  }, [isMobileDragging]);
+
+  const handleMobileIndicatorPointerUp = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    setIsMobileDragging(false);
+  }, []);
+
   if (!isRecording) return null;
 
   return (
     <>
-      {/* Barre sticky en haut pour mobile */}
-      <div className="md:hidden fixed top-16 left-0 right-0 z-50 bg-gradient-to-r from-coral-500 to-coral-600 shadow-lg h-[60px]">
-        <div className="flex items-center justify-between px-4 h-full">
-          {/* Timer et indicateur */}
-          <div className="flex items-center gap-3">
-            <div className="w-3 h-3 bg-white rounded-full animate-pulse shadow-lg" />
-            <span className="font-mono font-bold text-white text-lg tabular-nums">
+      {/* Indicateur mobile (style screen recording) */}
+      <div 
+        className="md:hidden fixed z-50"
+        style={{ 
+          left: `${mobileIndicatorPosition.x}px`,
+          top: `${mobileIndicatorPosition.y}px`,
+          transition: isMobileDragging ? 'none' : 'transform 0.2s ease-out'
+        }}
+      >
+        {isMobileExpanded ? (
+          /* Mode étendu : div noire avec boutons */
+          <div
+            ref={mobileIndicatorRef}
+            onPointerDown={handleMobileIndicatorPointerDown}
+            onPointerMove={handleMobileIndicatorPointerMove}
+            onPointerUp={handleMobileIndicatorPointerUp}
+            onPointerCancel={handleMobileIndicatorPointerUp}
+            className={`bg-white/90 backdrop-blur-sm rounded-full px-4 py-3 shadow-2xl cursor-grab active:cursor-grabbing ${isMobileDragging ? 'scale-105' : ''} transition-all select-none`}
+          >
+            <div className="flex items-center gap-3">
+              {/* Indicateur et timer */}
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
+                <span className="font-mono font-semibold text-gray-900 text-sm tabular-nums">
+                  {formatTime(recordingTime)}
+                </span>
+                {isPaused && (
+                  <span className="text-xs text-gray-700 font-medium bg-gray-200 px-2 py-0.5 rounded">PAUSE</span>
+                )}
+              </div>
+
+              {/* Boutons de contrôle */}
+              <div className="flex items-center gap-2 ml-2">
+                {isPaused ? (
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onResume();
+                    }}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-all shadow-lg active:scale-95 pointer-events-auto"
+                    title="Reprendre"
+                  >
+                    <Play className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onPause();
+                    }}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className="p-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl transition-all shadow-lg active:scale-95 pointer-events-auto"
+                    title="Pause"
+                  >
+                    <Pause className="w-4 h-4" />
+                  </button>
+                )}
+
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onStop();
+                  }}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  className="p-2 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-all shadow-lg active:scale-95 pointer-events-auto"
+                  title="Arrêter"
+                >
+                  <Square className="w-4 h-4" />
+                </button>
+
+                {/* Bouton pour cacher */}
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsMobileExpanded(false);
+                  }}
+                  onPointerDown={(e) => e.stopPropagation()}
+                    className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-all pointer-events-auto"
+                    title="Réduire"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                    </svg>
+                  </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Mode compact : petite barre avec juste le temps */
+          <div
+            ref={mobileIndicatorRef}
+            onPointerDown={handleMobileIndicatorPointerDown}
+            onPointerMove={handleMobileIndicatorPointerMove}
+            onPointerUp={handleMobileIndicatorPointerUp}
+            onPointerCancel={handleMobileIndicatorPointerUp}
+            className={`bg-white/90 backdrop-blur-sm rounded-full px-3 py-2 flex items-center gap-2 shadow-lg cursor-grab active:cursor-grabbing ${isMobileDragging ? 'scale-105' : 'active:scale-95'} transition-transform select-none`}
+          >
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+            <span className="font-mono font-semibold text-gray-900 text-xs tabular-nums">
               {formatTime(recordingTime)}
             </span>
-            {isPaused && (
-              <span className="text-xs text-white font-bold tracking-wider bg-white/20 px-2 py-1 rounded">
-                PAUSE
-              </span>
-            )}
           </div>
-
-          {/* Boutons de contrôle */}
-          <div className="flex items-center gap-2">
-            {isPaused ? (
-              <button
-                onClick={onResume}
-                className="p-2.5 bg-green-500 hover:bg-green-600 text-white rounded-full transition-all shadow-lg active:scale-95"
-                title="Reprendre"
-              >
-                <Play className="w-5 h-5" />
-              </button>
-            ) : (
-              <button
-                onClick={onPause}
-                className="p-2.5 bg-sunset-500 hover:bg-sunset-600 text-white rounded-full transition-all shadow-lg active:scale-95"
-                title="Pause"
-              >
-                <Pause className="w-5 h-5" />
-              </button>
-            )}
-
-            <button
-              onClick={onStop}
-              className="p-2.5 bg-red-500 hover:bg-red-600 text-white rounded-full transition-all shadow-lg active:scale-95"
-              title="Arrêter"
-            >
-              <Square className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Bouton flottant pour desktop uniquement */}
