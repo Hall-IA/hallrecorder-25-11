@@ -336,16 +336,36 @@ function App() {
 
   const startPartialAnalysisTimer = useCallback(() => {
     if (partialAnalysisTimerRef.current) {
+      console.log('[Transcription] ⏭️ Timer déjà démarré, skip');
       return;
     }
 
+    console.log('[Transcription] 🎬 Démarrage du timer d\'analyse toutes les 15s');
     partialAnalysisTimerRef.current = window.setInterval(async () => {
       try {
+        console.log('[Transcription] ⏰ Tick du timer - récupération fenêtre audio 15s...');
         const wav = await getLast15sWav();
-        if (!wav || wav.size < 5000) return;
-        console.log(`📝 Transcription fenêtre 15s ${(wav.size / 1024).toFixed(0)} KB`);
+
+        if (!wav || wav.size < 5000) {
+          console.warn('[Transcription] ⚠️ Audio trop petit ou absent:', {
+            hasWav: !!wav,
+            size: wav?.size || 0
+          });
+          return;
+        }
+
+        console.log(`[Transcription] 📝 Envoi à Whisper: ${(wav.size / 1024).toFixed(0)} KB`);
         const text = await transcribeAudio(wav, 0, `window15s_${Date.now()}.wav`);
+
+        console.log('[Transcription] 📨 Réponse de Whisper:', {
+          texte: text,
+          longueur: text?.length || 0,
+          valide: !!(text && text.trim().length > 5)
+        });
+
         if (text && text.trim().length > 5) {
+          console.log('[Transcription] ✅ Texte reçu:', text);
+
           setPartialTranscripts(prev => {
             const normalizedText = text.trim().toLowerCase();
             const isDuplicate = prev.some(existing =>
@@ -355,22 +375,36 @@ function App() {
             );
 
             if (isDuplicate) {
+              console.log('[Transcription] 🔄 Texte dupliqué, ignoré');
               return prev;
             }
 
+            console.log('[Transcription] ➕ Ajout du texte au state partialTranscripts');
             return [...prev, text];
           });
 
           liveTranscriptRef.current = `${(liveTranscriptRef.current || '').trim()} ${text}`.trim();
+          console.log('[Transcription] 📝 Mise à jour liveTranscriptRef:', {
+            longueurTotale: liveTranscriptRef.current.length,
+            extrait: liveTranscriptRef.current.substring(0, 100) + '...'
+          });
+
           recentChunksRef.current.push(text);
           if (recentChunksRef.current.length > 2) recentChunksRef.current.shift();
           const twoChunkWindow = recentChunksRef.current.join(' ').trim();
+
+          console.log('[Transcription] 🔍 Analyse partielle en cours...');
           await analyzePartialTranscript(twoChunkWindow);
+          console.log('[Transcription] ✅ Analyse partielle terminée');
+        } else {
+          console.log('[Transcription] ⚠️ Texte vide ou trop court, ignoré');
         }
       } catch (e) {
-        console.error('❌ Erreur transcription 15s:', e);
+        console.error('[Transcription] ❌ Erreur transcription 15s:', e);
       }
     }, 15000);
+
+    console.log('[Transcription] ✅ Timer configuré, première exécution dans 15s');
   }, [getLast15sWav, analyzePartialTranscript]);
 
   const loadDefaultSummaryMode = useCallback(async (userId: string) => {

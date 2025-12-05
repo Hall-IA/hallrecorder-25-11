@@ -164,7 +164,7 @@
   * {
     @apply transition-colors duration-200;
   }
-  
+
   body {
     @apply antialiased;
     background-color: var(--color-background, #f4f1ee);
@@ -174,6 +174,42 @@
   /* Agrandir les points des listes à puces */
   li::marker {
     font-size: 1.2em;
+  }
+
+  /* Fixes spécifiques iOS Safari */
+  html {
+    /* Empêcher le zoom sur les inputs */
+    -webkit-text-size-adjust: 100%;
+    /* Support des zones de sécurité (notch, etc.) */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  /* Désactiver le bounce effect sur iOS */
+  body {
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Fix pour les boutons iOS */
+  button,
+  input[type="button"],
+  input[type="submit"] {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* Fix pour les inputs iOS */
+  input,
+  textarea,
+  select {
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 0;
+  }
+
+  /* Empêcher le highlight bleu au tap sur iOS */
+  * {
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
@@ -776,5 +812,195 @@
     margin-bottom: -25px;
     margin-right: -16px;
   }
+}
+
+/* ========================================
+   DRIVER.JS CUSTOM STYLES (Tours guidés)
+   ======================================== */
+
+/* Styles de base pour Driver.js - Remplace driver.css pour éviter les conflits */
+.driver-overlay {
+  background: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000000;
+}
+
+.driver-active-element {
+  position: relative !important;
+  z-index: 1000001 !important;
+}
+
+/* Ne pas modifier les styles des éléments actifs, juste le z-index */
+.driver-active-element * {
+  /* Pas de reset ici pour éviter de casser les styles existants */
+}
+
+/* Personnalisation du popover avec vos couleurs - Isolation complète */
+.driver-popover {
+  /* Isolation totale - on ne touche RIEN à l'extérieur */
+  all: initial;
+  /* Uniquement les styles nécessaires pour le popover */
+  display: block;
+  position: fixed;
+  z-index: 1000002;
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 2px solid #FED7AA;
+  max-width: 400px;
+  padding: 1.5rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #000;
+  box-sizing: border-box;
+}
+
+/* Forcer box-sizing pour tous les enfants du popover UNIQUEMENT */
+.driver-popover,
+.driver-popover *,
+.driver-popover *::before,
+.driver-popover *::after {
+  box-sizing: border-box;
+}
+
+.driver-popover-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #EF6855; /* coral-500 */
+  margin-bottom: 0.5rem;
+  margin-top: 0;
+}
+
+.driver-popover-description {
+  font-size: 0.875rem;
+  color: #3E362E; /* cocoa-800 */
+  line-height: 1.5;
+  margin: 0;
+}
+
+.driver-popover-progress-text {
+  font-size: 0.75rem;
+  color: #78716C; /* gray-500 */
+  font-weight: 500;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.driver-popover-footer {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Boutons personnalisés */
+.driver-popover-next-btn,
+.driver-popover-prev-btn,
+.driver-popover-close-btn {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-family: inherit;
+}
+
+.driver-popover-next-btn,
+.driver-popover-prev-btn {
+  background: linear-gradient(to right, #EF6855, #F97316); /* coral to sunset */
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  text-shadow: none;
+  border: none;
+}
+
+.driver-popover-next-btn:hover,
+.driver-popover-prev-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(239, 104, 85, 0.3);
+}
+
+.driver-popover-prev-btn {
+  background: white;
+  color: #EF6855;
+  border: 2px solid #EF6855;
+}
+
+.driver-popover-close-btn {
+  color: #9CA3AF;
+  font-size: 1.5rem;
+  font-weight: 300;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+.driver-popover-close-btn:hover {
+  color: #EF6855;
+}
+
+/* Element mis en surbrillance */
+.driver-active-element {
+  outline: 3px solid #EF6855;
+  outline-offset: 4px;
+  border-radius: 0.5rem;
+}
+
+/* Flèche du popover */
+.driver-popover-arrow {
+  width: 0;
+  height: 0;
+  position: absolute;
+  border: 8px solid transparent;
+}
+
+.driver-popover-arrow-side-top {
+  border-top-color: #FED7AA;
+  bottom: -16px;
+}
+
+.driver-popover-arrow-side-bottom {
+  border-bottom-color: #FED7AA;
+  top: -16px;
+}
+
+.driver-popover-arrow-side-left {
+  border-left-color: #FED7AA;
+  right: -16px;
+}
+
+.driver-popover-arrow-side-right {
+  border-right-color: #FED7AA;
+  left: -16px;
+}
+
+/* Animation d'entrée */
+@keyframes driver-popover-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.driver-popover {
+  animation: driver-popover-fade-in 0.2s ease-out;
 }
 

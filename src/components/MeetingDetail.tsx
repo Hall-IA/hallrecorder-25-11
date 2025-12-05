@@ -1,4 +1,4 @@
-import { ArrowLeft, Calendar, Clock, Edit2, FileText, Mail, Save, X, Paperclip, Download, FileDown, RotateCw, Sparkles, AlertTriangle, MoreVertical, Tag, ChevronDown, Check } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Edit2, FileText, Mail, Save, X, Paperclip, Download, FileDown, RotateCw, Sparkles, AlertTriangle, MoreVertical, Tag, ChevronDown, Check, HelpCircle } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Meeting, EmailAttachment, MeetingCategory, supabase } from '../lib/supabase';
 import { generatePDFFromHTML } from '../services/pdfGenerator';
@@ -10,6 +10,9 @@ import { SummaryMode, generateSummary } from '../services/transcription';
 import { invalidateDictionaryCache } from '../services/dictionaryCorrection';
 import { SummaryRegenerationModal } from './SummaryRegenerationModal';
 import { useDialog } from '../context/DialogContext';
+import { useFeatureTour } from '../hooks/useFeatureTour';
+import { TOURS } from '../config/featureTours';
+import { WordCorrectionHint } from './WordCorrectionHint';
 
 interface MeetingDetailProps {
   meeting: Meeting;
@@ -74,7 +77,19 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
   const hasTranscript = useMemo(() => Boolean((meeting.transcript || '').trim().length), [meeting.transcript]);
   const summaryRef = useRef<HTMLDivElement>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
+  const hintTimeoutRef = useRef<number | null>(null);
   const { showAlert, showConfirm } = useDialog();
+
+  // État pour le hint de correction de mot au survol
+  const [showWordHint, setShowWordHint] = useState(false);
+  const [wordHintPosition, setWordHintPosition] = useState({ x: 0, y: 0 });
+
+  // Hook pour le tour guidé (démarre automatiquement après 2 secondes)
+  const { startTour } = useFeatureTour(
+    TOURS.meetingDetail.id,
+    TOURS.meetingDetail.steps,
+    { autoStart: true, delay: 2000 }
+  );
   const meetingSummaries = useMemo(() => inferSummaryValues(meeting), [meeting.summary_detailed, meeting.summary_short, meeting.summary, meeting.id]);
   const displaySummaries = isEditing ? editedSummaries : meetingSummaries;
   const currentSummaryText = displaySummaries[activeSummaryMode] || '';
@@ -1052,6 +1067,62 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
     }
   };
 
+  // Fonction pour gérer le survol d'un mot (affiche le hint)
+  const handleWordHover = (event: React.MouseEvent<HTMLSpanElement>) => {
+    if (isEditing) return; // Ne pas montrer le hint en mode édition
+
+    // Effacer le timeout précédent si existant
+    if (hintTimeoutRef.current) {
+      window.clearTimeout(hintTimeoutRef.current);
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    setWordHintPosition({
+      x: rect.left + rect.width / 2,
+      y: rect.top,
+    });
+
+    // Montrer le hint avec un petit délai pour éviter le flash
+    hintTimeoutRef.current = window.setTimeout(() => {
+      setShowWordHint(true);
+    }, 300);
+  };
+
+  const handleWordLeave = () => {
+    // Effacer le timeout si l'utilisateur quitte avant l'affichage
+    if (hintTimeoutRef.current) {
+      window.clearTimeout(hintTimeoutRef.current);
+      hintTimeoutRef.current = null;
+    }
+    setShowWordHint(false);
+  };
+
+  // Wrapper pour les mots avec hover detection
+  const wrapWordsWithHover = (text: string | React.ReactNode): React.ReactNode => {
+    if (typeof text !== 'string') return text;
+
+    // Diviser par mots en gardant la ponctuation
+    const words = text.split(/(\s+)/);
+
+    return words.map((word, index) => {
+      // Si c'est un espace, le retourner tel quel
+      if (/^\s+$/.test(word)) return word;
+
+      // Si c'est vide, ignorer
+      if (!word) return null;
+
+      return (
+        <span
+          key={index}
+          onMouseEnter={handleWordHover}
+          onMouseLeave={handleWordLeave}
+          className="cursor-text"
+        >
+          {word}
+        </span>
+      );
+    });
+  };
 
   const renderSummaryWithBold = (text: string | null) => {
     if (!text) return <div className="text-cocoa-500 italic">Aucun résumé disponible</div>;
@@ -1090,7 +1161,7 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
               )}
             </button>
             <span className={`flex-1 text-sm md:text-base ${isChecked ? 'line-through text-cocoa-400' : 'text-cocoa-800'}`}>
-              {content}
+              {wrapWordsWithHover(content)}
             </span>
           </div>
         );
@@ -1122,9 +1193,9 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
         const renderedParts = parts.map((part, index) => {
           if (part.startsWith('**') && part.endsWith('**')) {
             const text = part.slice(2, -2);
-            return <strong key={index}>{text}</strong>;
+            return <strong key={index}>{wrapWordsWithHover(text)}</strong>;
           }
-          return part;
+          return wrapWordsWithHover(part);
         });
 
         return (
@@ -1142,11 +1213,11 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
         const renderedParts = parts.map((part, index) => {
           if (part.startsWith('**') && part.endsWith('**')) {
             const text = part.slice(2, -2);
-            return <strong key={index}>{text}</strong>;
+            return <strong key={index}>{wrapWordsWithHover(text)}</strong>;
           }
-          return part;
+          return wrapWordsWithHover(part);
         });
-        
+
         return (
           <div key={lineIndex} className="flex items-start gap-2 ml-6 mb-1">
             <span className="text-cocoa-400 mt-1 text-xs">○</span>
@@ -1160,9 +1231,9 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
       const renderedParts = parts.map((part, index) => {
         if (part.startsWith('**') && part.endsWith('**')) {
           const content = part.slice(2, -2);
-          return <strong key={index}>{content}</strong>;
+          return <strong key={index}>{wrapWordsWithHover(content)}</strong>;
         }
-        return part;
+        return wrapWordsWithHover(part);
       });
 
       return (
@@ -1642,6 +1713,7 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
                   <span className="text-lg">Retour à l'historique</span>
                 </button>
                 <button
+                  data-tour="edit-button"
                   onClick={() => setIsEditing(true)}
                   className="flex items-center gap-2 px-3 py-2 text-cocoa-600 hover:text-cocoa-800 hover:bg-orange-50 rounded-xl transition-colors font-semibold border-2 border-transparent hover:border-orange-200 text-sm"
                 >
@@ -1653,6 +1725,7 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
               {/* Ligne 2: Autres boutons d'action */}
               <div className="flex items-center gap-2">
                 <button
+                  data-tour="pdf-button"
                   onClick={handleDownloadPDF}
                   className="flex items-center gap-2 px-3 py-2 bg-white border-2 border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50 rounded-lg transition-all shadow-sm font-semibold text-sm"
                 >
@@ -1718,6 +1791,7 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
                 )}
 
                 <button
+                  data-tour="email-button"
                   onClick={async () => {
                     const emailBody = await prepareInitialEmailBody();
                     setInitialEmailBody(emailBody);
@@ -1840,6 +1914,15 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
                 )}
               </button>
             )}
+
+            {/* Bouton d'aide pour relancer le guide */}
+            <button
+              onClick={startTour}
+              className="ml-auto flex-shrink-0 p-2 text-cocoa-400 hover:text-coral-500 hover:bg-coral-50 rounded-full transition-colors"
+              title="Voir le guide"
+            >
+              <HelpCircle className="w-5 h-5" />
+            </button>
 
           </div>
         </div>
@@ -1990,7 +2073,7 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
                 )}
               </div>
               <div className="prose prose-slate max-w-none">
-                <div ref={summaryRef} className="text-cocoa-800 whitespace-pre-wrap leading-relaxed text-sm md:text-lg cursor-text">
+                <div id="meeting-summary-text" ref={summaryRef} className="text-cocoa-800 whitespace-pre-wrap leading-relaxed text-sm md:text-lg cursor-text">
                   {renderSummaryWithBold(currentSummaryText)}
                 </div>
               </div>
@@ -2149,6 +2232,12 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
         errorMessage={regenerationError}
         onConfirm={handleConfirmRegeneration}
         onCancel={handleCloseRegenerationModal}
+      />
+
+      {/* Hint de correction au survol d'un mot */}
+      <WordCorrectionHint
+        show={showWordHint}
+        position={wordHintPosition}
       />
 
     </>
