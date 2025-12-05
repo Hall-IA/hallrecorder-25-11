@@ -778,3 +778,225 @@
   }
 }
 
+/* ====================================
+   DRIVER.JS CUSTOM STYLES
+   Styles personnalisés pour les tours guidés
+   ==================================== */
+
+/* Container principal du driver */
+.driver-popover {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  padding: 0;
+  max-width: 400px;
+  animation: driverFadeIn 0.2s ease-out;
+}
+
+@keyframes driverFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Titre du popover */
+.driver-popover-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0;
+  padding: 20px 20px 12px;
+  background: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  border-bottom: 2px solid #FFF5F0;
+}
+
+/* Description du popover */
+.driver-popover-description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #4a5568;
+  padding: 12px 20px 20px;
+  margin: 0;
+}
+
+/* Pied du popover (boutons + progression) */
+.driver-popover-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #f7fafc;
+  border-top: 1px solid #e2e8f0;
+  border-radius: 0 0 12px 12px;
+}
+
+/* Texte de progression */
+.driver-popover-progress-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #718096;
+  margin: 0;
+}
+
+/* Container des boutons */
+.driver-popover-navigation-btns {
+  display: flex;
+  gap: 8px;
+}
+
+/* Style de base pour tous les boutons */
+.driver-popover-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  outline: none;
+}
+
+/* Bouton Précédent */
+.driver-popover-prev-btn {
+  background: white;
+  color: #4a5568;
+  border: 1.5px solid #e2e8f0;
+}
+
+.driver-popover-prev-btn:hover {
+  background: #f7fafc;
+  border-color: #cbd5e0;
+  transform: translateY(-1px);
+}
+
+/* Bouton Suivant */
+.driver-popover-next-btn {
+  background: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+}
+
+.driver-popover-next-btn:hover {
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Bouton Terminé */
+.driver-popover-close-btn {
+  background: linear-gradient(135deg, #48BB78 0%, #38A169 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(72, 187, 120, 0.3);
+}
+
+.driver-popover-close-btn:hover {
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Flèche du popover */
+.driver-popover-arrow {
+  border: 5px solid transparent;
+}
+
+.driver-popover-arrow-side-left.driver-popover-arrow {
+  border-left-color: white;
+}
+
+.driver-popover-arrow-side-right.driver-popover-arrow {
+  border-right-color: white;
+}
+
+.driver-popover-arrow-side-top.driver-popover-arrow {
+  border-top-color: white;
+}
+
+.driver-popover-arrow-side-bottom.driver-popover-arrow {
+  border-bottom-color: white;
+}
+
+/* Overlay sombre autour de l'élément mis en avant */
+.driver-overlay {
+  background: rgba(0, 0, 0, 0.7);
+  animation: driverOverlayFadeIn 0.3s ease-out;
+}
+
+@keyframes driverOverlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Élément mis en avant */
+.driver-highlighted-element {
+  border-radius: 8px;
+  box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.4), 0 0 0 8px rgba(255, 107, 53, 0.2);
+  transition: all 0.3s ease;
+}
+
+/* Animation de pulsation pour l'élément mis en avant */
+@keyframes driverPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.4), 0 0 0 8px rgba(255, 107, 53, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.6), 0 0 0 12px rgba(255, 107, 53, 0.1);
+  }
+}
+
+.driver-highlighted-element {
+  animation: driverPulse 2s infinite;
+}
+
+/* Personnalisation pour le thème de l'application */
+.driver-popover-custom {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Responsive design pour mobile */
+@media (max-width: 640px) {
+  .driver-popover {
+    max-width: calc(100vw - 32px);
+    margin: 16px;
+  }
+
+  .driver-popover-title {
+    font-size: 16px;
+    padding: 16px 16px 10px;
+  }
+
+  .driver-popover-description {
+    font-size: 13px;
+    padding: 10px 16px 16px;
+  }
+
+  .driver-popover-footer {
+    padding: 12px 16px;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .driver-popover-navigation-btns {
+    width: 100%;
+  }
+
+  .driver-popover-btn {
+    flex: 1;
+    padding: 10px 12px;
+  }
+
+  .driver-popover-progress-text {
+    font-size: 12px;
+  }
+}
+
