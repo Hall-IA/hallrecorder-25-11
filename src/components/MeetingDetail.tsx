@@ -1,4 +1,4 @@
-import { ArrowLeft, Calendar, Clock, Edit2, FileText, Mail, Save, X, Paperclip, Download, FileDown, RotateCw, Sparkles, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Edit2, FileText, Mail, Save, X, Paperclip, Download, FileDown, RotateCw, Sparkles, AlertTriangle, HelpCircle } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Meeting, EmailAttachment, supabase } from '../lib/supabase';
 import { generatePDFFromHTML } from '../services/pdfGenerator';
@@ -10,6 +10,9 @@ import { SummaryMode, generateSummary } from '../services/transcription';
 import { invalidateDictionaryCache } from '../services/dictionaryCorrection';
 import { SummaryRegenerationModal } from './SummaryRegenerationModal';
 import { useDialog } from '../context/DialogContext';
+import { useFeatureTour } from '../hooks/useFeatureTour';
+import { TOURS } from '../config/featureTours';
+import { WordCorrectionHint } from './WordCorrectionHint';
 
 interface MeetingDetailProps {
   meeting: Meeting;
@@ -53,10 +56,22 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
   const [audioExpiresAt, setAudioExpiresAt] = useState<string | null>(null);
   const [audioTimeRemaining, setAudioTimeRemaining] = useState<string>('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // Tour guidé pour les fonctionnalités
+  const { hasSeenTour, startTour } = useFeatureTour(
+    TOURS.meetingDetail.id,
+    TOURS.meetingDetail.steps,
+    { autoStart: true, delay: 2000 } // Démarre automatiquement après 2 secondes
+  );
   const [successModalData, setSuccessModalData] = useState<{ recipientCount: number; method: 'gmail' | 'smtp' }>({ recipientCount: 0, method: 'smtp' });
   const [showWordCorrection, setShowWordCorrection] = useState(false);
   const [selectedWord, setSelectedWord] = useState('');
   const [wordPosition, setWordPosition] = useState<{ start: number; end: number; text: string } | null>(null);
+
+  // État pour le hint de correction de mot au survol
+  const [showWordHint, setShowWordHint] = useState(false);
+  const [wordHintPosition, setWordHintPosition] = useState({ x: 0, y: 0 });
+  const hintTimeoutRef = useRef<number | null>(null);
   const [showRegenerationModal, setShowRegenerationModal] = useState(false);
   const [regenerationMode, setRegenerationMode] = useState<SummaryMode>('detailed');
   const [isRegeneratingSummary, setIsRegeneratingSummary] = useState(false);
@@ -508,12 +523,12 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
       if (hours > 0) {
-        setAudioTimeRemaining(`${hours}h ${minutes}min restantes`);
+        setAudioTimeRemaining(`Audio expire dans : ${hours}h ${minutes}min`);
       } else if (minutes > 0) {
-        setAudioTimeRemaining(`${minutes} minutes restantes`);
+        setAudioTimeRemaining(`Audio expire dans : ${minutes}min`);
       } else {
         const seconds = Math.floor(diff / 1000);
-        setAudioTimeRemaining(`${seconds} secondes restantes`);
+        setAudioTimeRemaining(`Audio expire dans : ${seconds}s`);
       }
     };
 
@@ -967,6 +982,61 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
     }
   };
 
+  // Fonction pour gérer le survol d'un mot
+  const handleWordHover = (event: React.MouseEvent<HTMLSpanElement>) => {
+    if (isEditing) return; // Ne pas montrer le hint en mode édition
+
+    // Effacer le timeout précédent si existant
+    if (hintTimeoutRef.current) {
+      window.clearTimeout(hintTimeoutRef.current);
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    setWordHintPosition({
+      x: rect.left + rect.width / 2,
+      y: rect.top,
+    });
+
+    // Montrer le hint avec un petit délai pour éviter le flash
+    hintTimeoutRef.current = window.setTimeout(() => {
+      setShowWordHint(true);
+    }, 300);
+  };
+
+  const handleWordLeave = () => {
+    // Effacer le timeout si l'utilisateur quitte avant l'affichage
+    if (hintTimeoutRef.current) {
+      window.clearTimeout(hintTimeoutRef.current);
+      hintTimeoutRef.current = null;
+    }
+    setShowWordHint(false);
+  };
+
+  // Wrapper pour les mots avec hover detection
+  const wrapWordsWithHover = (text: string | React.ReactNode) => {
+    if (typeof text !== 'string') return text;
+
+    // Diviser par mots en gardant la ponctuation
+    const words = text.split(/(\s+)/);
+    return words.map((word, index) => {
+      // Ne pas wrapper les espaces
+      if (word.match(/^\s+$/)) return word;
+
+      // Ne wrapper que les mots de plus de 2 caractères
+      if (word.length <= 2) return word;
+
+      return (
+        <span
+          key={index}
+          className="cursor-pointer hover:bg-coral-50 rounded px-0.5 transition-colors"
+          onMouseEnter={handleWordHover}
+          onMouseLeave={handleWordLeave}
+        >
+          {word}
+        </span>
+      );
+    });
+  };
 
   const renderSummaryWithBold = (text: string | null) => {
     if (!text) return <div className="text-cocoa-500 italic">Aucun résumé disponible</div>;
@@ -1005,7 +1075,7 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
               )}
             </button>
             <span className={`flex-1 ${isChecked ? 'line-through text-cocoa-400' : 'text-cocoa-800'}`}>
-              {content}
+              {wrapWordsWithHover(content)}
             </span>
           </div>
         );
@@ -1016,7 +1086,7 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
         const titleText = line.substring(4).trim();
         return (
           <h3 key={lineIndex} className="text-xl font-bold text-cocoa-800 mt-6 mb-3">
-            {titleText}
+            {wrapWordsWithHover(titleText)}
           </h3>
         );
       }
@@ -1025,7 +1095,7 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
         const titleText = line.substring(5).trim();
         return (
           <h4 key={lineIndex} className="text-lg font-semibold text-cocoa-700 mt-4 mb-2">
-            {titleText}
+            {wrapWordsWithHover(titleText)}
           </h4>
         );
       }
@@ -1037,9 +1107,9 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
         const renderedParts = parts.map((part, index) => {
           if (part.startsWith('**') && part.endsWith('**')) {
             const text = part.slice(2, -2);
-            return <strong key={index}>{text}</strong>;
+            return <strong key={index}>{wrapWordsWithHover(text)}</strong>;
           }
-          return part;
+          return wrapWordsWithHover(part);
         });
 
         return (
@@ -1057,11 +1127,11 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
         const renderedParts = parts.map((part, index) => {
           if (part.startsWith('**') && part.endsWith('**')) {
             const text = part.slice(2, -2);
-            return <strong key={index}>{text}</strong>;
+            return <strong key={index}>{wrapWordsWithHover(text)}</strong>;
           }
-          return part;
+          return wrapWordsWithHover(part);
         });
-        
+
         return (
           <div key={lineIndex} className="flex items-start gap-2 ml-6 mb-1">
             <span className="text-cocoa-400 mt-1 text-xs">○</span>
@@ -1075,9 +1145,9 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
       const renderedParts = parts.map((part, index) => {
         if (part.startsWith('**') && part.endsWith('**')) {
           const content = part.slice(2, -2);
-          return <strong key={index}>{content}</strong>;
+          return <strong key={index}>{wrapWordsWithHover(content)}</strong>;
         }
-        return part;
+        return wrapWordsWithHover(part);
       });
 
       return (
@@ -1333,126 +1403,137 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
 
   return (
     <>
-      <div className="bg-white rounded-2xl md:rounded-3xl shadow-2xl overflow-hidden border-2 border-orange-100 h-full flex flex-col">
+      <div className="bg-white rounded-xl md:rounded-2xl shadow-xl overflow-hidden border-2 border-orange-100 h-full flex flex-col">
         <div className="border-b-2 border-orange-100 flex-shrink-0">
-          <div className="p-4 md:p-8">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4">
-              <button
-                onClick={onBack}
-                className="flex items-center gap-1 md:gap-2 text-cocoa-600 hover:text-coral-600 transition-colors font-semibold text-sm md:text-base"
-              >
-                <ArrowLeft className="w-5 h-5 md:w-6 md:h-6" />
-                <span className="md:text-lg">Retour à l'historique</span>
-              </button>
-
-              <div className="flex items-center gap-2 w-full sm:w-auto pb-6 sm:pb-0">
+          <div className="p-3 md:p-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mb-3">
+              <div className="flex items-center gap-2">
                 <button
-                  onClick={handleDownloadPDF}
-                  className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 bg-white border-2 border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50 rounded-lg transition-all shadow-sm font-semibold text-sm flex-1 sm:flex-initial justify-center"
+                  onClick={onBack}
+                  className="flex items-center gap-1 text-cocoa-600 hover:text-coral-600 transition-colors font-semibold text-sm"
                 >
-                  <FileDown className="w-4 h-4 md:w-5 md:h-5" />
-                  <span className="hidden sm:inline">Télécharger PDF</span>
-                  <span className="sm:hidden">PDF</span>
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Retour</span>
                 </button>
 
-                    {/* Bouton télécharger audio */}
-                    {meeting.audio_url && (
-                      <div className="relative flex-1 sm:flex-initial">
-                        <button
-                          onClick={audioAvailable === false ? checkAudioAvailability : handleDownloadAudio}
-                          disabled={isDownloadingAudio || (audioTimeRemaining?.includes('Expiré') ?? false)}
-                          className={`flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 rounded-lg transition-all shadow-sm font-semibold text-sm justify-center w-full ${
-                            audioTimeRemaining?.includes('Expiré')
-                              ? 'bg-gray-300 text-gray-500 cursor-not-allowed border-2 border-gray-300'
-                              : audioAvailable === false
-                              ? 'bg-amber-500 text-white hover:bg-amber-600 border-2 border-amber-500'
-                              : isDownloadingAudio
-                              ? 'bg-gray-100 text-gray-600 cursor-wait border-2 border-gray-300'
-                              : 'bg-white border-2 border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'
-                          }`}
-                          title={
-                            audioTimeRemaining?.includes('Expiré')
-                              ? 'Audio expiré (24h dépassées)'
-                              : audioAvailable === false
-                              ? 'Cliquez pour revérifier la disponibilité'
-                              : audioTimeRemaining
-                              ? `Télécharger l'audio (${audioTimeRemaining})`
-                              : 'Télécharger l\'audio'
-                          }
-                        >
-                          {isDownloadingAudio ? (
-                            <>
-                              <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
-                              <span className="hidden sm:inline">Téléchargement...</span>
-                            </>
-                          ) : audioTimeRemaining?.includes('Expiré') ? (
-                            <>
-                              <Clock className="w-4 h-4 md:w-5 md:h-5" />
-                              <span className="hidden sm:inline">Audio expiré</span>
-                              <span className="sm:hidden">Expiré</span>
-                            </>
-                          ) : audioAvailable === false ? (
-                            <>
-                              <Clock className="w-4 h-4 md:w-5 md:h-5" />
-                              <span className="hidden sm:inline">Revérifier l'audio</span>
-                              <span className="sm:hidden">Revérifier</span>
-                            </>
-                          ) : (
-                            <>
-                              <Download className="w-4 h-4 md:w-5 md:h-5" />
-                              <span className="hidden sm:inline">Télécharger Audio</span>
-                              <span className="sm:hidden">Audio</span>
-                            </>
-                          )}
-                        </button>
-                        {audioTimeRemaining && audioAvailable && !audioTimeRemaining.includes('Expiré') && (
-                          <div className="absolute -bottom-5 left-0 right-0 text-xs text-center whitespace-nowrap">
-                            <span className={`font-semibold ${audioTimeRemaining.includes('minutes') && !audioTimeRemaining.includes('h') ? 'text-amber-600' : 'text-gray-600'}`}>
-                              Expire dans : {audioTimeRemaining}
-                            </span>
-                          </div>
-                        )}
+                {/* Bouton pour afficher le tour guidé */}
+                <button
+                  onClick={startTour}
+                  className="flex items-center gap-1 px-2 py-1 text-xs text-coral-600 hover:text-coral-700 hover:bg-coral-50 rounded-md transition-colors border border-coral-200"
+                  title="Afficher le guide des fonctionnalités"
+                >
+                  <HelpCircle className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Guide</span>
+                </button>
+              </div>
+
+              {/* Boutons d'action compacts */}
+              <div className="flex flex-wrap items-start gap-3 sm:gap-4">
+                <button
+                  data-tour="pdf-button"
+                  onClick={handleDownloadPDF}
+                  className="flex items-center justify-center gap-1.5 px-4 py-2 bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50 rounded-lg transition-all shadow-sm font-medium text-sm min-w-[90px]"
+                >
+                  <FileDown className="w-4 h-4" />
+                  <span>PDF</span>
+                </button>
+
+                {/* Bouton télécharger audio */}
+                {meeting.audio_url && (
+                  <div className="flex flex-col items-center gap-1.5">
+                    <button
+                      onClick={audioAvailable === false ? checkAudioAvailability : handleDownloadAudio}
+                      disabled={isDownloadingAudio || (audioTimeRemaining?.includes('Expiré') ?? false)}
+                      className={`flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg transition-all shadow-sm font-medium text-sm min-w-[90px] ${
+                        audioTimeRemaining?.includes('Expiré')
+                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed border border-gray-300'
+                          : audioAvailable === false
+                          ? 'bg-amber-500 text-white hover:bg-amber-600 border border-amber-500'
+                          : isDownloadingAudio
+                          ? 'bg-gray-100 text-gray-600 cursor-wait border border-gray-300'
+                          : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'
+                      }`}
+                        title={
+                          audioTimeRemaining?.includes('Expiré')
+                            ? 'Audio expiré (24h dépassées)'
+                            : audioAvailable === false
+                            ? 'Cliquez pour revérifier la disponibilité'
+                            : audioTimeRemaining
+                            ? `Télécharger l'audio (${audioTimeRemaining})`
+                            : 'Télécharger l\'audio'
+                        }
+                    >
+                      {isDownloadingAudio ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
+                          <span>...</span>
+                        </>
+                      ) : audioTimeRemaining?.includes('Expiré') ? (
+                        <>
+                          <Clock className="w-4 h-4" />
+                          <span>Expiré</span>
+                        </>
+                      ) : audioAvailable === false ? (
+                        <>
+                          <RotateCw className="w-4 h-4" />
+                          <span>Vérifier</span>
+                        </>
+                      ) : (
+                        <>
+                          <Download className="w-4 h-4" />
+                          <span>Audio</span>
+                        </>
+                      )}
+                    </button>
+                    {audioTimeRemaining && audioAvailable && !audioTimeRemaining.includes('Expiré') && (
+                      <div className="text-xs text-center whitespace-nowrap">
+                        <span className={`font-semibold ${audioTimeRemaining.includes('min') && !audioTimeRemaining.includes('h') ? 'text-amber-600' : 'text-gray-600'}`}>
+                          {audioTimeRemaining}
+                        </span>
                       </div>
                     )}
+                  </div>
+                )}
 
-                    <button
-                      onClick={async () => {
-                        const emailBody = await prepareInitialEmailBody();
-                        setInitialEmailBody(emailBody);
-                        setShowEmailComposer(true);
-                      }}
-                      className="flex items-center gap-1 md:gap-2 px-3 md:px-5 py-2 md:py-3 bg-orange-500 text-white hover:bg-orange-600 rounded-lg md:rounded-xl transition-colors font-semibold shadow-sm text-sm md:text-base flex-1 sm:flex-initial justify-center"
-                    >
-                      <Mail className="w-4 h-4 md:w-5 md:h-5" />
-                      <span className="hidden sm:inline">Envoyer par email</span>
-                      <span className="sm:hidden">Email</span>
-                    </button>
                 <button
-                  onClick={() => setIsEditing(true)}
-                  className="flex items-center gap-1 md:gap-2 px-3 md:px-5 py-2 md:py-3 text-cocoa-600 hover:text-cocoa-800 hover:bg-orange-50 rounded-lg md:rounded-xl transition-colors font-semibold border-2 border-transparent hover:border-orange-200 text-sm md:text-base flex-1 sm:flex-initial justify-center"
+                  data-tour="email-button"
+                  onClick={async () => {
+                    const emailBody = await prepareInitialEmailBody();
+                    setInitialEmailBody(emailBody);
+                    setShowEmailComposer(true);
+                  }}
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-orange-500 text-white hover:bg-orange-600 rounded-lg transition-colors font-semibold shadow-md text-sm min-w-[140px]"
                 >
-                  <Edit2 className="w-4 h-4 md:w-5 md:h-5" />
-                  <span className="hidden sm:inline">Modifier</span>
-                  <span className="sm:hidden">Modifier</span>
+                  <Mail className="w-4 h-4" />
+                  <span>Envoyer par email</span>
+                </button>
+
+                <button
+                  data-tour="edit-button"
+                  onClick={() => setIsEditing(true)}
+                  className="flex items-center justify-center gap-1.5 px-4 py-2 text-cocoa-600 hover:text-cocoa-800 hover:bg-orange-50 rounded-lg transition-colors font-medium border border-transparent hover:border-orange-200 text-sm min-w-[90px]"
+                >
+                  <Edit2 className="w-4 h-4" />
+                  <span>Modifier</span>
                 </button>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 md:gap-5">
-              <div className="flex-shrink-0 w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-coral-500 to-sunset-500 rounded-xl md:rounded-2xl flex items-center justify-center shadow-xl">
-                <FileText className="w-6 h-6 md:w-8 md:h-8 text-white" />
+            <div className="flex items-start gap-2 md:gap-3">
+              <div className="flex-shrink-0 w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-coral-500 to-sunset-500 rounded-lg md:rounded-xl flex items-center justify-center shadow-lg">
+                <FileText className="w-5 h-5 md:w-6 md:h-6 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <h1 className="text-xl md:text-4xl font-bold bg-gradient-to-r from-coral-600 to-sunset-600 bg-clip-text text-transparent mb-2 md:mb-4 break-words">
+                <h1 className="text-lg md:text-2xl font-bold bg-gradient-to-r from-coral-600 to-sunset-600 bg-clip-text text-transparent mb-1.5 md:mb-2 break-words">
                   {meeting.title}
                 </h1>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-cocoa-600 font-medium text-xs md:text-base">
-                  <div className="flex items-center gap-1 md:gap-2">
-                    <Calendar className="w-4 h-4 md:w-5 md:h-5 text-sunset-500" />
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-cocoa-600 font-medium text-[11px] md:text-sm">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5 text-sunset-500" />
                     <span className="truncate">{formatDate(meeting.created_at)}</span>
                   </div>
-                  <div className="flex items-center gap-1 md:gap-2">
-                    <Clock className="w-4 h-4 md:w-5 md:h-5 text-sunset-500" />
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5 text-sunset-500" />
                     <span>Durée : {formatDuration(meeting.duration)}</span>
                   </div>
                 </div>
@@ -1460,11 +1541,11 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 px-4 md:px-8 border-t-2 border-orange-100 bg-gradient-to-r from-orange-50/50 to-red-50/50 flex-shrink-0">
-            <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex flex-wrap items-center gap-2 px-3 md:px-4 border-t border-orange-100 bg-gradient-to-r from-orange-50/50 to-red-50/50 flex-shrink-0">
+            <div className="flex items-center gap-1 flex-wrap">
               <button
                 onClick={() => setActiveTab('summary')}
-                className={`px-4 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold transition-all relative rounded-t-xl whitespace-nowrap ${
+                className={`px-3 md:px-5 py-2 md:py-2.5 text-xs md:text-sm font-bold transition-all relative rounded-t-lg whitespace-nowrap ${
                   activeTab === 'summary'
                     ? 'text-coral-600 bg-white'
                     : 'text-cocoa-600 hover:text-coral-500 hover:bg-orange-50/50'
@@ -1472,13 +1553,13 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
               >
                 Résumé
                 {activeTab === 'summary' && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-coral-500 to-orange-500 rounded-full" />
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-coral-500 to-orange-500 rounded-full" />
                 )}
               </button>
 
               <button
                 onClick={() => setActiveTab('transcript')}
-                className={`px-4 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold transition-all relative rounded-t-xl whitespace-nowrap ${
+                className={`px-3 md:px-5 py-2 md:py-2.5 text-xs md:text-sm font-bold transition-all relative rounded-t-lg whitespace-nowrap ${
                   activeTab === 'transcript'
                     ? 'text-amber-600 bg-white'
                     : 'text-cocoa-600 hover:text-amber-500 hover:bg-orange-50/50'
@@ -1486,13 +1567,13 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
               >
                 Transcription
                 {activeTab === 'transcript' && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-red-500 rounded-full" />
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-red-500 rounded-full" />
                 )}
               </button>
 
               <button
                 onClick={() => setActiveTab('suggestions')}
-                className={`px-4 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold transition-all relative rounded-t-xl whitespace-nowrap ${
+                className={`px-3 md:px-5 py-2 md:py-2.5 text-xs md:text-sm font-bold transition-all relative rounded-t-lg whitespace-nowrap ${
                   activeTab === 'suggestions'
                     ? 'text-purple-600 bg-white'
                     : 'text-cocoa-600 hover:text-purple-500 hover:bg-purple-50/50'
@@ -1500,7 +1581,7 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
               >
                 Suggestions
                 {activeTab === 'suggestions' && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full" />
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full" />
                 )}
               </button>
             </div>
@@ -1675,7 +1756,11 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
                 )}
               </div>
               <div className="prose prose-slate max-w-none">
-                <div ref={summaryRef} className="text-cocoa-800 whitespace-pre-wrap leading-relaxed text-lg cursor-text">
+                <div
+                  id="meeting-summary-text"
+                  ref={summaryRef}
+                  className="text-cocoa-800 whitespace-pre-wrap leading-relaxed text-lg cursor-text"
+                >
                   {renderSummaryWithBold(currentSummaryText)}
                 </div>
               </div>
@@ -1834,6 +1919,12 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
         errorMessage={regenerationError}
         onConfirm={handleConfirmRegeneration}
         onCancel={handleCloseRegenerationModal}
+      />
+
+      {/* Hint de correction au survol d'un mot */}
+      <WordCorrectionHint
+        show={showWordHint}
+        position={wordHintPosition}
       />
 
     </>

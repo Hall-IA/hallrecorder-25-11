@@ -1219,10 +1219,10 @@ const previewBaseScale = 0.22;
                 {/* Catégorie en haut si existe */}
                 {meeting.category && (
                   <span
-                    className="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full border mb-2"
+                    className="inline-flex items-center justify-center text-center gap-1 px-2 py-1 text-xs font-semibold rounded-full border mb-2"
                     style={getCategoryBadgeStyle(meeting.category.color)}
                   >
-                    <Tag className="w-3 h-3" />
+                    <Tag className="w-3 h-3 flex-shrink-0" />
                     {meeting.category.name}
                   </span>
                 )}
@@ -1420,7 +1420,7 @@ const previewBaseScale = 0.22;
                 <div className="hidden md:flex flex-shrink-0 w-auto md:w-32">
                   {meeting.category ? (
                     <span
-                      className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full cursor-pointer hover:opacity-80 transition-opacity"
+                      className="inline-flex items-center justify-center text-center px-2.5 py-1 text-xs font-medium rounded-full cursor-pointer hover:opacity-80 transition-opacity"
                       style={{
                         backgroundColor: `${meeting.category.color}20`,
                         color: meeting.category.color

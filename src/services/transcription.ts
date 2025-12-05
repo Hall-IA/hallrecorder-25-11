@@ -21,15 +21,40 @@ export const transcribeAudio = async (audioBlob: Blob, retryCount = 0, filename?
     if (!isFastAPI) {
       headers['Authorization'] = `Bearer ${SUPABASE_ANON_KEY}`;
     }
+
+    console.log('[API Transcription] 📤 Envoi vers:', {
+      endpoint,
+      isFastAPI,
+      fileName: name,
+      audioSize: `${(audioBlob.size / 1024).toFixed(1)} KB`,
+      audioType: audioBlob.type,
+      retryCount
+    });
+
+    const startTime = Date.now();
     const response = await fetch(endpoint, { method: 'POST', headers, body: formData });
+    const duration = Date.now() - startTime;
+
+    console.log('[API Transcription] 📥 Réponse reçue:', {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok,
+      duration: `${duration}ms`,
+      headers: Object.fromEntries(response.headers.entries())
+    });
 
     if (!response.ok) {
       const error = await response.json();
+      console.error('[API Transcription] ❌ Erreur HTTP:', {
+        status: response.status,
+        error
+      });
 
       // Si erreur 429 (rate limit) et qu'on n'a pas encore fait 3 tentatives
       if (response.status === 429 && retryCount < 3) {
         const delays = [2000, 4000, 8000]; // 2s, 4s, 8s
         const delay = delays[retryCount];
+        console.warn(`[API Transcription] ⏳ Rate limit, retry ${retryCount + 1}/3 dans ${delay}ms`);
 
         await new Promise(resolve => setTimeout(resolve, delay));
         return transcribeAudio(audioBlob, retryCount + 1);
@@ -44,12 +69,26 @@ export const transcribeAudio = async (audioBlob: Blob, retryCount = 0, filename?
     }
 
     const data = await response.json();
+    console.log('[API Transcription] ✅ Transcription réussie:', {
+      transcript: data.transcript,
+      transcriptLength: data.transcript?.length || 0,
+      duration: `${duration}ms`,
+      fullResponse: data
+    });
+
     // FastAPI renvoie { transcript: ... }, Edge aussi → compatible
     return data.transcript;
   } catch (error) {
+    console.error('[API Transcription] ❌ Exception:', {
+      error,
+      message: error instanceof Error ? error.message : String(error),
+      retryCount
+    });
+
     if (retryCount < 3 && error instanceof Error && error.message.includes('429')) {
       const delays = [2000, 4000, 8000];
       const delay = delays[retryCount];
+      console.warn(`[API Transcription] ⏳ Exception 429, retry ${retryCount + 1}/3 dans ${delay}ms`);
 
       await new Promise(resolve => setTimeout(resolve, delay));
       return transcribeAudio(audioBlob, retryCount + 1);
@@ -65,24 +104,45 @@ export const transcribeLongAudio = async (
   const baseUrl = TRANSCRIBE_LONG_URL || TRANSCRIBE_URL?.replace('/transcribe', '/transcribe_long');
 
   if (!baseUrl) {
+    console.error('[API Transcription Longue] ❌ URL non configurée');
     throw new Error('URL de transcription non configurée');
   }
 
   const formData = new FormData();
   formData.append('audio', audioFile, audioFile.name);
 
+  console.log('[API Transcription Longue] 📤 Envoi fichier:', {
+    url: baseUrl,
+    fileName: audioFile.name,
+    fileSize: `${(audioFile.size / 1024 / 1024).toFixed(2)} MB`,
+    fileType: audioFile.type
+  });
+
   try {
     if (onProgress) {
       onProgress('Envoi du fichier au serveur...');
     }
 
+    const startTime = Date.now();
     const response = await fetch(baseUrl, {
       method: 'POST',
       body: formData,
     });
+    const duration = Date.now() - startTime;
+
+    console.log('[API Transcription Longue] 📥 Réponse reçue:', {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok,
+      duration: `${duration}ms`
+    });
 
     if (!response.ok) {
       const error = await response.json();
+      console.error('[API Transcription Longue] ❌ Erreur HTTP:', {
+        status: response.status,
+        error
+      });
       throw new Error(error.detail || `Transcription failed (${response.status})`);
     }
 
@@ -91,6 +151,14 @@ export const transcribeLongAudio = async (
     }
 
     const data = await response.json();
+
+    console.log('[API Transcription Longue] ✅ Transcription réussie:', {
+      transcriptLength: data.transcript?.length || 0,
+      segmentsCount: data.segments_count,
+      durationSeconds: data.duration_seconds,
+      totalDuration: `${duration}ms`,
+      fullResponse: data
+    });
 
     if (onProgress) {
       onProgress(`Transcription terminée (${data.segments_count} segments traités)`);
@@ -101,7 +169,10 @@ export const transcribeLongAudio = async (
       duration_seconds: data.duration_seconds
     };
   } catch (error) {
-    console.error('Erreur transcription longue:', error);
+    console.error('[API Transcription Longue] ❌ Exception:', {
+      error,
+      message: error instanceof Error ? error.message : String(error)
+    });
     throw error;
   }
 };
