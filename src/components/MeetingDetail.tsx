@@ -1732,8 +1732,8 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
             </div>
 
             {/* Catégorie - au-dessus du titre */}
-            {currentCategory && (
-              <div className="mb-3 md:mb-4 md:mt-10">
+            <div className="mb-3 md:mb-4 md:mt-10">
+              {currentCategory ? (
                 <span
                   className="inline-flex items-center gap-2 px-3 py-1.5 text-xs md:text-sm font-semibold rounded-full border-2"
                   style={{
@@ -1745,8 +1745,13 @@ export const MeetingDetail = ({ meeting, onBack, onUpdate, userDefaultSummaryMod
                   <Tag className="w-3 h-3 md:w-4 md:h-4" />
                   {currentCategory.name}
                 </span>
-              </div>
-            )}
+              ) : (
+                <span className="inline-flex items-center gap-2 px-3 py-1.5 text-xs md:text-sm font-semibold rounded-full border-2 bg-gray-100 text-gray-500 border-gray-300">
+                  <Tag className="w-3 h-3 md:w-4 md:h-4" />
+                  Sans catégorie
+                </span>
+              )}
+            </div>
 
             <div className="flex items-start gap-3 md:gap-5">
               <div className="hidden md:flex flex-shrink-0 w-16 h-16 bg-gradient-to-br from-coral-500 to-sunset-500 rounded-2xl items-center justify-center shadow-xl">

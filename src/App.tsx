@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Mic, History, LogOut, Settings as SettingsIcon, Upload, LayoutDashboard, Mail, BellRing, PauseCircle, StopCircle, PlayCircle, X, CreditCard, Menu } from 'lucide-react';
+import { Mic, History, LogOut, Settings as SettingsIcon, Upload, LayoutDashboard, Mail, BellRing, PauseCircle, StopCircle, PlayCircle, X, CreditCard, Menu, ChevronUp, ChevronDown } from 'lucide-react';
 import { useAudioRecorder } from './hooks/useAudioRecorder';
 import { useLiveSuggestions } from './hooks/useLiveSuggestions';
 import { RecordingControls } from './components/RecordingControls';
@@ -129,6 +129,7 @@ function App() {
   const [view, setView] = useState<'landing' | 'auth' | 'record' | 'history' | 'detail' | 'settings' | 'upload' | 'dashboard' | 'gmail-callback' | 'contact' | 'subscription'>(getInitialView());
   const [historyTab, setHistoryTab] = useState<'meetings' | 'emails'>('meetings'); // Onglet d'historique
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Menu burger mobile
+  const [isHistoryExpanded, setIsHistoryExpanded] = useState(false); // Historique expandable
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStatus, setProcessingStatus] = useState('');
   const [result, setResult] = useState<{
@@ -2354,7 +2355,7 @@ function App() {
                     </div>
 
                     {/* Panneau droit - Bouton microphone circulaire */}
-                    <div className="bg-gray-50 rounded-2xl border border-gray-200 p-6 flex flex-col items-center justify-center min-h-[300px]">
+                    <div className="bg-gray-50 rounded-2xl mb-20 md:mb-0 border border-gray-200 p-6 flex flex-col items-center justify-center min-h-[300px]">
                       {/* Grand bouton microphone circulaire avec animation */}
                       <div className="relative">
                         {/* Cercles d'animation pulsants - dégradé rose-corail vers orange */}
@@ -2367,6 +2368,7 @@ function App() {
                               background: 'linear-gradient(135deg, #FF6B6B 0%, #FFA64D 100%)'
                             }}></div>
                           </>
+                          
                         )}
 
                         {/* Bouton principal - même dégradé rose-corail vers orange */}
@@ -2578,88 +2580,96 @@ function App() {
 
               {/* Section Historique en bas - minimaliste avec 3 réunions - masquée pendant l'enregistrement */}
               {!isRecording && (
-              <div className="flex-shrink-0 border-t border-gray-200 bg-white px-4 md:px-8 py-4">
+              <div className="md:flex-shrink-0 border-t border-gray-200 bg-white px-4 md:px-8 py-4 fixed bottom-0 left-0 right-0 md:static z-10 shadow-lg md:shadow-none">
                 <div className="max-w-5xl mx-auto">
-                  <div className="flex items-center justify-between mb-4">
+                  <button
+                    onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
+                    className="w-full flex items-center justify-between mb-4"
+                  >
                     <h3 className="text-sm font-semibold text-gray-900">Historique</h3>
-                    <button
-                      onClick={() => setView('history')}
-                      className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-                    >
-                      Modifier
-                    </button>
-                  </div>
+                    {isHistoryExpanded ? (
+                      <ChevronDown className="w-4 h-4 text-gray-400" />
+                    ) : (
+                      <ChevronUp className="w-4 h-4 text-gray-400" />
+                    )}
+                  </button>
 
-                  {isRecentLoading ? (
-                    <div className="space-y-2">
-                      {[...Array(3)].map((_, idx) => (
-                        <div key={`skeleton-${idx}`} className="animate-pulse flex items-center gap-4 py-3 border-b border-gray-100 last:border-0">
-                          <div className="w-16 h-4 bg-gray-100 rounded" />
-                          <div className="flex-1 h-4 bg-gray-100 rounded" />
-                          <div className="w-12 h-4 bg-gray-100 rounded" />
-                        </div>
-                      ))}
-                    </div>
-                  ) : meetings.length === 0 ? (
-                    <p className="text-sm text-gray-400 py-4 text-center">Aucune réunion enregistrée</p>
-                  ) : (
-                    <div className="divide-y divide-gray-100">
-                      {meetings.slice(0, 3).map((meeting) => {
-                        const durationMins = Math.floor(meeting.duration / 60);
-                        const durationSecs = meeting.duration % 60;
-
-                        return (
-                          <div
-                            key={meeting.id}
-                            onClick={() => handleViewMeeting(meeting)}
-                            className="flex items-center gap-4 py-3 cursor-pointer hover:bg-gray-50 -mx-2 px-2 rounded-lg transition-colors"
-                          >
-                            {/* Date */}
-                            <span className="text-sm text-gray-500 w-20 flex-shrink-0">
-                              {new Date(meeting.created_at).toLocaleDateString('fr-FR', {
-                                day: 'numeric',
-                                month: 'short'
-                              })}
-                            </span>
-
-                            {/* Titre */}
-                            <span className="flex-1 text-sm text-gray-900 truncate font-medium">
-                              {meeting.title}
-                            </span>
-
-                            {/* Catégorie/Badge */}
-                            {meeting.category && (
-                              <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full flex-shrink-0">
-                                {meeting.category.name}
-                              </span>
-                            )}
-
-                            {/* Durée */}
-                            <span className="text-sm text-gray-500 w-14 text-right flex-shrink-0">
-                              {durationMins}:{durationSecs.toString().padStart(2, '0')}
-                            </span>
-
-                            {/* Actions */}
-                            <div className="flex items-center gap-1 flex-shrink-0">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleViewMeeting(meeting);
-                                }}
-                                className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
-                                title="Voir"
-                              >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                              </button>
-                            </div>
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                      isHistoryExpanded ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+                  >
+                    {isRecentLoading ? (
+                      <div className="space-y-2">
+                        {[...Array(3)].map((_, idx) => (
+                          <div key={`skeleton-${idx}`} className="animate-pulse flex items-center gap-4 py-3 border-b border-gray-100 last:border-0">
+                            <div className="w-16 h-4 bg-gray-100 rounded" />
+                            <div className="flex-1 h-4 bg-gray-100 rounded" />
+                            <div className="w-12 h-4 bg-gray-100 rounded" />
                           </div>
-                        );
-                      })}
-                    </div>
-                  )}
+                        ))}
+                      </div>
+                    ) : meetings.length === 0 ? (
+                      <p className="text-sm text-gray-400 py-4 text-center">Aucune réunion enregistrée</p>
+                    ) : (
+                      <div className="divide-y divide-gray-100">
+                        {meetings.slice(0, 3).map((meeting) => {
+                            const durationMins = Math.floor(meeting.duration / 60);
+                            const durationSecs = meeting.duration % 60;
+
+                            return (
+                              <div
+                                key={meeting.id}
+                                onClick={() => handleViewMeeting(meeting)}
+                                className="flex items-center gap-4 py-3 cursor-pointer hover:bg-gray-50 -mx-2 px-2 rounded-lg transition-colors"
+                              >
+                                {/* Date */}
+                                <span className="text-sm text-gray-500 w-20 flex-shrink-0">
+                                  {new Date(meeting.created_at).toLocaleDateString('fr-FR', {
+                                    day: 'numeric',
+                                    month: 'short'
+                                  })}
+                                </span>
+
+                                {/* Titre */}
+                                <span className="flex-1 text-sm text-gray-900 truncate font-medium">
+                                  {meeting.title}
+                                </span>
+
+                                {/* Catégorie/Badge */}
+                                {meeting.category && (
+                                  <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full flex-shrink-0">
+                                    {meeting.category.name}
+                                  </span>
+                                )}
+
+                                {/* Durée */}
+                                <span className="text-sm text-gray-500 w-14 text-right flex-shrink-0">
+                                  {durationMins}:{durationSecs.toString().padStart(2, '0')}
+                                </span>
+
+                                {/* Actions */}
+                                <div className="flex items-center gap-1 flex-shrink-0">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleViewMeeting(meeting);
+                                    }}
+                                    className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+                                    title="Voir"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                  </div>
                 </div>
               </div>
               )}
