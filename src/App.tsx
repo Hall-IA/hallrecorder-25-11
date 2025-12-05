@@ -2851,15 +2851,17 @@ function App() {
         </div>
       </main>
 
-      {/* Bouton flottant pendant l'enregistrement - Visible sur mobile et desktop */}
-      <FloatingRecordButton
-        isRecording={isRecording}
-        isPaused={isPaused}
-        recordingTime={recordingTime}
-        onPause={pauseRecording}
-        onResume={resumeRecording}
-        onStop={handleStopRecordingRequest}
-      />
+      {/* Bouton flottant pendant l'enregistrement - Visible sur mobile et desktop, mais pas sur la page d'enregistrement */}
+      {isRecording && view !== 'record' && (
+        <FloatingRecordButton
+          isRecording={isRecording}
+          isPaused={isPaused}
+          recordingTime={recordingTime}
+          onPause={pauseRecording}
+          onResume={resumeRecording}
+          onStop={handleStopRecordingRequest}
+        />
+      )}
 
       {/* Bouton flottant "Démarrer" visible sur DESKTOP uniquement, sur toutes les pages sauf la page d'enregistrement */}
       <div className="hidden md:block">

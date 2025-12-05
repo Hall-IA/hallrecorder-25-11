@@ -214,6 +214,7 @@ export const FloatingRecordButton = ({
     }
     
     event.preventDefault();
+    event.stopPropagation();
     event.currentTarget.setPointerCapture(event.pointerId);
     
     const startX = event.clientX;
@@ -228,23 +229,33 @@ export const FloatingRecordButton = ({
     setIsMobileDragging(true);
     
     // Détecter si c'est un drag ou un clic simple
-    const handleMove = (e: PointerEvent) => {
-      const deltaX = Math.abs(e.clientX - startX);
-      const deltaY = Math.abs(e.clientY - startY);
+    const handleMove = (e: PointerEvent | TouchEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const clientX = 'touches' in e ? e.touches[0]?.clientX : e.clientX;
+      const clientY = 'touches' in e ? e.touches[0]?.clientY : e.clientY;
+      
+      if (clientX === undefined || clientY === undefined) return;
+      
+      const deltaX = Math.abs(clientX - startX);
+      const deltaY = Math.abs(clientY - startY);
       // Si le mouvement est significatif (> 5px), c'est un drag
       if (deltaX > 5 || deltaY > 5) {
         hasMoved = true;
         mobileDragOffsetRef.current.isDragging = true;
         
         // Déplacer l'indicateur
-        const nextX = e.clientX - mobileDragOffsetRef.current.x;
-        const nextY = e.clientY - mobileDragOffsetRef.current.y;
+        const nextX = clientX - mobileDragOffsetRef.current.x;
+        const nextY = clientY - mobileDragOffsetRef.current.y;
         
         // Limiter aux bords de l'écran
-        const maxX = window.innerWidth - 80;
-        const maxY = window.innerHeight - 100;
+        const indicatorWidth = 80;
+        const indicatorHeight = 60;
+        const maxX = window.innerWidth - indicatorWidth;
+        const maxY = window.innerHeight - indicatorHeight;
         const minX = 8;
-        const minY = 80;
+        const minY = 8; // Permettre de monter plus haut
         
         setMobileIndicatorPosition({
           x: Math.max(minX, Math.min(maxX, nextX)),
@@ -253,9 +264,16 @@ export const FloatingRecordButton = ({
       }
     };
     
-    const handleUp = () => {
-      document.removeEventListener('pointermove', handleMove);
-      document.removeEventListener('pointerup', handleUp);
+    const handleUp = (e?: PointerEvent | TouchEvent) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      
+      document.removeEventListener('pointermove', handleMove as EventListener);
+      document.removeEventListener('pointerup', handleUp as EventListener);
+      document.removeEventListener('touchmove', handleMove as EventListener);
+      document.removeEventListener('touchend', handleUp as EventListener);
       
       // Si ce n'était pas un drag, c'est un clic simple
       if (!hasMoved) {
@@ -267,8 +285,11 @@ export const FloatingRecordButton = ({
       mobileDragOffsetRef.current.isDragging = false;
     };
     
-    document.addEventListener('pointermove', handleMove);
-    document.addEventListener('pointerup', handleUp);
+    // Ajouter les listeners pour pointer ET touch (pour mobile)
+    document.addEventListener('pointermove', handleMove as EventListener, { passive: false });
+    document.addEventListener('pointerup', handleUp as EventListener, { passive: false });
+    document.addEventListener('touchmove', handleMove as EventListener, { passive: false });
+    document.addEventListener('touchend', handleUp as EventListener, { passive: false });
   }, [mobileIndicatorPosition, isMobileExpanded]);
 
   const handleMobileIndicatorPointerMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
@@ -277,15 +298,18 @@ export const FloatingRecordButton = ({
     if (!mobileDragOffsetRef.current.isDragging) return;
     
     event.preventDefault();
+    event.stopPropagation();
     
     const nextX = event.clientX - mobileDragOffsetRef.current.x;
     const nextY = event.clientY - mobileDragOffsetRef.current.y;
     
     // Limiter aux bords de l'écran
-    const maxX = window.innerWidth - 80; // Largeur approximative de l'indicateur
-    const maxY = window.innerHeight - 100; // Hauteur approximative
+    const indicatorWidth = 80;
+    const indicatorHeight = 60;
+    const maxX = window.innerWidth - indicatorWidth;
+    const maxY = window.innerHeight - indicatorHeight;
     const minX = 8;
-    const minY = 80; // En dessous de la navbar
+    const minY = 8; // Permettre de monter plus haut
     
     setMobileIndicatorPosition({
       x: Math.max(minX, Math.min(maxX, nextX)),
@@ -321,6 +345,7 @@ export const FloatingRecordButton = ({
             onPointerMove={handleMobileIndicatorPointerMove}
             onPointerUp={handleMobileIndicatorPointerUp}
             onPointerCancel={handleMobileIndicatorPointerUp}
+            style={{ touchAction: 'none' }}
             className={`bg-white/90 backdrop-blur-sm rounded-full px-4 py-3 shadow-2xl cursor-grab active:cursor-grabbing ${isMobileDragging ? 'scale-105' : ''} transition-all select-none`}
           >
             <div className="flex items-center gap-3">
@@ -404,6 +429,7 @@ export const FloatingRecordButton = ({
             onPointerMove={handleMobileIndicatorPointerMove}
             onPointerUp={handleMobileIndicatorPointerUp}
             onPointerCancel={handleMobileIndicatorPointerUp}
+            style={{ touchAction: 'none' }}
             className={`bg-white/90 backdrop-blur-sm rounded-full px-3 py-2 flex items-center gap-2 shadow-lg cursor-grab active:cursor-grabbing ${isMobileDragging ? 'scale-105' : 'active:scale-95'} transition-transform select-none`}
           >
             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
