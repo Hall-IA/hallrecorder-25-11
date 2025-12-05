@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
 import { ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Image } from '../ui/Image';
 
 interface ArgumentItem {
   title: string;
@@ -14,7 +16,7 @@ const argumentsData: ArgumentItem[] = [
     description: [
       "Notre technologie avancée permet d'enregistrer vos réunions aussi bien en présentiel qu'en visioconférence. En salle, le module capte l'ensemble des échanges autour de lui ; en visio, il analyse automatiquement les voix et interventions de tous les participants. Compatible avec Google Meet, Zoom, Teams, Discord et bien d'autres, l'outil s'intègre facilement à votre environnement de travail.",
     ],
-    image: '/assets/img/presentiel-visio.png',
+    image: '/assets/img/presentiel-visio.webp',
     imagePosition: 'left',
   },
   {
@@ -115,7 +117,22 @@ export default function ArgumentsSection() {
             </div>
 
             {/* Image - visible sur tous les écrans, en dessous du texte sur mobile */}
-            <div className="w-full max-w-3xl mx-auto px-6 min-[1100px]:max-w-none min-[1100px]:mx-0 min-[1100px]:w-1/2 min-[1100px]:px-0 shrink-0 order-2 min-[1100px]:order-none">
+            <motion.div 
+              className="w-full max-w-3xl mx-auto px-6 min-[1100px]:max-w-none min-[1100px]:mx-0 min-[1100px]:w-1/2 min-[1100px]:px-0 shrink-0 order-2 min-[1100px]:order-none"
+              initial={{ 
+                opacity: 0, 
+                x: argument.imagePosition === 'left' ? -100 : 100 
+              }}
+              whileInView={{ 
+                opacity: 1, 
+                x: 0 
+              }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ 
+                duration: 0.8, 
+                ease: [0.25, 0.1, 0.25, 1] 
+              }}
+            >
               <div
                 className={`relative overflow-hidden h-[250px] sm:h-[350px] md:h-[450px] min-[1100px]:h-full ${
                   argument.imagePosition === 'left'
@@ -128,9 +145,10 @@ export default function ArgumentsSection() {
                   alt={argument.title}
                   className="h-full w-full object-cover object-[center_top]"
                   loading="lazy"
+                  decoding="async"
                 />
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       ))}

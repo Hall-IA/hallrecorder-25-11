@@ -1,4 +1,4 @@
-import { Calendar, Clock, FileText, Trash2, Loader2, Search, X, Mail, Edit2, Check, ChevronLeft, ChevronRight, Send, PlusCircle, Tag, FolderPlus, List, LayoutGrid, Sparkles } from 'lucide-react';
+import { Calendar, Clock, FileText, Trash2, Loader2, Search, X, Mail, Edit2, Check, ChevronLeft, ChevronRight, Send, PlusCircle, Tag, FolderPlus, List, LayoutGrid, Sparkles, ChevronDown } from 'lucide-react';
 import { Meeting, MeetingCategory } from '../lib/supabase';
 import { useState, useMemo, useEffect, useRef, useCallback, CSSProperties } from 'react';
 import { supabase } from '../lib/supabase';
@@ -60,6 +60,10 @@ export const MeetingHistory = ({
   const [categoryError, setCategoryError] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all');
   const [showManageCategories, setShowManageCategories] = useState(false);
+  const [categoryManageMode, setCategoryManageMode] = useState<'create' | 'edit' | 'list'>('list');
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+  const [editingCategoryName, setEditingCategoryName] = useState('');
+  const [editingCategoryColor, setEditingCategoryColor] = useState<string>('#6366F1');
   const [newCategoryName, setNewCategoryName] = useState('');
   const [categoryFormError, setCategoryFormError] = useState<string | null>(null);
   const [categorySelectorMeetingId, setCategorySelectorMeetingId] = useState<string | null>(null);
@@ -73,6 +77,7 @@ export const MeetingHistory = ({
   const [isRegeneratingSummary, setIsRegeneratingSummary] = useState(false);
   const [regenerationError, setRegenerationError] = useState<string | null>(null);
   const [regenerationToast, setRegenerationToast] = useState<{ message: string; mode: SummaryMode } | null>(null);
+  const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
 
   // Palette de couleurs professionnelle et douce (style Notion/Linear)
   const colorPalette = [
@@ -248,6 +253,18 @@ const previewBaseScale = 0.22;
     loadCategories();
   }, [loadCategories]);
 
+  // Fermer le dropdown des catégories quand on clique en dehors
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (showCategoriesDropdown && !target.closest('.categories-dropdown-container')) {
+        setShowCategoriesDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showCategoriesDropdown]);
+
   useEffect(() => {
     setCategorySelectorMeetingId(null);
   }, [meetings]);
@@ -281,10 +298,15 @@ const previewBaseScale = 0.22;
         return;
       }
 
-      setNewCategoryName('');
-      setNewCategoryColor(colorPalette[0]);
       await loadCategories();
       await onUpdateMeetings();
+      // Fermer la modal directement
+      setShowManageCategories(false);
+      // Réinitialiser les états après fermeture
+      setNewCategoryName('');
+      setNewCategoryColor(colorPalette[0]);
+      setCategoryManageMode('list');
+      setCategoryFormError(null);
     } catch (error: any) {
       console.error('Erreur création catégorie:', error);
       setCategoryFormError(error.message || 'Erreur lors de la création');
@@ -501,6 +523,93 @@ const previewBaseScale = 0.22;
         message: 'Erreur lors de la mise à jour de la couleur',
         variant: 'danger',
       });
+    }
+  };
+
+  const handleUpdateCategoryName = async (categoryId: string, name: string): Promise<boolean> => {
+    if (!userId) return false;
+    const trimmed = name.trim();
+    if (!trimmed) {
+      setCategoryFormError('Le nom ne peut pas être vide');
+      return false;
+    }
+
+    setCategoryFormError(null);
+    try {
+      const { error } = await supabase
+        .from('meeting_categories')
+        .update({ name: trimmed })
+        .eq('id', categoryId)
+        .eq('user_id', userId);
+
+      if (error) {
+        if (error.code === '23505') {
+          setCategoryFormError('Une catégorie avec ce nom existe déjà');
+        } else {
+          setCategoryFormError(error.message || 'Erreur lors de la mise à jour');
+        }
+        return false;
+      }
+
+      // Ne pas réinitialiser les états ici, laisser handleSaveCategoryEdit le faire
+      await loadCategories();
+      await onUpdateMeetings();
+      return true;
+    } catch (error: any) {
+      console.error('Erreur mise à jour nom catégorie:', error);
+      setCategoryFormError(error.message || 'Erreur lors de la mise à jour');
+      return false;
+    }
+  };
+
+  const handleStartEditCategory = (category: MeetingCategory) => {
+    setEditingCategoryId(category.id);
+    setEditingCategoryName(category.name);
+    setEditingCategoryColor(category.color);
+    setCategoryManageMode('edit');
+    setCategoryFormError(null);
+  };
+
+  const handleCancelCategoryEdit = () => {
+    setEditingCategoryId(null);
+    setEditingCategoryName('');
+    setEditingCategoryColor('#6366F1');
+    setCategoryManageMode('list');
+    setCategoryFormError(null);
+  };
+
+  const handleSaveCategoryEdit = async () => {
+    if (!editingCategoryId) return;
+    
+    // Vérifier s'il y a des erreurs avant de continuer
+    if (!editingCategoryName.trim()) {
+      setCategoryFormError('Le nom ne peut pas être vide');
+      return;
+    }
+    
+    setCategoryFormError(null);
+    
+    try {
+      const nameUpdated = await handleUpdateCategoryName(editingCategoryId, editingCategoryName);
+      if (!nameUpdated) {
+        return; // Ne pas fermer la modal s'il y a une erreur
+      }
+      
+      if (editingCategoryColor !== categories.find(c => c.id === editingCategoryId)?.color) {
+        await handleUpdateCategoryColor(editingCategoryId, editingCategoryColor);
+      }
+      
+      // Fermer la modal directement sans changer le mode
+      setShowManageCategories(false);
+      // Réinitialiser les états après fermeture
+      setEditingCategoryId(null);
+      setEditingCategoryName('');
+      setEditingCategoryColor('#6366F1');
+      setCategoryManageMode('list');
+      setCategoryFormError(null);
+    } catch (error) {
+      // En cas d'erreur, ne pas fermer la modal
+      console.error('Erreur lors de la sauvegarde:', error);
     }
   };
 
@@ -872,7 +981,7 @@ const previewBaseScale = 0.22;
         <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-coral-100 to-sunset-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
           <Loader2 className="w-10 h-10 md:w-12 md:h-12 text-coral-500 animate-spin" />
         </div>
-        <p className="text-cocoa-600 text-base md:text-lg font-medium">Chargement des réunions...</p>
+        <p className="text-cocoa-600 text-base md:text-lg font-medium font-roboto">Chargement des réunions...</p>
       </div>
     );
   }
@@ -883,23 +992,23 @@ const previewBaseScale = 0.22;
         <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-coral-100 to-sunset-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
           <Calendar className="w-10 h-10 md:w-12 md:h-12 text-coral-500" />
         </div>
-        <p className="text-cocoa-600 text-base md:text-lg font-medium">Aucune réunion enregistrée</p>
+        <p className="text-cocoa-600 text-base md:text-lg font-medium font-roboto">Aucune réunion enregistrée</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="bg-white overflow-hidden font-roboto">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-100">
-        <h2 className="text-xl font-semibold text-gray-900" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+      <div className="px-0 md:px-6 py-4 border-b border-gray-100">
+        <h2 className="text-xl font-semibold text-gray-900 font-roboto" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
           Historique
         </h2>
       </div>
 
 
       {/* Filters Bar */}
-      <div className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 bg-gray-50/50">
+      <div className="px-0 md:px-6 py-3 md:py-4 border-b border-gray-100 bg-gray-50/50">
         {/* Ligne 1: Recherche et actions */}
         <div className="flex flex-col md:flex-row md:items-center gap-3 mb-3">
           {/* Search */}
@@ -910,7 +1019,7 @@ const previewBaseScale = 0.22;
               placeholder="Rechercher..."
               value={searchTitle}
               onChange={(e) => setSearchTitle(e.target.value)}
-              className="w-full pl-9 pr-3 py-2.5 md:py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-100 bg-white"
+              className="w-full pl-9 pr-3 py-2.5 md:py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-100 bg-white font-roboto"
             />
             {searchTitle && (
               <button
@@ -930,8 +1039,14 @@ const previewBaseScale = 0.22;
                 type="date"
                 value={searchDate}
                 onChange={(e) => setSearchDate(e.target.value)}
-                className="w-full md:w-auto px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-100 bg-white"
+                className="w-full md:w-auto px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-100 bg-white font-roboto"
               />
+              {/* Placeholder simulé pour mobile */}
+              {!searchDate && (
+                <span className="md:hidden absolute left-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none font-roboto">
+                  jj/mm/aaaa
+                </span>
+              )}
               {searchDate && (
                 <button
                   onClick={() => setSearchDate('')}
@@ -942,14 +1057,14 @@ const previewBaseScale = 0.22;
               )}
             </div>
 
-            {/* Edit button - Icon seulement sur mobile */}
+            {/* Edit button - Caché en mobile, visible en desktop */}
             <button
               onClick={() => setShowManageCategories(true)}
-              className="flex px-2 py-2 sm:px-3 sm:py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors items-center gap-1.5"
+              className="hidden md:flex px-2 py-2 sm:px-3 sm:py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors items-center gap-1.5 font-roboto"
               title="Gérer les catégories"
             >
               <Edit2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
-              <span className="hidden sm:inline">Édit</span>
+              <span className="hidden sm:inline font-roboto">Édit</span>
             </button>
 
             {/* Refresh button */}
@@ -1006,9 +1121,10 @@ const previewBaseScale = 0.22;
           </div>
         </div>
 
-        {/* Ligne 2: Category chips - Scrollable horizontal sur mobile */}
+        {/* Ligne 2: Category chips - Dropdown sur mobile, scrollable sur desktop */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide flex-1">
+          {/* Version Desktop - Scrollable horizontal */}
+          <div className="hidden md:flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide flex-1">
             <button
               onClick={() => setSelectedCategoryId('all')}
               draggable={Boolean(draggedMeetingId)}
@@ -1024,7 +1140,7 @@ const previewBaseScale = 0.22;
                 e.preventDefault();
                 handleCategoryDrop(null);
               }}
-              className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
+              className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all font-roboto ${
                 selectedCategoryId === 'all'
                   ? 'bg-orange-500 text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -1049,7 +1165,7 @@ const previewBaseScale = 0.22;
                   e.preventDefault();
                   handleCategoryDrop(category.id);
                 }}
-                className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
+                className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all font-roboto ${
                   selectedCategoryId === category.id
                     ? 'text-white'
                     : 'text-gray-600 hover:opacity-80'
@@ -1064,6 +1180,81 @@ const previewBaseScale = 0.22;
             ))}
           </div>
 
+          {/* Version Mobile - Dropdown */}
+          <div className="md:hidden relative flex-1 categories-dropdown-container">
+            <button
+              onClick={() => setShowCategoriesDropdown(!showCategoriesDropdown)}
+              className="w-full flex items-center justify-between px-4 py-2.5 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors font-roboto"
+            >
+              {selectedCategoryId === 'all' ? (
+                <span className="text-sm font-medium text-gray-700 font-roboto">Mes catégories</span>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span
+                    className="w-3 h-3 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: categories.find(c => c.id === selectedCategoryId)?.color || '#gray' }}
+                  />
+                  <span 
+                    className="text-sm font-medium font-roboto"
+                    style={{ color: categories.find(c => c.id === selectedCategoryId)?.color || '#gray' }}
+                  >
+                    {categories.find(c => c.id === selectedCategoryId)?.name || 'Catégorie'}
+                  </span>
+                </div>
+              )}
+              <ChevronDown 
+                className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
+                  showCategoriesDropdown ? 'rotate-180' : ''
+                } ${!showCategoriesDropdown ? 'animate-pulse' : ''}`}
+              />
+            </button>
+
+            {/* Dropdown content */}
+            {showCategoriesDropdown && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                <div className="p-2 space-y-1">
+                  <button
+                    onClick={() => {
+                      setSelectedCategoryId('all');
+                      setShowCategoriesDropdown(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm font-medium rounded-lg transition-all font-roboto ${
+                      selectedCategoryId === 'all'
+                        ? 'bg-orange-500 text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    Toutes
+                  </button>
+                  {!isCategoriesLoading && categories.map((category) => (
+                    <button
+                      key={category.id}
+                      onClick={() => {
+                        setSelectedCategoryId(category.id);
+                        setShowCategoriesDropdown(false);
+                      }}
+                    className={`w-full text-left px-3 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2 font-roboto ${
+                      selectedCategoryId === category.id
+                        ? 'text-white'
+                        : 'text-gray-600 hover:opacity-80'
+                    }`}
+                    style={{
+                      backgroundColor: selectedCategoryId === category.id ? category.color : `${category.color}20`,
+                      color: selectedCategoryId === category.id ? '#fff' : category.color
+                    }}
+                  >
+                    <span
+                      className="w-3 h-3 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: category.color }}
+                    />
+                    {category.name}
+                  </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Edit button - Visible uniquement sur mobile */}
           <button
             onClick={() => setShowManageCategories(true)}
@@ -1075,8 +1266,8 @@ const previewBaseScale = 0.22;
 
         {/* Filter status */}
         {(searchTitle || searchDate || selectedCategoryId !== 'all') && (
-          <div className="mt-3 px-3 md:px-0 flex items-center justify-between text-xs text-gray-500">
-            <span>
+          <div className="mt-3 px-3 md:px-0 flex items-center justify-between text-xs text-gray-500 font-roboto">
+            <span className="font-roboto">
               {filteredMeetings.length} réunion{filteredMeetings.length !== 1 ? 's' : ''} trouvée{filteredMeetings.length !== 1 ? 's' : ''}
             </span>
             <button
@@ -1085,7 +1276,7 @@ const previewBaseScale = 0.22;
                 setSearchDate('');
                 setSelectedCategoryId('all');
               }}
-              className="text-orange-500 hover:text-orange-600 font-medium"
+              className="text-orange-500 hover:text-orange-600 font-medium font-roboto"
             >
               Réinitialiser
             </button>
@@ -1093,13 +1284,13 @@ const previewBaseScale = 0.22;
         )}
 
         {categoryError && (
-          <div className="mt-2 px-3 md:px-0 text-xs text-red-600">{categoryError}</div>
+          <div className="mt-2 px-3 md:px-0 text-xs text-red-600 font-roboto">{categoryError}</div>
         )}
       </div>
 
       {/* Refreshing indicator */}
       {isRefreshing && meetings.length > 0 && (
-        <div className="px-6 py-2 bg-orange-50 border-b border-orange-100 flex items-center gap-2 text-sm text-orange-700">
+        <div className="px-0 md:px-6 py-2 bg-orange-50 border-b border-orange-100 flex items-center gap-2 text-sm text-orange-700 font-roboto">
           <Loader2 className="w-4 h-4 animate-spin" />
           Mise à jour des réunions...
         </div>
@@ -1109,7 +1300,7 @@ const previewBaseScale = 0.22;
       {draggedMeetingId && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[1200] max-w-[90vw] px-3 animate-fadeInUp">
           <div className="bg-white backdrop-blur-md border border-gray-200 rounded-xl shadow-2xl px-4 py-3 flex items-center gap-2 overflow-x-auto">
-            <span className="text-xs font-medium text-gray-500 mr-2 whitespace-nowrap">Déposer dans :</span>
+            <span className="text-xs font-medium text-gray-500 mr-2 whitespace-nowrap font-roboto">Déposer dans :</span>
             <button
               onClick={() => handleCategoryDrop(null)}
               onDragOver={(e) => e.preventDefault()}
@@ -1123,7 +1314,7 @@ const previewBaseScale = 0.22;
                 e.preventDefault();
                 handleCategoryDrop(null);
               }}
-              className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
+              className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all font-roboto ${
                 dropHighlightCategoryId === 'all'
                   ? 'bg-orange-500 text-white scale-110'
                   : 'bg-gray-100 text-gray-600'
@@ -1146,7 +1337,7 @@ const previewBaseScale = 0.22;
                   e.preventDefault();
                   handleCategoryDrop(category.id);
                 }}
-                className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
+                className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all font-roboto ${
                   dropHighlightCategoryId === category.id ? 'scale-110' : ''
                 }`}
                 style={{
@@ -1162,19 +1353,19 @@ const previewBaseScale = 0.22;
       )}
 
       {/* Content */}
-      <div className="p-6">
+      <div className="p-0 md:p-6">
         {filteredMeetings.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Search className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-gray-600 font-medium">Aucune réunion trouvée</p>
-            <p className="text-gray-400 text-sm mt-1">Essayez de modifier vos critères de recherche</p>
+            <p className="text-gray-600 font-medium font-roboto">Aucune réunion trouvée</p>
+            <p className="text-gray-400 text-sm mt-1 font-roboto">Essayez de modifier vos critères de recherche</p>
           </div>
         ) : viewMode === 'grid' ? (
         <>
         {/* Vue grille */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-0 md:gap-5">
           {paginatedMeetings.map((meeting, index) => {
             const summaryBadge = getSummaryBadge(meeting);
             const showRegenerateButton = canRegenerateSummary(meeting);
@@ -1219,10 +1410,10 @@ const previewBaseScale = 0.22;
                 {/* Catégorie en haut si existe */}
                 {meeting.category && (
                   <span
-                    className="inline-flex items-center justify-center text-center gap-1 px-2 py-1 text-xs font-semibold rounded-full border mb-2"
+                    className="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full border mb-2 font-roboto"
                     style={getCategoryBadgeStyle(meeting.category.color)}
                   >
-                    <Tag className="w-3 h-3 flex-shrink-0" />
+                    <Tag className="w-3 h-3" />
                     {meeting.category.name}
                   </span>
                 )}
@@ -1238,14 +1429,14 @@ const previewBaseScale = 0.22;
                       if (e.key === 'Enter') handleSaveTitle(meeting.id);
                       if (e.key === 'Escape') handleCancelEdit();
                     }}
-                    className="w-full px-2 py-1 border-2 border-coral-300 rounded-lg font-semibold text-gray-900 text-sm focus:outline-none focus:border-coral-500 mb-2"
+                    className="w-full px-2 py-1 border-2 border-coral-300 rounded-lg font-semibold text-gray-900 text-sm focus:outline-none focus:border-coral-500 mb-2 font-roboto"
                     autoFocus
                   />
                 ) : (
-                  <h3 className="font-semibold text-gray-900 text-sm line-clamp-2 mb-2 min-h-[2.5rem]">
+                  <h3 className="font-semibold text-gray-900 text-sm line-clamp-2 mb-2 min-h-[2.5rem] font-roboto">
                     {meeting.title}
                     {sentMeetingIds.has(meeting.id) && (
-                      <span className="inline-flex items-center gap-1 ml-2 px-1.5 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
+                      <span className="inline-flex items-center gap-1 ml-2 px-1.5 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full font-roboto">
                         <Send className="w-2.5 h-2.5" />
                       </span>
                     )}
@@ -1254,12 +1445,12 @@ const previewBaseScale = 0.22;
 
                 {/* Date et durée */}
                 <div className="flex flex-col gap-1 mb-3">
-                  <span className="text-xs text-gray-600 font-medium">
+                  <span className="text-xs text-gray-600 font-medium font-roboto">
                     {formatDate(meeting.created_at)}
                   </span>
                   <div className="flex items-center gap-1 text-xs text-gray-600 font-medium">
                     <Clock className="w-3 h-3 text-orange-500" />
-                    <span>{formatDuration(meeting.duration)}</span>
+                    <span className="font-roboto">{formatDuration(meeting.duration)}</span>
                   </div>
                 </div>
 
@@ -1339,7 +1530,7 @@ const previewBaseScale = 0.22;
             {paginatedMeetings.map((meeting, index) => (
               <div
                 key={meeting.id}
-                className={`flex items-center gap-2 md:gap-4 py-3 px-2 hover:bg-gray-50 transition-all duration-150 rounded-lg group ${
+                className={`flex items-center gap-2 md:gap-4 py-3 px-0 md:px-2 hover:bg-gray-50 transition-all duration-150 rounded-lg group ${
                   deletingId === meeting.id ? 'opacity-0 scale-95' : ''
                 } ${draggedMeetingId === meeting.id ? 'scale-98 opacity-70 bg-orange-50' : ''}`}
                 style={{
@@ -1349,16 +1540,16 @@ const previewBaseScale = 0.22;
                 onDragStart={(e) => window.innerWidth >= 768 && handleDragStart(e, meeting)}
                 onDragEnd={handleDragEnd}
               >
-                {/* File icon */}
+                {/* File icon - Caché sur mobile */}
                 <div
-                  className="flex-shrink-0 w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors"
+                  className="hidden md:flex flex-shrink-0 w-10 h-10 bg-gray-100 rounded-lg items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors"
                   onClick={() => onView(meeting)}
                 >
                   <FileText className="w-5 h-5 text-gray-500" />
                 </div>
 
                 {/* Date - Caché sur mobile */}
-                <div className="hidden md:flex flex-shrink-0 w-24 text-sm text-gray-600">
+                <div className="hidden md:flex flex-shrink-0 w-24 text-sm text-gray-600 font-roboto">
                   {new Date(meeting.created_at).toLocaleDateString('fr-FR', {
                     day: '2-digit',
                     month: '2-digit',
@@ -1381,31 +1572,31 @@ const previewBaseScale = 0.22;
                         if (e.key === 'Enter') handleSaveTitle(meeting.id);
                         if (e.key === 'Escape') handleCancelEdit();
                       }}
-                      className="w-full px-2 py-1 text-sm border border-orange-300 rounded focus:outline-none focus:border-orange-500"
+                      className="w-full px-2 py-1 text-sm border border-orange-300 rounded focus:outline-none focus:border-orange-500 font-roboto"
                       autoFocus
                     />
                   ) : (
                     <div className="flex flex-col gap-1 min-w-0 flex-1">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-sm font-medium text-gray-900 truncate hover:text-orange-600 transition-colors min-w-0">
+                        <span className="text-sm font-medium text-gray-900 truncate hover:text-orange-600 transition-colors min-w-0 font-roboto">
                           {meeting.title}
                         </span>
                         {sentMeetingIds.has(meeting.id) && (
                           <>
                             {/* Version desktop */}
-                            <span className="hidden sm:inline-flex flex-shrink-0 items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                            <span className="hidden sm:inline-flex flex-shrink-0 items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full font-roboto">
                               <Send className="w-3 h-3" />
                               Envoyé
                             </span>
                             {/* Version mobile - icon seulement */}
-                            <span className="sm:hidden flex-shrink-0 inline-flex items-center justify-center w-5 h-5 bg-green-100 text-green-600 rounded-full" title="Envoyé">
+                            <span className="sm:hidden flex-shrink-0 inline-flex items-center justify-center w-5 h-5 bg-green-100 text-green-600 rounded-full font-roboto" title="Envoyé">
                               <Send className="w-3 h-3" />
                             </span>
                           </>
                         )}
                       </div>
                       {/* Date sur mobile uniquement */}
-                      <span className="md:hidden text-xs text-gray-500">
+                      <span className="md:hidden text-xs text-gray-500 font-roboto">
                         {new Date(meeting.created_at).toLocaleDateString('fr-FR', {
                           day: '2-digit',
                           month: '2-digit',
@@ -1420,7 +1611,7 @@ const previewBaseScale = 0.22;
                 <div className="hidden md:flex flex-shrink-0 w-auto md:w-32">
                   {meeting.category ? (
                     <span
-                      className="inline-flex items-center justify-center text-center px-2.5 py-1 text-xs font-medium rounded-full cursor-pointer hover:opacity-80 transition-opacity"
+                      className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full cursor-pointer hover:opacity-80 transition-opacity font-roboto"
                       style={{
                         backgroundColor: `${meeting.category.color}20`,
                         color: meeting.category.color
@@ -1438,7 +1629,7 @@ const previewBaseScale = 0.22;
                         e.stopPropagation();
                         handleOpenCategorySelector(meeting.id);
                       }}
-                      className="text-xs text-gray-400 hover:text-orange-500 transition-colors"
+                      className="text-xs text-gray-400 hover:text-orange-500 transition-colors font-roboto"
                     >
                       + Catégorie
                     </button>
@@ -1523,9 +1714,9 @@ const previewBaseScale = 0.22;
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="text-xs font-medium text-gray-500 px-2 py-1 mb-1">Choisir une catégorie</div>
+                <div className="text-xs font-medium text-gray-500 px-2 py-1 mb-1 font-roboto">Choisir une catégorie</div>
                 {categories.length === 0 ? (
-                  <p className="text-xs text-gray-400 px-2 py-2">
+                  <p className="text-xs text-gray-400 px-2 py-2 font-roboto">
                     Aucune catégorie disponible
                   </p>
                 ) : (
@@ -1535,7 +1726,7 @@ const previewBaseScale = 0.22;
                       onClick={() => {
                         handleAssignCategory(categorySelectorMeetingId, category.id);
                       }}
-                      className="w-full text-left px-2 py-1.5 rounded text-sm hover:bg-gray-50 flex items-center gap-2"
+                      className="w-full text-left px-2 py-1.5 rounded text-sm hover:bg-gray-50 flex items-center gap-2 font-roboto"
                     >
                       <span
                         className="w-3 h-3 rounded-full"
@@ -1548,7 +1739,7 @@ const previewBaseScale = 0.22;
                 {paginatedMeetings.find(m => m.id === categorySelectorMeetingId)?.category && (
                   <button
                     onClick={() => handleClearCategory(categorySelectorMeetingId)}
-                    className="w-full text-left px-2 py-1.5 rounded text-sm text-red-600 hover:bg-red-50 mt-1 border-t border-gray-100 pt-2"
+                    className="w-full text-left px-2 py-1.5 rounded text-sm text-red-600 hover:bg-red-50 mt-1 border-t border-gray-100 pt-2 font-roboto"
                   >
                     Retirer la catégorie
                   </button>
@@ -1562,31 +1753,31 @@ const previewBaseScale = 0.22;
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
-            <div className="text-sm text-gray-500">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0 mt-6 px-2">
+            <div className="text-xs sm:text-sm text-cocoa-600 order-2 sm:order-1 font-roboto">
               Page {currentPage} sur {totalPages} • {filteredMeetings.length} réunion{filteredMeetings.length !== 1 ? 's' : ''}
             </div>
-            <nav className="flex items-center gap-1" aria-label="Pagination des réunions">
+            <nav className="flex items-center gap-1 sm:gap-2 order-1 sm:order-2" aria-label="Pagination des réunions">
               <button
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
-                className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                className="h-8 w-8 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-coral-200 text-coral-700 hover:bg-coral-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                 aria-label="Page précédente"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5 sm:gap-1">
                 {paginationRange.map((item, index) => (
                   item === 'dots' ? (
-                    <span key={`dots-${index}`} className="w-8 text-center text-sm text-gray-400">...</span>
+                    <span key={`dots-${index}`} className="px-1 sm:px-2 text-xs sm:text-sm font-medium text-cocoa-400 font-roboto">...</span>
                   ) : (
                     <button
                       key={`page-${item}`}
                       onClick={() => setCurrentPage(item)}
-                      className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-all ${
+                      className={`min-w-[2rem] sm:min-w-[2.5rem] h-8 sm:h-10 px-2 sm:px-3 rounded-full text-xs sm:text-sm font-semibold transition-all font-roboto ${
                         currentPage === item
-                          ? 'bg-orange-500 text-white'
-                          : 'border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'
+                          ? 'bg-coral-500 text-white shadow-md'
+                          : 'border border-coral-200 text-coral-700 hover:bg-coral-100'
                       }`}
                       aria-current={currentPage === item ? 'page' : undefined}
                     >
@@ -1598,10 +1789,10 @@ const previewBaseScale = 0.22;
               <button
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
-                className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                className="h-8 w-8 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-coral-200 text-coral-700 hover:bg-coral-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                 aria-label="Page suivante"
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
             </nav>
           </div>
@@ -1623,8 +1814,8 @@ const previewBaseScale = 0.22;
           <div className="flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl border border-emerald-200 bg-white">
             <Sparkles className="w-5 h-5 text-emerald-500" />
             <div>
-              <p className="text-sm font-semibold text-cocoa-900">{regenerationToast.message}</p>
-              <p className="text-xs text-cocoa-500">
+              <p className="text-sm font-semibold text-cocoa-900 font-roboto">{regenerationToast.message}</p>
+              <p className="text-xs text-cocoa-500 font-roboto">
                 Résumé {regenerationToast.mode === 'detailed' ? 'détaillé' : 'court'} maintenant disponible.
               </p>
             </div>
@@ -1633,34 +1824,103 @@ const previewBaseScale = 0.22;
       )}
 
     {showManageCategories && (
-      <div className="fixed inset-0 z-[1200] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
-        <div className="relative bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-zoomIn">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-gray-100 rounded-lg">
-                <Tag className="w-5 h-5 text-gray-600" />
+      <div className="fixed inset-0 z-[1200] bg-black/50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-fadeIn">
+        <div className="relative bg-white w-full max-w-lg rounded-xl sm:rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-zoomIn max-h-[90vh] flex flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-100 flex-shrink-0">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-1.5 sm:p-2 bg-gray-100 rounded-lg">
+                <Tag className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
               </div>
-              <h4 className="text-lg font-semibold text-gray-900">Gestion des catégories</h4>
+              <h4 className="text-base sm:text-lg font-semibold text-gray-900 font-roboto">
+                {categoryManageMode === 'create' ? 'Créer une catégorie' : categoryManageMode === 'edit' ? 'Modifier la catégorie' : 'Gestion des catégories'}
+              </h4>
             </div>
             <button
               onClick={() => {
                 setShowManageCategories(false);
+                setCategoryManageMode('list');
                 setCategoryFormError(null);
                 setNewCategoryName('');
+                setNewCategoryColor('#6366F1');
+                handleCancelCategoryEdit();
               }}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              className="p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 transition-colors"
             >
-              <X className="w-5 h-5 text-gray-500" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
             </button>
           </div>
 
-          <div className="px-5 py-4 space-y-5">
-            <form onSubmit={handleCreateCategory} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nouvelle catégorie
-                </label>
-                <div className="flex gap-2">
+          {/* Content */}
+          <div className="px-4 sm:px-5 py-4 space-y-4 sm:space-y-5 overflow-y-auto flex-1">
+            {/* Mode: Liste des catégories */}
+            {categoryManageMode === 'list' && (
+              <>
+                {/* Bouton Créer */}
+                <button
+                  onClick={() => {
+                    setCategoryManageMode('create');
+                    setNewCategoryName('');
+                    setNewCategoryColor('#6366F1');
+                    setCategoryFormError(null);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 text-white font-medium text-sm rounded-lg hover:bg-indigo-700 transition-colors font-roboto"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  Créer une catégorie
+                </button>
+
+                {/* Liste des catégories */}
+                <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
+                  {isCategoriesLoading ? (
+                    <div className="flex items-center justify-center gap-2 text-sm text-gray-500 py-8 font-roboto">
+                      <Loader2 className="w-4 h-4 animate-spin" /> Chargement...
+                    </div>
+                  ) : categories.length === 0 ? (
+                    <p className="text-sm text-gray-500 text-center py-8 font-roboto">Aucune catégorie créée pour le moment.</p>
+                  ) : (
+                    categories.map((category) => (
+                      <div
+                        key={category.id}
+                        className="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-all bg-white"
+                      >
+                        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                          <div
+                            className="w-4 h-4 rounded-md flex-shrink-0"
+                            style={{ backgroundColor: category.color || '#6366F1' }}
+                          />
+                          <p className="font-medium text-sm sm:text-base text-gray-900 truncate font-roboto">{category.name}</p>
+                        </div>
+                        <div className="flex items-center gap-1 sm:gap-2">
+                          <button
+                            onClick={() => handleStartEditCategory(category)}
+                            className="p-1.5 sm:p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                            title="Modifier la catégorie"
+                          >
+                            <Edit2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCategory(category.id)}
+                            className="p-1.5 sm:p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Supprimer la catégorie"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* Mode: Créer une catégorie */}
+            {categoryManageMode === 'create' && (
+              <form onSubmit={handleCreateCategory} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2 font-roboto">
+                    Nom de la catégorie
+                  </label>
                   <input
                     type="text"
                     value={newCategoryName}
@@ -1669,109 +1929,152 @@ const previewBaseScale = 0.22;
                       if (categoryFormError) setCategoryFormError(null);
                     }}
                     placeholder="Nom de la catégorie"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all bg-white text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all bg-white text-sm font-roboto"
                   />
-                  <button
-                    type="submit"
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium text-sm hover:bg-indigo-700 transition-colors"
-                  >
-                    <PlusCircle className="w-4 h-4" />
-                    Ajouter
-                  </button>
                 </div>
-              </div>
 
-              {/* Color picker section */}
-              <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-700">Couleur</label>
-                <div className="flex items-start gap-4">
-                  {/* Color preview */}
-                  <div
-                    className="w-12 h-12 rounded-lg border-2 border-gray-200 shadow-sm flex-shrink-0"
-                    style={{ backgroundColor: newCategoryColor }}
-                  />
-                  {/* Presets */}
-                  <div className="flex-1">
-                    <div className="flex flex-wrap gap-1.5 mb-3">
-                      {colorPalette.map((color) => (
-                        <button
-                          key={`preset-${color}`}
-                          type="button"
-                          onClick={() => setNewCategoryColor(color)}
-                          className={`w-6 h-6 rounded-md transition-all ${newCategoryColor === color ? 'ring-2 ring-offset-1 ring-gray-400 scale-110' : 'hover:scale-110'}`}
-                          style={{ backgroundColor: color }}
-                        />
-                      ))}
-                    </div>
-                    {/* Color picker */}
-                    <div className="color-picker-container">
-                      <HexColorPicker color={newCategoryColor} onChange={setNewCategoryColor} style={{ width: '100%', height: '120px' }} />
-                    </div>
-                    <input
-                      type="text"
-                      value={newCategoryColor}
-                      onChange={(e) => setNewCategoryColor(e.target.value)}
-                      className="mt-2 w-full px-2 py-1.5 text-xs font-mono border border-gray-200 rounded-md focus:outline-none focus:border-indigo-400"
-                      placeholder="#000000"
+                {/* Color picker section */}
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-gray-700">Couleur</label>
+                  <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
+                    {/* Color preview */}
+                    <div
+                      className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg border-2 border-gray-200 shadow-sm flex-shrink-0"
+                      style={{ backgroundColor: newCategoryColor }}
                     />
-                  </div>
-                </div>
-              </div>
-
-              {categoryFormError && (
-                <p className="text-sm text-red-600">{categoryFormError}</p>
-              )}
-            </form>
-
-            <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
-              {isCategoriesLoading ? (
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <Loader2 className="w-4 h-4 animate-spin" /> Chargement des catégories...
-                </div>
-              ) : categories.length === 0 ? (
-                <p className="text-sm text-gray-500 text-center py-4">Aucune catégorie créée pour le moment.</p>
-              ) : (
-                categories.map((category, index) => (
-                  <div
-                    key={category.id}
-                    className="relative flex items-center justify-between px-4 py-3 border border-gray-200 rounded-xl hover:border-gray-300 transition-all duration-200 bg-white shadow-sm animate-fadeInLeft"
-                    style={{ animationDelay: `${index * 50}ms` }}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-4 h-4 rounded-md flex-shrink-0"
-                          style={{ backgroundColor: category.color || '#6366F1' }}
-                        />
-                        <p className="font-medium text-gray-900 truncate">{category.name}</p>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1 ml-7">
-                        Créée le {new Date(category.created_at).toLocaleDateString('fr-FR')}
-                      </p>
-                      <div className="mt-2 ml-7 flex flex-wrap items-center gap-1.5">
+                    {/* Presets and picker */}
+                    <div className="flex-1 w-full">
+                      <div className="flex flex-wrap gap-1.5 mb-3">
                         {colorPalette.map((color) => (
                           <button
-                            key={`palette-${category.id}-${color}`}
+                            key={`preset-${color}`}
                             type="button"
-                            onClick={() => handleUpdateCategoryColor(category.id, color)}
-                            className={`w-5 h-5 rounded transition-all duration-150 ${category.color === color ? 'ring-2 ring-offset-1 ring-gray-400 scale-110' : 'hover:scale-110 opacity-70 hover:opacity-100'}`}
+                            onClick={() => setNewCategoryColor(color)}
+                            className={`w-6 h-6 sm:w-7 sm:h-7 rounded-md transition-all ${newCategoryColor === color ? 'ring-2 ring-offset-1 ring-gray-400 scale-110' : 'hover:scale-110'}`}
                             style={{ backgroundColor: color }}
-                            title={color}
                           />
                         ))}
                       </div>
+                      {/* Color picker */}
+                      <div className="color-picker-container mb-2">
+                        <HexColorPicker color={newCategoryColor} onChange={setNewCategoryColor} style={{ width: '100%', height: '100px' }} />
+                      </div>
+                      <input
+                        type="text"
+                        value={newCategoryColor}
+                        onChange={(e) => setNewCategoryColor(e.target.value)}
+                        className="w-full px-2 py-1.5 text-xs font-mono border border-gray-200 rounded-md focus:outline-none focus:border-indigo-400"
+                        placeholder="#000000"
+                      />
                     </div>
-                    <button
-                      onClick={() => handleDeleteCategory(category.id)}
-                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors ml-2"
-                      title="Supprimer la catégorie"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
                   </div>
-                ))
-              )}
-            </div>
+                </div>
+
+                {categoryFormError && (
+                  <p className="text-sm text-red-600">{categoryFormError}</p>
+                )}
+
+                <div className="flex gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCategoryManageMode('list');
+                      setNewCategoryName('');
+                      setNewCategoryColor('#6366F1');
+                      setCategoryFormError(null);
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium text-sm hover:bg-gray-50 transition-colors font-roboto"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-4 py-2 bg-indigo-600 text-white font-medium text-sm rounded-lg hover:bg-indigo-700 transition-colors font-roboto"
+                  >
+                    Créer
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* Mode: Modifier une catégorie */}
+            {categoryManageMode === 'edit' && editingCategoryId && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2 font-roboto">
+                    Nom de la catégorie
+                  </label>
+                  <input
+                    type="text"
+                    value={editingCategoryName}
+                    onChange={(e) => {
+                      setEditingCategoryName(e.target.value);
+                      if (categoryFormError) setCategoryFormError(null);
+                    }}
+                    placeholder="Nom de la catégorie"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all bg-white text-sm font-roboto"
+                  />
+                </div>
+
+                {/* Color picker section */}
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-gray-700 font-roboto">Couleur</label>
+                  <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
+                    {/* Color preview */}
+                    <div
+                      className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg border-2 border-gray-200 shadow-sm flex-shrink-0"
+                      style={{ backgroundColor: editingCategoryColor }}
+                    />
+                    {/* Presets and picker */}
+                    <div className="flex-1 w-full">
+                      <div className="flex flex-wrap gap-1.5 mb-3">
+                        {colorPalette.map((color) => (
+                          <button
+                            key={`edit-preset-${color}`}
+                            type="button"
+                            onClick={() => setEditingCategoryColor(color)}
+                            className={`w-6 h-6 sm:w-7 sm:h-7 rounded-md transition-all ${editingCategoryColor === color ? 'ring-2 ring-offset-1 ring-gray-400 scale-110' : 'hover:scale-110'}`}
+                            style={{ backgroundColor: color }}
+                          />
+                        ))}
+                      </div>
+                      {/* Color picker */}
+                      <div className="color-picker-container mb-2">
+                        <HexColorPicker color={editingCategoryColor} onChange={setEditingCategoryColor} style={{ width: '100%', height: '100px' }} />
+                      </div>
+                      <input
+                        type="text"
+                        value={editingCategoryColor}
+                        onChange={(e) => setEditingCategoryColor(e.target.value)}
+                        className="w-full px-2 py-1.5 text-xs font-mono border border-gray-200 rounded-md focus:outline-none focus:border-indigo-400 font-roboto"
+                        placeholder="#000000"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {categoryFormError && (
+                  <p className="text-sm text-red-600 font-roboto">{categoryFormError}</p>
+                )}
+
+                <div className="flex gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleCancelCategoryEdit}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium text-sm hover:bg-gray-50 transition-colors font-roboto"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveCategoryEdit}
+                    className="flex-1 px-4 py-2 bg-indigo-600 text-white font-medium text-sm rounded-lg hover:bg-indigo-700 transition-colors font-roboto"
+                  >
+                    Enregistrer
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

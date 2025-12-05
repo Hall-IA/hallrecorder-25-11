@@ -451,11 +451,11 @@ export function Dashboard() {
           </div>
 
           {/* Ligne 2: Filtres de période - Scrollable sur mobile */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
-            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5 flex-shrink-0">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide items-start">
+            <div className="flex items-center w-fit gap-1 bg-gray-100 rounded-lg p-1 flex-shrink-0">
               <button
                 onClick={() => handlePeriodFilter('today')}
-                className={`px-2.5 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
+                className={`px-2 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
                   periodFilter === 'today'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
@@ -465,7 +465,7 @@ export function Dashboard() {
               </button>
               <button
                 onClick={() => handlePeriodFilter('week')}
-                className={`px-2.5 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
+                className={`px-2 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
                   periodFilter === 'week'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
@@ -475,7 +475,7 @@ export function Dashboard() {
               </button>
               <button
                 onClick={() => handlePeriodFilter('month')}
-                className={`px-2.5 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
+                className={`px-2 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
                   periodFilter === 'month'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
@@ -485,7 +485,7 @@ export function Dashboard() {
               </button>
               <button
                 onClick={() => handlePeriodFilter('year')}
-                className={`px-2.5 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
+                className={`px-2 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
                   periodFilter === 'year'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
@@ -495,7 +495,7 @@ export function Dashboard() {
               </button>
               <button
                 onClick={() => setShowCalendar(!showCalendar)}
-                className={`px-2.5 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 whitespace-nowrap ${
+                className={`px-2 md:px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 whitespace-nowrap ${
                   periodFilter === 'custom'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
@@ -509,10 +509,10 @@ export function Dashboard() {
             {/* Bouton Actualiser */}
             <button
               onClick={handleRefresh}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 text-white text-xs font-medium rounded-lg hover:bg-orange-600 transition-colors flex-shrink-0"
+              className="w-fit flex items-center gap-1.5 px-3 py-1.5 md:py-2 bg-orange-500 text-white text-xs font-medium rounded-lg hover:bg-orange-600 transition-colors flex-shrink-0"
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Actualiser</span>
+              <span>Actualiser</span>
             </button>
           </div>
 
@@ -580,19 +580,32 @@ export function Dashboard() {
               ? 'bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 border-amber-300'
               : 'bg-gradient-to-br from-coral-50 via-peach-50 to-sunset-50 border-coral-300'
           }`}>
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
+            <div className="flex items-start justify-between mb-4 relative">
+              {/* Icône en haut à droite en mobile */}
+              <div className="md:hidden absolute top-0 right-0 z-10">
                 {subscription.plan_type === 'unlimited' ? (
-                  <div className="p-3 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-xl shadow-lg">
+                  <div className="p-1.5 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-lg shadow-md">
+                    <Crown className="w-4 h-4 text-white" />
+                  </div>
+                ) : (
+                  <div className="p-1.5 bg-gradient-to-br from-coral-500 to-sunset-500 rounded-lg shadow-md">
+                    <Zap className="w-4 h-4 text-white" />
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-3 flex-1">
+                {/* Icône à gauche en desktop */}
+                {subscription.plan_type === 'unlimited' ? (
+                  <div className="hidden md:block p-3 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-xl shadow-lg">
                     <Crown className="w-8 h-8 text-white" />
                   </div>
                 ) : (
-                  <div className="p-3 bg-gradient-to-br from-coral-500 to-sunset-500 rounded-xl shadow-lg">
+                  <div className="hidden md:block p-3 bg-gradient-to-br from-coral-500 to-sunset-500 rounded-xl shadow-lg">
                     <Zap className="w-8 h-8 text-white" />
                   </div>
                 )}
-                <div>
-                  <h2 className="text-2xl font-bold text-cocoa-900">
+                <div className="pr-12 md:pr-0">
+                  <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-cocoa-900">
                     {subscription.plan_type === 'unlimited' ? 'Formule Illimitée' : 'Formule Starter'}
                   </h2>
                   <p className="text-cocoa-600">
@@ -650,7 +663,7 @@ export function Dashboard() {
             {subscription.plan_type === 'unlimited' && (
               <div className="bg-white/50 rounded-xl p-4 border border-amber-200">
                 <div className="flex items-center gap-3">
-                  <Zap className="w-6 h-6 text-amber-600" />
+                  <Zap className="hidden md:block w-6 h-6 text-amber-600" />
                   <div>
                     <p className="font-semibold text-cocoa-900">Réunions illimitées</p>
                     <p className="text-sm text-cocoa-600">
@@ -803,7 +816,7 @@ export function Dashboard() {
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-4">
                   <div className="p-3 bg-emerald-100 rounded-xl">
-                    <Eye className="w-6 h-6 text-emerald-600" />
+                    <Eye className="w-5 h-5 md:w-6 md:h-6 text-emerald-600" />
                   </div>
                   <span className={`flex items-center gap-1 text-sm font-medium ${
                     stats.weekComparison.emailsChange >= 0 ? 'text-emerald-600' : 'text-red-500'
@@ -812,37 +825,37 @@ export function Dashboard() {
                     {Math.abs(stats.weekComparison.emailsChange)}%
                   </span>
                 </div>
-                <p className="text-3xl font-bold text-gray-900">{stats.emailOpenRate}%</p>
-                <p className="text-sm text-gray-500 mt-1">Taux d'ouverture</p>
+                <p className="text-2xl  lg:text-3xl font-bold text-gray-900">{stats.emailOpenRate}%</p>
+                <p className="text-xs md:text-sm text-gray-500 mt-1">Taux d'ouverture</p>
               </div>
 
               {/* Emails envoyés */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-4">
                   <div className="p-3 bg-blue-100 rounded-xl">
-                    <Mail className="w-6 h-6 text-blue-600" />
+                    <Mail className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
                   </div>
                 </div>
-                <p className="text-3xl font-bold text-gray-900">{stats.totalEmailsAllTime}</p>
-                <p className="text-sm text-gray-500 mt-1">Emails envoyés ({periodLabel.toLowerCase()})</p>
+                <p className="text-2xl  lg:text-3xl font-bold text-gray-900">{stats.totalEmailsAllTime}</p>
+                <p className="text-xs md:text-sm text-gray-500 mt-1">Emails envoyés ({periodLabel.toLowerCase()})</p>
               </div>
 
               {/* Emails ouverts */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-4">
                   <div className="p-3 bg-purple-100 rounded-xl">
-                    <Eye className="w-6 h-6 text-purple-600" />
+                    <Eye className="w-5 h-5 md:w-6 md:h-6 text-purple-600" />
                   </div>
                 </div>
-                <p className="text-3xl font-bold text-gray-900">{stats.totalOpensAllTime}</p>
-                <p className="text-sm text-gray-500 mt-1">Emails ouverts ({periodLabel.toLowerCase()})</p>
+                <p className="text-2xl  lg:text-3xl font-bold text-gray-900">{stats.totalOpensAllTime}</p>
+                <p className="text-xs md:text-sm text-gray-500 mt-1">Emails ouverts ({periodLabel.toLowerCase()})</p>
               </div>
 
               {/* Comparaison réunions */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-4">
                   <div className="p-3 bg-orange-100 rounded-xl">
-                    <TrendingUp className="w-6 h-6 text-orange-600" />
+                    <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-orange-600" />
                   </div>
                   <span className={`flex items-center gap-1 text-sm font-medium ${
                     stats.weekComparison.meetingsChange >= 0 ? 'text-emerald-600' : 'text-red-500'
@@ -851,8 +864,8 @@ export function Dashboard() {
                     {Math.abs(stats.weekComparison.meetingsChange)}%
                   </span>
                 </div>
-                <p className="text-3xl font-bold text-gray-900">{stats.periodMeetings}</p>
-                <p className="text-sm text-gray-500 mt-1">Réunions cette période</p>
+                <p className="text-2xl  lg:text-3xl font-bold text-gray-900">{stats.periodMeetings}</p>
+                <p className="text-xs md:text-sm text-gray-500 mt-1">Réunions cette période</p>
               </div>
             </div>
 
@@ -870,19 +883,27 @@ export function Dashboard() {
                 ) : (
                   <div className="space-y-4">
                     {stats.topContacts.map((contact, index) => (
-                      <div key={contact.email} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+                      <div key={contact.email} className="flex flex-col md:flex-row md:items-center md:justify-between py-3 border-b border-gray-100 last:border-0 gap-2">
                         <div className="flex items-center gap-3">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-sm ${
                             index === 0 ? 'bg-amber-500' : index === 1 ? 'bg-gray-400' : index === 2 ? 'bg-orange-400' : 'bg-gray-300'
                           }`}>
                             {index + 1}
                           </div>
-                          <div>
+                          <div className="flex-1">
                             <p className="font-medium text-gray-900 text-sm truncate max-w-[200px]">{contact.email}</p>
                             <p className="text-xs text-gray-500">{contact.emailsSent} emails envoyés</p>
+                            {/* Pourcentage en dessous en mobile */}
+                            <div className="md:hidden mt-1">
+                              <p className={`font-semibold text-sm ${contact.openRate >= 50 ? 'text-emerald-600' : 'text-gray-600'}`}>
+                                {contact.openRate}%
+                              </p>
+                              <p className="text-xs text-gray-400">ouverture</p>
+                            </div>
                           </div>
                         </div>
-                        <div className="text-right">
+                        {/* Pourcentage à droite en desktop */}
+                        <div className="hidden md:block text-right">
                           <p className={`font-semibold text-sm ${contact.openRate >= 50 ? 'text-emerald-600' : 'text-gray-600'}`}>
                             {contact.openRate}%
                           </p>
@@ -896,17 +917,29 @@ export function Dashboard() {
 
               {/* Activité par heure */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg shadow-indigo-200">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="hidden md:block p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg shadow-indigo-200">
                       <Clock className="w-5 h-5 text-white" />
                     </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">Heures productives</h3>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between md:justify-start gap-2 mb-1">
+                        <h3 className="text-base md:text-lg font-semibold text-gray-900">Heures productives</h3>
+                        {/* Icône en mobile */}
+                        <div className="md:hidden p-1.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-md">
+                          <Clock className="w-4 h-4 text-white" />
+                        </div>
+                      </div>
                       <p className="text-xs text-gray-400">Activité par créneau horaire</p>
+                      {/* Réunions en dessous en mobile */}
+                      <div className="md:hidden flex items-center gap-2 text-xs text-gray-500 mt-2">
+                        <span className="w-2 h-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500"></span>
+                        Réunions
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                  {/* Réunions à droite en desktop */}
+                  <div className="hidden md:flex items-center gap-2 text-xs text-gray-500">
                     <span className="w-2 h-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500"></span>
                     Réunions
                   </div>
@@ -992,26 +1025,32 @@ export function Dashboard() {
 
             {/* Résumé de la période */}
             <div className="bg-gradient-to-r from-coral-500 to-sunset-500 rounded-2xl p-6 text-white">
-              <div className="flex items-center gap-3 mb-4">
-                <TrendingUp className="w-6 h-6" />
-                <h3 className="text-lg font-semibold">Performance - {periodFilter === 'today' ? "Aujourd'hui" : periodFilter === 'week' ? 'Cette semaine' : 'Cette année'}</h3>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <TrendingUp className="hidden md:block w-6 h-6" />
+                  <h3 className="text-base md:text-lg font-semibold">Performance - {periodFilter === 'today' ? "Aujourd'hui" : periodFilter === 'week' ? 'Cette semaine' : 'Cette année'}</h3>
+                </div>
+                {/* Icône en mobile */}
+                <div className="md:hidden p-1.5 bg-white/20 rounded-lg">
+                  <TrendingUp className="w-4 h-4 text-white" />
+                </div>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 ">
                 <div className="bg-white/20 rounded-xl p-4">
-                  <p className="text-2xl font-bold">{stats.emailsSent}</p>
-                  <p className="text-sm text-white/80">Emails envoyés</p>
+                  <p className="text-xl md:text-2xl font-bold">{stats.emailsSent}</p>
+                  <p className="text-xs md:text-sm text-white/80">Emails envoyés</p>
                 </div>
                 <div className="bg-white/20 rounded-xl p-4">
-                  <p className="text-2xl font-bold">{stats.emailsOpened}</p>
-                  <p className="text-sm text-white/80">Emails ouverts</p>
+                  <p className="text-xl md:text-2xl font-bold">{stats.emailsOpened}</p>
+                  <p className="text-xs md:text-sm text-white/80">Emails ouverts</p>
                 </div>
                 <div className="bg-white/20 rounded-xl p-4">
-                  <p className="text-2xl font-bold">{stats.periodMeetings}</p>
-                  <p className="text-sm text-white/80">Réunions</p>
+                  <p className="text-xl md:text-2xl font-bold">{stats.periodMeetings}</p>
+                  <p className="text-xs md:text-sm text-white/80">Réunions</p>
                 </div>
                 <div className="bg-white/20 rounded-xl p-4">
-                  <p className="text-2xl font-bold">{stats.periodMinutes}min</p>
-                  <p className="text-sm text-white/80">Temps total</p>
+                  <p className="text-xl md:text-2xl font-bold">{stats.periodMinutes}min</p>
+                  <p className="text-xs md:text-sm text-white/80">Temps total</p>
                 </div>
               </div>
             </div>

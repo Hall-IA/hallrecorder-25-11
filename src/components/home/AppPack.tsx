@@ -201,6 +201,15 @@ export default function AppPack() {
 
             {/* Content */}
             <div className="space-y-6 p-6">
+              <div className="space-y-4">
+                <p className="text-base text-gray-700">
+                  Essayez gratuitement pendant 7 jours, sans aucun engagement.
+                </p>
+                <p className="text-base text-gray-700">
+                  Si vous annulez avant la fin de l'essai, vous ne paierez absolument rien.
+                </p>
+              </div>
+
               <p className="text-base text-gray-700">
                 Nos applications sont disponibles sous forme d'abonnement mensuel ou annuel, selon
                 les conditions ci-dessous.
@@ -208,7 +217,7 @@ export default function AppPack() {
 
               <div className="space-y-5">
                 <div>
-                  <h3 className="mb-2 text-lg font-bold text-gray-900">1. Durée et reconduction</h3>
+                  <h3 className="mb-2 text-lg font-bold text-gray-900">Durée et reconduction</h3>
                   <p className="text-base text-gray-700">
                     Chaque abonnement, qu'il soit mensuel ou annuel, est conclu pour la durée
                     initialement choisie par le client. À l'issue de cette période, l'abonnement se
@@ -218,7 +227,7 @@ export default function AppPack() {
                 </div>
 
                 <div>
-                  <h3 className="mb-2 text-lg font-bold text-gray-900">2. Paiement</h3>
+                  <h3 className="mb-2 text-lg font-bold text-gray-900">Paiement</h3>
                   <p className="mb-2 text-base text-gray-700">
                     <strong>Abonnement mensuel :</strong> le montant est facturé et payable d'avance
                     chaque mois.
@@ -230,7 +239,7 @@ export default function AppPack() {
                 </div>
 
                 <div>
-                  <h3 className="mb-2 text-lg font-bold text-gray-900">3. Résiliation</h3>
+                  <h3 className="mb-2 text-lg font-bold text-gray-900">Résiliation</h3>
                   <p className="mb-2 text-base text-gray-700">
                     Le client peut demander la résiliation de son abonnement à tout moment.
                   </p>
@@ -250,23 +259,25 @@ export default function AppPack() {
 
                 <div>
                   <h3 className="mb-2 text-lg font-bold text-gray-900">
-                    4. Modalités d'annulation
+                    Modalités d'annulation
                   </h3>
                   <p className="mb-2 text-base text-gray-700">
                     La demande de résiliation peut être effectuée :
                   </p>
                   <ul className="ml-4 list-inside list-disc space-y-1 text-base text-gray-700">
-                    <li>Depuis l'espace client</li>
+                    <li>Depuis l'espace client.</li>
                   </ul>
                   <p className="mt-2 text-base text-gray-700">
-                    Une confirmation de résiliation sera envoyée par email. Pour éviter le
-                    renouvellement automatique, la résiliation doit être faite avant la date
+                    Une confirmation de résiliation sera envoyée par email.
+                  </p>
+                  <p className="text-base text-gray-700">
+                    Pour éviter le renouvellement automatique, la résiliation doit être faite avant la date
                     d'échéance de la période en cours.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="mb-2 text-lg font-bold text-gray-900">5. Réactivation</h3>
+                  <h3 className="mb-2 text-lg font-bold text-gray-900">Réactivation</h3>
                   <p className="text-base text-gray-700">
                     Le client peut réactiver son abonnement à tout moment en souscrivant à nouveau
                     via la plateforme.

@@ -482,7 +482,7 @@ export function EmailComposer({
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4 animate-fadeIn">
-      <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-5xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col animate-scaleIn">
+      <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-5xl h-[80vh] sm:max-h-[90vh] overflow-hidden flex flex-col animate-scaleIn">
         {/* Header */}
         <div className="sticky top-0 bg-gradient-to-r from-[#EF6855] via-[#E5503F] to-[#D64838] text-white p-3 sm:p-6 z-10 shadow-lg">
           <div className="flex flex-col gap-3">
@@ -849,7 +849,7 @@ export function EmailComposer({
             <button
               onClick={onClose}
               disabled={isSending}
-              className="px-6 py-2.5 text-gray-700 bg-white hover:bg-gray-50 border-2 border-gray-300 rounded-xl font-semibold transition-all disabled:opacity-50 shadow-sm hover:shadow"
+              className="  px-6 py-2.5   text-xs md:text-base text-gray-700 bg-white hover:bg-gray-50 border-2 border-gray-300 rounded-xl font-semibold transition-all disabled:opacity-50 shadow-sm hover:shadow"
             >
               Annuler
             </button>
@@ -863,7 +863,7 @@ export function EmailComposer({
           <button
             onClick={handleSend}
             disabled={isSending}
-            className="px-8 py-3 bg-gradient-to-r from-[#EF6855] via-[#E5503F] to-[#D64838] text-white rounded-xl font-bold hover:from-[#E5503F] hover:via-[#D64838] hover:to-[#C73E2E] transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transform hover:scale-105"
+            className="md:px-8 md:py-3 px-3 py-2.5 bg-gradient-to-r from-[#EF6855] via-[#E5503F] to-[#D64838] text-white text-xs md:text-base rounded-xl font-bold hover:from-[#E5503F] hover:via-[#D64838] hover:to-[#C73E2E] transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transform hover:scale-105"
           >
             {isSending ? (
               <>

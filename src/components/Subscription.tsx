@@ -360,10 +360,10 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
           <div className="w-16 h-16 mx-auto mb-4 relative">
             <Loader className="w-16 h-16 animate-spin text-coral-500" />
           </div>
-          <h3 className="text-xl font-bold text-cocoa-800 mb-2">
+          <h3 className="text-xl font-bold text-cocoa-800 mb-2 font-roboto">
             {isProcessing ? 'Changement de plan en cours...' : 'Chargement...'}
           </h3>
-          <p className="text-cocoa-600">
+          <p className="text-cocoa-600 font-roboto">
             {isProcessing
               ? 'Veuillez patienter pendant que nous mettons à jour votre abonnement et récupérons les dernières données.'
               : 'Récupération de vos informations d\'abonnement...'
@@ -384,8 +384,8 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
       <div className="max-w-4xl mx-auto p-6">
         <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 text-center">
           <AlertCircle className="w-12 h-12 text-orange-500 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-cocoa-800 mb-2">Aucun abonnement</h3>
-          <p className="text-cocoa-600 mb-4">
+          <h3 className="text-xl font-bold text-cocoa-800 mb-2 font-roboto">Aucun abonnement</h3>
+          <p className="text-cocoa-600 mb-4 font-roboto">
             Vous n'avez pas encore d'abonnement actif.
           </p>
         </div>
@@ -414,7 +414,7 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
   const getStatusBadge = () => {
     if (!subscription.is_active) {
       return (
-        <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-semibold">
+        <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-semibold font-roboto">
           <XCircle className="w-4 h-4" />
           Inactif
         </span>
@@ -423,7 +423,7 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
 
     if (stripeSubscription?.cancel_at_period_end) {
       return (
-        <span className="inline-flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-semibold">
+        <span className="inline-flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-semibold font-roboto">
           <AlertCircle className="w-4 h-4" />
           Annulation prévue
         </span>
@@ -431,7 +431,7 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
     }
 
     return (
-      <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
+      <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold font-roboto">
         <CheckCircle className="w-4 h-4" />
         Actif
       </span>
@@ -443,16 +443,16 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
     : 0;
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
+    <div className="max-w-6xl mx-auto px-2 md:px-6 p-6 space-y-6 font-roboto">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-cocoa-800">Mon Abonnement</h1>
+        <h1 className="text-lg md:text-xl lg:text-3xl font-bold text-cocoa-800 font-roboto">Mon Abonnement</h1>
         {getStatusBadge()}
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3 font-roboto">
           <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-          <p className="text-red-700">{error}</p>
+          <p className="text-red-700 font-roboto">{error}</p>
         </div>
       )}
 
@@ -466,15 +466,15 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
             <CheckCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
               changeType === 'upgrade' ? 'text-green-500' : 'text-blue-500'
             }`} />
-            <p className={`font-semibold ${changeType === 'upgrade' ? 'text-green-700' : 'text-blue-700'}`}>
+            <p className={`font-semibold font-roboto ${changeType === 'upgrade' ? 'text-green-700' : 'text-blue-700'}`}>
               {changeMessage}
             </p>
           </div>
           <div className="ml-8">
             {isWaitingForInvoice ? (
-              <div className="flex items-center gap-2 text-sm">
+              <div className="flex items-center gap-2 text-sm font-roboto">
                 <Loader className="w-4 h-4 animate-spin text-amber-600" />
-                <span className={changeType === 'upgrade' ? 'text-green-600' : 'text-blue-600'}>
+                <span className={`font-roboto ${changeType === 'upgrade' ? 'text-green-600' : 'text-blue-600'}`}>
                   {changeType === 'upgrade'
                     ? 'Génération de la facture de prorata en cours...'
                     : 'Vérification de votre facture en cours...'
@@ -482,7 +482,7 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
                 </span>
               </div>
             ) : (
-              <p className={`text-sm ${changeType === 'upgrade' ? 'text-green-600' : 'text-blue-600'}`}>
+              <p className={`text-sm font-roboto ${changeType === 'upgrade' ? 'text-green-600' : 'text-blue-600'}`}>
                 {changeType === 'upgrade'
                   ? 'La facture d\'ajustement de prorata a été générée par Stripe et apparaît dans votre liste de factures ci-dessous.'
                   : 'Votre liste de factures a été mise à jour.'
@@ -494,11 +494,11 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
       )}
 
       {subscription?.pending_downgrade_plan && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3 font-roboto">
           <AlertCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
           <div className="text-blue-700">
-            <p className="font-semibold mb-1">Changement de plan programmé</p>
-            <p>
+            <p className="font-semibold mb-1 font-roboto">Changement de plan programmé</p>
+            <p className="font-roboto">
               Votre abonnement passera au plan {subscription.pending_downgrade_plan === 'starter' ? 'Starter' : 'Illimité'} le {formatDate(subscription.billing_cycle_end)}.
             </p>
           </div>
@@ -506,8 +506,8 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
       )}
 
       {/* Section Choix de la formule */}
-      <div className="bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6">
-        <h3 className="text-2xl font-bold text-cocoa-900 mb-4">
+      <div className="bg-white rounded-2xl shadow-lg border-2 border-coral-200 px-2 py-4 md:p-6">
+        <h3 className="text-base md:text-lg lg:text-2xl font-bold text-cocoa-900 mb-4 font-roboto">
           Choisissez la formule qui correspond à vos besoins
         </h3>
 
@@ -515,43 +515,49 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
           {/* Formule Starter */}
           <div
             onClick={() => setSelectedPlan('starter')}
-            className={`relative rounded-2xl p-6 border-2 cursor-pointer transition-all ${
+            className={`relative rounded-2xl px-2 py-4 md:p-6 border-2 cursor-pointer transition-all ${
               selectedPlan === 'starter'
                 ? 'border-coral-500 bg-gradient-to-br from-coral-50 to-sunset-50 shadow-xl scale-105'
                 : 'border-coral-200 bg-white hover:border-coral-300 hover:shadow-lg'
             }`}
           >
             {selectedPlan === 'starter' && (
-              <div className="absolute -top-3 right-4 px-3 py-1 bg-coral-500 text-white text-xs font-bold rounded-full shadow-lg">
+              <div className="absolute -top-3 right-4 px-3 py-1 bg-coral-500 text-white text-xs font-bold rounded-full shadow-lg font-roboto">
                 Sélectionné
               </div>
             )}
+            {/* Icône en haut à droite en mobile */}
+            <div className="md:hidden absolute top-5 right-2">
+              <div className="p-1.5 bg-gradient-to-br from-coral-500 to-sunset-500 rounded-lg shadow-md">
+                <Zap className="w-4 h-4 text-white" />
+              </div>
+            </div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 bg-gradient-to-br from-coral-500 to-sunset-500 rounded-xl shadow-md">
+              <div className="hidden md:block p-3 bg-gradient-to-br from-coral-500 to-sunset-500 rounded-xl shadow-md">
                 <Zap className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h4 className="text-xl font-bold text-cocoa-900">Formule Starter</h4>
-                <p className="text-2xl font-bold text-coral-600">39€<span className="text-sm text-cocoa-600">/mois</span></p>
-                <p className="text-xs text-cocoa-500">Sans engagement</p>
+                <h4 className="text-base md:text-lg lg:text-xl font-bold text-cocoa-900 font-roboto">Formule Starter</h4>
+                <p className="text-lg md:text-xl lg:text-2xl font-bold text-coral-600 font-roboto">39€<span className="text-sm text-cocoa-600 font-roboto">/mois</span></p>
+                <p className="text-xs text-cocoa-500 font-roboto">Sans engagement</p>
               </div>
             </div>
             <ul className="space-y-2">
               <li className="flex items-center gap-2 text-cocoa-700">
                 <CheckCircle className="w-5 h-5 text-green-500" />
-                <span className="font-semibold">600 minutes/mois</span>
+                <span className="text-sm md:text-base font-semibold font-roboto">600 minutes/mois</span>
               </li>
               <li className="flex items-center gap-2 text-cocoa-700">
                 <CheckCircle className="w-5 h-5 text-green-500" />
-                <span>Transcription IA</span>
+                <span className="text-sm md:text-base font-roboto">Transcription IA</span>
               </li>
               <li className="flex items-center gap-2 text-cocoa-700">
                 <CheckCircle className="w-5 h-5 text-green-500" />
-                <span>Résumés automatiques</span>
+                <span className="text-sm md:text-base font-roboto">Résumés automatiques</span>
               </li>
               <li className="flex items-center gap-2 text-cocoa-700">
                 <CheckCircle className="w-5 h-5 text-green-500" />
-                <span>Envoi d'emails</span>
+                <span className="text-sm md:text-base font-roboto">Envoi d'emails</span>
               </li>
             </ul>
           </div>
@@ -559,50 +565,56 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
           {/* Formule Illimitée */}
           <div
             onClick={() => setSelectedPlan('unlimited')}
-            className={`relative rounded-2xl p-6 border-2 cursor-pointer transition-all ${
+            className={`relative rounded-2xl px-2 py-4 md:p-6 border-2 cursor-pointer transition-all ${
               selectedPlan === 'unlimited'
                 ? 'border-amber-500 bg-gradient-to-br from-amber-50 to-yellow-50 shadow-xl scale-105'
                 : 'border-amber-200 bg-white hover:border-amber-300 hover:shadow-lg'
             }`}
           >
             {selectedPlan === 'unlimited' && (
-              <div className="absolute -top-3 right-4 px-3 py-1 bg-amber-500 text-white text-xs font-bold rounded-full shadow-lg">
+              <div className="absolute -top-3 right-4 px-3 py-1 bg-amber-500 text-white text-xs font-bold rounded-full shadow-lg font-roboto">
                 Sélectionné
               </div>
             )}
-            <div className="absolute -top-3 left-4 px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold rounded-full shadow-lg">
+            <div className="absolute -top-3 left-4 px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold rounded-full shadow-lg font-roboto">
               ⭐ POPULAIRE
             </div>
+            {/* Icône en haut à droite en mobile */}
+            <div className="md:hidden absolute top-5 right-2 z-10">
+              <div className="p-1.5 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-lg shadow-md">
+                <Crown className="w-4 h-4 text-white" />
+              </div>
+            </div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-xl shadow-md">
+              <div className="hidden md:block p-3 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-xl shadow-md">
                 <Crown className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h4 className="text-xl font-bold text-cocoa-900">Formule Illimitée</h4>
-                <p className="text-2xl font-bold text-amber-600">49€<span className="text-sm text-cocoa-600">/mois</span></p>
-                <p className="text-xs text-cocoa-500">Sans engagement</p>
+                <h4 className="text-base md:text-lg lg:text-xl font-bold text-cocoa-900 font-roboto">Formule Illimitée</h4>
+                <p className="text-lg md:text-xl lg:text-2xl font-bold text-amber-600 font-roboto">49€<span className="text-sm text-cocoa-600 font-roboto">/mois</span></p>
+                <p className="text-xs text-cocoa-500 font-roboto">Sans engagement</p>
               </div>
             </div>
             <ul className="space-y-2">
               <li className="flex items-center gap-2 text-cocoa-700">
                 <CheckCircle className="w-5 h-5 text-green-500" />
-                <span className="font-semibold">Minutes illimitées</span>
+                <span className="text-sm md:text-base font-semibold font-roboto">Minutes illimitées</span>
               </li>
               <li className="flex items-center gap-2 text-cocoa-700">
                 <CheckCircle className="w-5 h-5 text-green-500" />
-                <span>Transcription IA</span>
+                <span className="text-sm md:text-base font-roboto">Transcription IA</span>
               </li>
               <li className="flex items-center gap-2 text-cocoa-700">
                 <CheckCircle className="w-5 h-5 text-green-500" />
-                <span>Résumés automatiques</span>
+                <span className="text-sm md:text-base font-roboto">Résumés automatiques</span>
               </li>
               <li className="flex items-center gap-2 text-cocoa-700">
                 <CheckCircle className="w-5 h-5 text-green-500" />
-                <span>Envoi d'emails</span>
+                <span className="text-sm md:text-base font-roboto">Envoi d'emails</span>
               </li>
               <li className="flex items-center gap-2 text-cocoa-700">
                 <CheckCircle className="w-5 h-5 text-green-500" />
-                <span>Support prioritaire</span>
+                <span className="text-sm md:text-base font-roboto">Support prioritaire</span>
               </li>
             </ul>
           </div>
@@ -616,12 +628,12 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
           >
             <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
             {isProcessing ? (
-              <span className="relative flex items-center justify-center gap-2">
+              <span className="relative flex items-center justify-center gap-2 font-roboto">
                 <Loader className="w-5 h-5 animate-spin" />
                 Redirection...
               </span>
             ) : (
-              <span className="relative">Changer pour la formule {selectedPlan === 'starter' ? 'Starter (39€)' : 'Illimitée (49€)'}</span>
+              <span className="relative font-roboto">Changer pour la formule {selectedPlan === 'starter' ? 'Starter (39€)' : 'Illimitée (49€)'}</span>
             )}
           </button>
         )}
@@ -634,46 +646,52 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
           >
             <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
             {isProcessing ? (
-              <span className="relative flex items-center justify-center gap-2">
+              <span className="relative flex items-center justify-center gap-2 font-roboto">
                 <Loader className="w-5 h-5 animate-spin" />
                 Redirection...
               </span>
             ) : (
-              <span className="relative">Activer la formule {selectedPlan === 'starter' ? 'Starter (39€)' : 'Illimitée (49€)'}</span>
+              <span className="relative font-roboto">Activer la formule {selectedPlan === 'starter' ? 'Starter (39€)' : 'Illimitée (49€)'}</span>
             )}
           </button>
         )}
 
-        <p className="text-xs text-center text-cocoa-500 mt-4">
+        <p className="text-xs text-center text-cocoa-500 mt-4 font-roboto">
           Note: Chaque réunion est limitée à un maximum de 4 heures
         </p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-white border-2 border-coral-200 rounded-2xl p-6">
+        <div className="bg-white border-2 border-coral-200 rounded-2xl p-6 relative">
+          {/* Icône en haut à droite en mobile */}
+          <div className="md:hidden absolute top-4 right-4">
+            <div className="p-1.5 bg-gradient-to-r from-coral-500 to-sunset-500 rounded-lg shadow-md">
+              <Crown className="w-4 h-4 text-white" />
+            </div>
+          </div>
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-coral-500 to-sunset-500 rounded-xl flex items-center justify-center">
+            <div className="hidden md:flex w-12 h-12 bg-gradient-to-r from-coral-500 to-sunset-500 rounded-xl items-center justify-center">
               <Crown className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-cocoa-800">Plan actuel</h3>
-              <p className="text-sm text-cocoa-600">Votre formule d'abonnement</p>
+              <h3 className="font-bold text-cocoa-800 font-roboto">Plan actuel</h3>
+              <p className="text-sm text-cocoa-600 font-roboto">Votre formule d'abonnement</p>
             </div>
           </div>
 
           <div className="space-y-3">
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-bold bg-gradient-to-r from-coral-500 to-sunset-500 bg-clip-text text-transparent">
+              <span className="text-lg md:text-xl lg:text-4xl font-bold bg-gradient-to-r from-coral-500 to-sunset-500 bg-clip-text text-transparent font-roboto">
                 {planNames[subscription.plan_type]}
               </span>
-              <span className="text-2xl text-cocoa-600">{planPrices[subscription.plan_type]}/mois</span>
+              <span className="text-lg md:text-xl lg:text-2xl text-cocoa-600 font-roboto">{planPrices[subscription.plan_type]}/mois</span>
             </div>
 
             {subscription.minutes_quota ? (
               <div>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-cocoa-600">Minutes utilisées</span>
-                  <span className="font-semibold text-cocoa-800">
+                  <span className="text-sm md:text-base text-cocoa-600 font-roboto">Minutes utilisées</span>
+                  <span className="text-sm md:text-base font-semibold text-cocoa-800 font-roboto">
                     {subscription.minutes_used_this_month} / {subscription.minutes_quota} min
                   </span>
                 </div>
@@ -691,7 +709,7 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
                 </div>
               </div>
             ) : (
-              <p className="text-green-600 font-semibold flex items-center gap-2">
+              <p className="text-sm md:text-base text-green-600 font-semibold flex items-center gap-2 font-roboto">
                 <CheckCircle className="w-5 h-5" />
                 Minutes illimitées
               </p>
@@ -699,37 +717,43 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
           </div>
         </div>
 
-        <div className="bg-white border-2 border-coral-200 rounded-2xl p-6">
+        <div className="bg-white border-2 border-coral-200 rounded-2xl p-6 relative">
+          {/* Icône en haut à droite en mobile */}
+          <div className="md:hidden absolute top-4 right-4">
+            <div className="p-1.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg shadow-md">
+              <Calendar className="w-4 h-4 text-white" />
+            </div>
+          </div>
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
+            <div className="hidden md:flex w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl items-center justify-center">
               <Calendar className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-cocoa-800">Période de facturation</h3>
-              <p className="text-sm text-cocoa-600">Dates de votre cycle</p>
+              <h3 className="font-bold text-cocoa-800 font-roboto">Période de facturation</h3>
+              <p className="text-xs md:text-sm text-cocoa-600 font-roboto">Dates de votre cycle</p>
             </div>
           </div>
 
           <div className="space-y-3">
             <div>
-              <p className="text-sm text-cocoa-600 mb-1">Début du cycle</p>
-              <p className="font-semibold text-cocoa-800">
+              <p className="text-xs md:text-sm text-cocoa-600 mb-1 font-roboto">Début du cycle</p>
+              <p className="text-sm md:text-base font-semibold text-cocoa-800 font-roboto">
                 {formatDate(subscription.billing_cycle_start)}
               </p>
             </div>
 
             <div>
-              <p className="text-sm text-cocoa-600 mb-1">
+              <p className="text-xs md:text-sm text-cocoa-600 mb-1 font-roboto">
                 {stripeSubscription?.cancel_at_period_end ? 'Date d\'annulation' : 'Prochaine facturation'}
               </p>
-              <p className="font-semibold text-cocoa-800">
+              <p className="text-sm md:text-base font-semibold text-cocoa-800 font-roboto">
                 {formatDate(subscription.billing_cycle_end)}
               </p>
             </div>
 
             {stripeSubscription?.cancel_at_period_end && (
               <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-                <p className="text-sm text-orange-700">
+                <p className="text-xs md:text-sm text-orange-700 font-roboto">
                   Votre abonnement sera annulé à la fin de la période en cours.
                 </p>
               </div>
@@ -745,39 +769,48 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
               <CreditCard className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-cocoa-800">Moyen de paiement</h3>
-              <p className="text-sm text-cocoa-600">Carte enregistrée</p>
+              <h3 className="font-bold text-cocoa-800 font-roboto">Moyen de paiement</h3>
+              <p className="text-sm text-cocoa-600 font-roboto">Carte enregistrée</p>
             </div>
           </div>
 
           {stripeSubscription.payment_method_brand && stripeSubscription.payment_method_last4 ? (
             <div className="flex items-center gap-3">
-              <div className="px-4 py-2 bg-gray-100 rounded-lg font-mono">
+              <div className="px-4 py-2 bg-gray-100 rounded-lg font-mono font-roboto">
                 {stripeSubscription.payment_method_brand.toUpperCase()} •••• {stripeSubscription.payment_method_last4}
               </div>
             </div>
           ) : (
-            <p className="text-cocoa-600">Aucune carte enregistrée</p>
+            <p className="text-cocoa-600 font-roboto">Aucune carte enregistrée</p>
           )}
         </div>
       )}
 
       {/* Section Factures */}
-      <div className="bg-white border-2 border-coral-200 rounded-2xl p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-              <FileText className="w-6 h-6 text-white" />
+      <div className="bg-white border-2 border-coral-200 rounded-2xl px-2 py-4 md:p-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+          <div className="flex items-center justify-between md:justify-start gap-3 w-full md:w-auto">
+            <div className="flex items-center gap-3">
+              <div className="hidden md:flex w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl items-center justify-center">
+                <FileText className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-cocoa-800 font-roboto">Mes factures</h3>
+                <p className="text-sm text-cocoa-600 font-roboto">Téléchargez vos factures</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-bold text-cocoa-800">Mes factures</h3>
-              <p className="text-sm text-cocoa-600">Téléchargez vos factures</p>
-            </div>
+            <button
+              onClick={loadInvoices}
+              disabled={isLoadingInvoices}
+              className="md:hidden flex items-center justify-center w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:shadow-lg transition-all disabled:opacity-50"
+            >
+              <RefreshCw className={`w-5 h-5 ${isLoadingInvoices ? 'animate-spin' : ''}`} />
+            </button>
           </div>
           <button
             onClick={loadInvoices}
             disabled={isLoadingInvoices}
-            className="flex items-center gap-2 px-3 py-2 text-sm bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:shadow-lg transition-all disabled:opacity-50"
+            className="hidden md:flex items-center gap-2 px-3 py-2 w-fit text-sm bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:shadow-lg transition-all disabled:opacity-50 font-roboto"
           >
             <RefreshCw className={`w-4 h-4 ${isLoadingInvoices ? 'animate-spin' : ''}`} />
             Actualiser
@@ -789,14 +822,14 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Loader className="w-5 h-5 animate-spin text-amber-600 flex-shrink-0" />
-                <div className="text-sm text-amber-700">
+                <div className="text-sm text-amber-700 font-roboto">
                   <p className="font-semibold">Facture en cours de génération</p>
                   <p>Stripe génère votre facture de prorata. Elle apparaîtra ici dans quelques instants...</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsWaitingForInvoice(false)}
-                className="text-amber-600 hover:text-amber-800 text-sm font-medium px-3 py-1 rounded hover:bg-amber-100 transition-colors"
+                className="text-amber-600 hover:text-amber-800 text-sm font-medium px-3 py-1 rounded hover:bg-amber-100 transition-colors font-roboto"
               >
                 Arrêter
               </button>
@@ -807,7 +840,7 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
         {isLoadingInvoices ? (
           <div className="flex items-center justify-center py-8">
             <Loader className="w-6 h-6 animate-spin text-coral-500" />
-            <span className="ml-2 text-cocoa-600">Chargement des factures...</span>
+            <span className="ml-2 text-cocoa-600 font-roboto">Chargement des factures...</span>
           </div>
         ) : invoices.length > 0 ? (
           <div className="space-y-3">
@@ -819,35 +852,35 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
                 <div className="flex items-center justify-between p-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="font-semibold text-cocoa-900">Facture {invoice.number}</p>
+                      <p className="font-semibold text-cocoa-900 font-roboto">Facture {invoice.number}</p>
                       {invoice.is_proration && (
-                        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">
+                        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-medium font-roboto">
                           📊 Prorata
                         </span>
                       )}
                       {invoice.status === 'paid' && (
-                        <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium">
+                        <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium font-roboto">
                           Payée
                         </span>
                       )}
                       {invoice.status === 'open' && (
-                        <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full font-medium">
+                        <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full font-medium font-roboto">
                           En attente
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-cocoa-600">
+                    <p className="text-sm text-cocoa-600 font-roboto">
                       {new Date(invoice.created * 1000).toLocaleDateString('fr-FR', {
                         day: 'numeric',
                         month: 'long',
                         year: 'numeric'
                       })}
                     </p>
-                    <p className="text-sm text-cocoa-500">{invoice.description}</p>
+                    <p className="text-sm text-cocoa-500 font-roboto">{invoice.description}</p>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <p className="text-xl font-bold text-cocoa-900">
+                      <p className="text-xl font-bold text-cocoa-900 font-roboto">
                         {invoice.amount.toFixed(2)} {invoice.currency}
                       </p>
                     </div>
@@ -869,7 +902,7 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
                         href={invoice.invoice_pdf}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-coral-500 to-sunset-500 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-coral-500 to-sunset-500 text-white rounded-lg font-semibold hover:shadow-lg transition-all font-roboto"
                       >
                         <Download className="w-4 h-4" />
                         <span>PDF</span>
@@ -880,7 +913,7 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
 
                 {expandedInvoiceId === invoice.id && invoice.lines && invoice.lines.length > 0 && (
                   <div className="border-t border-coral-200 bg-white/50 p-4">
-                    <h4 className="font-semibold text-cocoa-800 mb-3 flex items-center gap-2">
+                    <h4 className="font-semibold text-cocoa-800 mb-3 flex items-center gap-2 font-roboto">
                       <FileText className="w-4 h-4" />
                       Détail de la facture
                     </h4>
@@ -896,10 +929,10 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
                         >
                           <div className="flex justify-between items-start mb-1">
                             <div className="flex-1">
-                              <p className="text-sm font-medium text-cocoa-800">
+                              <p className="text-sm font-medium text-cocoa-800 font-roboto">
                                 {line.description || `Ligne ${index + 1}`}
                               </p>
-                              <p className="text-xs text-cocoa-500 mt-1">
+                              <p className="text-xs text-cocoa-500 mt-1 font-roboto">
                                 {new Date(line.period_start * 1000).toLocaleDateString('fr-FR', {
                                   day: 'numeric',
                                   month: 'short',
@@ -914,11 +947,11 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
                               </p>
                             </div>
                             <div className="text-right">
-                              <p className={`font-bold ${line.amount < 0 ? 'text-red-600' : 'text-green-600'}`}>
+                              <p className={`font-bold font-roboto ${line.amount < 0 ? 'text-red-600' : 'text-green-600'}`}>
                                 {line.amount >= 0 ? '+' : ''}{line.amount.toFixed(2)} {invoice.currency}
                               </p>
                               {line.proration && (
-                                <span className="text-xs text-blue-600 font-medium">Prorata</span>
+                                <span className="text-xs text-blue-600 font-medium font-roboto">Prorata</span>
                               )}
                             </div>
                           </div>
@@ -927,22 +960,22 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
                     </div>
                     <div className="mt-4 pt-3 border-t border-coral-200">
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-cocoa-600">Sous-total (hors taxes)</span>
-                        <span className="font-semibold text-cocoa-800">
+                        <span className="text-cocoa-600 font-roboto">Sous-total (hors taxes)</span>
+                        <span className="font-semibold text-cocoa-800 font-roboto">
                           {(invoice.subtotal || invoice.amount).toFixed(2)} {invoice.currency}
                         </span>
                       </div>
                       {invoice.tax && invoice.tax > 0 && (
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="text-cocoa-600">TVA</span>
-                          <span className="font-semibold text-cocoa-800">
+                          <span className="text-cocoa-600 font-roboto">TVA</span>
+                          <span className="font-semibold text-cocoa-800 font-roboto">
                             {invoice.tax.toFixed(2)} {invoice.currency}
                           </span>
                         </div>
                       )}
                       <div className="flex justify-between text-base font-bold pt-2 border-t border-coral-200">
-                        <span className="text-cocoa-900">Total</span>
-                        <span className="text-cocoa-900">
+                        <span className="text-cocoa-900 font-roboto">Total</span>
+                        <span className="text-cocoa-900 font-roboto">
                           {invoice.amount.toFixed(2)} {invoice.currency}
                         </span>
                       </div>
@@ -955,25 +988,25 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
         ) : (
           <div className="text-center py-8 text-cocoa-500">
             <FileText className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p className="text-sm">Aucune facture disponible</p>
+            <p className="text-sm font-roboto">Aucune facture disponible</p>
           </div>
         )}
       </div>
 
       <div className="bg-gradient-to-r from-coral-50 to-sunset-50 border-2 border-coral-200 rounded-2xl p-6">
-        <h3 className="font-bold text-cocoa-800 mb-4 flex items-center gap-2">
+        <h3 className="font-bold text-cocoa-800 mb-4 flex items-center gap-2 font-roboto">
           <Download className="w-5 h-5" />
           Gestion de l'abonnement
         </h3>
 
-        <p className="text-cocoa-600 mb-4">
+        <p className="text-cocoa-600 mb-4 text-xs md:text-base font-roboto">
           Accédez au portail Stripe pour gérer votre abonnement et mettre à jour votre moyen de paiement.
         </p>
 
         <button
           onClick={handleManageBilling}
           disabled={isProcessing}
-          className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-coral-500 to-sunset-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center text-sm md:text-base justify-center gap-2 px-6 py-3 bg-gradient-to-r from-coral-500 to-sunset-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed font-roboto"
         >
           {isProcessing ? (
             <>
@@ -988,7 +1021,7 @@ export const Subscription = ({ userId }: SubscriptionProps) => {
           )}
         </button>
 
-        <p className="text-xs text-cocoa-500 mt-3">
+        <p className="text-xs text-cocoa-500 mt-3 font-roboto">
           Vous serez redirigé vers le portail sécurisé Stripe où vous pourrez également annuler.
         </p>
       </div>

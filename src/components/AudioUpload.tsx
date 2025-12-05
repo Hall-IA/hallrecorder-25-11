@@ -389,15 +389,15 @@ export const AudioUpload = ({ userId, onSuccess }: AudioUploadProps) => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 md:p-12 bg-white">
-        <h2 className="text-lg font-semibold text-gray-900 mb-8">
+    <div className="max-w-4xl mx-auto font-roboto">
+      <div className="p-8 md:p-12 bg-white rounded-lg shadow-md">
+        <h2 className="text-lg font-semibold text-gray-900 mb-8 font-roboto">
           Importer un fichier audio
         </h2>
 
         <div className="space-y-6">
           {/* Zone de drop/sélection */}
-          <div className="bg-gray-50 rounded-lg p-12 text-center hover:bg-gray-100 transition-all">
+          <div className="border-2 border-dashed border-gray-300 bg-gray-50 rounded-lg p-12 text-center hover:bg-gray-100 transition-all">
           <input
             ref={fileInputRef}
             type="file"
@@ -415,12 +415,12 @@ export const AudioUpload = ({ userId, onSuccess }: AudioUploadProps) => {
               <>
                 <FileAudio className="w-12 h-12 text-gray-400" />
                 <div className="text-center">
-                  <p className="font-medium text-gray-900">{selectedFile.name}</p>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="font-medium text-gray-900 font-roboto">{selectedFile.name}</p>
+                  <p className="text-sm text-gray-500 mt-1 font-roboto">
                     {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                   </p>
                   {audioDuration > 0 && (
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-gray-600 mt-1 font-roboto">
                       Durée: {Math.floor(audioDuration / 60)}:{String(audioDuration % 60).padStart(2, '0')}
                     </p>
                   )}
@@ -434,7 +434,7 @@ export const AudioUpload = ({ userId, onSuccess }: AudioUploadProps) => {
                     setIsCalculatingDuration(false);
                     if (fileInputRef.current) fileInputRef.current.value = '';
                   }}
-                  className="text-sm text-gray-600 hover:text-gray-800 font-medium flex items-center gap-1"
+                  className="text-sm text-gray-600 hover:text-gray-800 font-medium flex items-center gap-1 font-roboto"
                 >
                   <X className="w-4 h-4" />
                   Supprimer
@@ -444,10 +444,10 @@ export const AudioUpload = ({ userId, onSuccess }: AudioUploadProps) => {
               <>
                 <Upload className="w-12 h-12 text-gray-400" />
                 <div>
-                  <p className="font-medium text-gray-900 mb-1">
+                  <p className="text-sm md:text-base font-medium text-gray-900 mb-1 font-roboto">
                     Cliquez pour sélectionner un fichier audio
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs md:text-sm text-gray-500 font-roboto">
                     MP3, WAV, M4A, WebM, OGG, FLAC, etc.
                   </p>
                 </div>
@@ -458,7 +458,7 @@ export const AudioUpload = ({ userId, onSuccess }: AudioUploadProps) => {
 
         {/* Titre */}
         <div>
-          <label htmlFor="upload-title" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="upload-title" className="block text-sm md:text-base font-medium text-gray-700 mb-2 font-roboto">
             Titre de la réunion (optionnel)
           </label>
           <input
@@ -467,7 +467,7 @@ export const AudioUpload = ({ userId, onSuccess }: AudioUploadProps) => {
             value={meetingTitle}
             onChange={(e) => setMeetingTitle(e.target.value)}
             placeholder="Ex : Rendez-vous client"
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-200 text-gray-900"
+            className="text-sm md:text-base w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-200 text-gray-900 font-roboto"
             disabled={isProcessing}
           />
         </div>
@@ -475,7 +475,7 @@ export const AudioUpload = ({ userId, onSuccess }: AudioUploadProps) => {
         {/* Indicateur de calcul de durée */}
         {isCalculatingDuration && selectedFile && (
           <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800 flex items-center gap-2">
+            <p className="text-sm text-blue-800 flex items-center gap-2 font-roboto">
               <Loader className="w-4 h-4 animate-spin" />
               Calcul de la durée du fichier en cours...
             </p>
@@ -485,7 +485,7 @@ export const AudioUpload = ({ userId, onSuccess }: AudioUploadProps) => {
         {/* Affichage de la durée détectée */}
         {audioDuration > 0 && !isCalculatingDuration && (
           <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-sm text-green-800 flex items-center gap-2">
+            <p className="text-sm text-green-800 flex items-center gap-2 font-roboto">
               ✅ Durée détectée : {Math.floor(audioDuration / 60)} min {audioDuration % 60} sec
             </p>
           </div>
@@ -495,7 +495,7 @@ export const AudioUpload = ({ userId, onSuccess }: AudioUploadProps) => {
         <button
           onClick={handleUpload}
           disabled={!selectedFile || isProcessing || isCalculatingDuration || audioDuration === 0}
-          className={`w-auto px-8 py-2.5 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 ${
+          className={`w-auto px-8 py-2.5 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 font-roboto ${
             !selectedFile || isProcessing || isCalculatingDuration || audioDuration === 0
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
               : 'bg-orange-500 text-white hover:bg-orange-600'
@@ -504,16 +504,16 @@ export const AudioUpload = ({ userId, onSuccess }: AudioUploadProps) => {
           {isProcessing ? (
             <>
               <Loader className="w-4 h-4 animate-spin" />
-              <span>Traitement en cours...</span>
+              <span className="font-roboto">Traitement en cours...</span>
             </>
           ) : isCalculatingDuration ? (
             <>
               <Loader className="w-4 h-4 animate-spin" />
-              <span>Analyse du fichier...</span>
+              <span className="font-roboto">Analyse du fichier...</span>
             </>
           ) : (
             <>
-              <span>Transcrire et générer le résumé</span>
+              <span className="font-roboto">Transcrire et générer le résumé</span>
             </>
           )}
         </button>
@@ -522,13 +522,13 @@ export const AudioUpload = ({ userId, onSuccess }: AudioUploadProps) => {
         {progress && (
           <div className="space-y-3">
             <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-800 flex items-center gap-2">
+              <p className="text-sm text-blue-800 flex items-center gap-2 font-roboto">
                 <Loader className="w-4 h-4 animate-spin" />
                 {progress}
               </p>
             </div>
             <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
-              <p className="text-xs text-orange-800 flex items-center gap-2">
+              <p className="text-xs text-orange-800 flex items-center gap-2 font-roboto">
                 ⚠️ Ne fermez pas cette page et ne rafraîchissez pas le navigateur pendant le traitement !
               </p>
             </div>
