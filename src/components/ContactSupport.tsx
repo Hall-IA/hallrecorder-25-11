@@ -305,12 +305,12 @@ export const ContactSupport = ({ userId, userEmail }: ContactSupportProps) => {
     <div className="bg-white rounded-2xl shadow-lg border-2 border-coral-200 p-6 md:p-8">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-3 bg-gradient-to-br from-coral-500 to-sunset-500 rounded-xl">
+        <div className="hidden md:block p-3 bg-gradient-to-br from-coral-500 to-sunset-500 rounded-xl">
           <Mail className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-cocoa-900">Support</h2>
-          <p className="text-sm text-cocoa-600">Nous sommes là pour vous aider !</p>
+          <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-cocoa-900 font-roboto">Support</h2>
+          <p className="text-sm text-cocoa-600 font-roboto">Nous sommes là pour vous aider !</p>
         </div>
       </div>
 
@@ -327,7 +327,7 @@ export const ContactSupport = ({ userId, userEmail }: ContactSupportProps) => {
         <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-xl flex items-start gap-3 animate-scaleIn">
           <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="font-semibold text-red-900">Erreur</p>
+            <p className="font-semibold text-red-900 font-roboto">Erreur</p>
             <p className="text-sm text-red-700 mt-1">{errorMessage}</p>
           </div>
         </div>
@@ -337,7 +337,7 @@ export const ContactSupport = ({ userId, userEmail }: ContactSupportProps) => {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Nom */}
         <div>
-          <label className="block text-sm font-semibold text-cocoa-800 mb-2">
+          <label className="block text-sm font-semibold text-cocoa-800 mb-2 font-roboto">
             Votre nom <span className="text-red-500">*</span>
           </label>
           <input
@@ -345,14 +345,14 @@ export const ContactSupport = ({ userId, userEmail }: ContactSupportProps) => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Jean Dupont"
-            className="w-full px-4 py-3 border-2 border-coral-200 rounded-xl focus:outline-none focus:border-coral-400 focus:ring-2 focus:ring-coral-100 transition-all"
+            className="text-sm md:text-base font-roboto w-full px-4 py-3 border-2 border-coral-200 rounded-xl focus:outline-none focus:border-coral-400 focus:ring-2 focus:ring-coral-100 transition-all"
             disabled={isSending}
           />
         </div>
 
         {/* Email */}
         <div>
-          <label className="block text-sm font-semibold text-cocoa-800 mb-2">
+          <label className="block text-sm font-semibold text-cocoa-800 mb-2 font-roboto">
             Votre email <span className="text-red-500">*</span>
           </label>
           <input
@@ -360,7 +360,7 @@ export const ContactSupport = ({ userId, userEmail }: ContactSupportProps) => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="votre@email.com"
-            className="w-full px-4 py-3 border-2 border-coral-200 rounded-xl focus:outline-none focus:border-coral-400 focus:ring-2 focus:ring-coral-100 transition-all"
+            className="text-sm md:text-base font-roboto w-full px-4 py-3 border-2 border-coral-200 rounded-xl focus:outline-none focus:border-coral-400 focus:ring-2 focus:ring-coral-100 transition-all"
             disabled={isSending}
           />
           <p className="text-xs text-cocoa-500 mt-1">
@@ -370,7 +370,7 @@ export const ContactSupport = ({ userId, userEmail }: ContactSupportProps) => {
 
         {/* Catégorie */}
         <div>
-          <label className="block text-sm font-semibold text-cocoa-800 mb-3">
+          <label className="block text-sm font-semibold text-cocoa-800 mb-3 font-roboto">
             Catégorie <span className="text-red-500">*</span>
           </label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -382,7 +382,7 @@ export const ContactSupport = ({ userId, userEmail }: ContactSupportProps) => {
                   type="button"
                   onClick={() => setCategory(cat.id)}
                   disabled={isSending}
-                  className={`p-3 rounded-xl border-2 transition-all text-left ${
+                  className={`text-sm md:text-base font-roboto p-3 rounded-xl border-2 transition-all text-left ${
                     category === cat.id
                       ? 'border-coral-500 bg-coral-50 shadow-md'
                       : 'border-gray-200 bg-white hover:border-coral-300'
@@ -400,7 +400,7 @@ export const ContactSupport = ({ userId, userEmail }: ContactSupportProps) => {
 
         {/* Sujet */}
         <div>
-          <label className="block text-sm font-semibold text-cocoa-800 mb-2">
+          <label className="block text-sm font-semibold text-cocoa-800 mb-2 font-roboto">
             Sujet <span className="text-red-500">*</span>
           </label>
           <input
@@ -408,14 +408,14 @@ export const ContactSupport = ({ userId, userEmail }: ContactSupportProps) => {
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="Ex: Problème lors de la transcription d'un enregistrement"
-            className="w-full px-4 py-3 border-2 border-coral-200 rounded-xl focus:outline-none focus:border-coral-400 focus:ring-2 focus:ring-coral-100 transition-all"
+            className="text-sm md:text-base font-roboto w-full px-4 py-3 border-2 border-coral-200 rounded-xl focus:outline-none focus:border-coral-400 focus:ring-2 focus:ring-coral-100 transition-all"
             disabled={isSending}
           />
         </div>
 
         {/* Message */}
         <div>
-          <label className="block text-sm font-semibold text-cocoa-800 mb-2">
+          <label className="block text-sm font-semibold text-cocoa-800 mb-2 font-roboto">
             Décrivez votre problème <span className="text-red-500">*</span>
           </label>
           <textarea
@@ -423,14 +423,14 @@ export const ContactSupport = ({ userId, userEmail }: ContactSupportProps) => {
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Décrivez en détail le problème rencontré, les étapes pour le reproduire, etc."
             rows={6}
-            className="w-full px-4 py-3 border-2 border-coral-200 rounded-xl focus:outline-none focus:border-coral-400 focus:ring-2 focus:ring-coral-100 transition-all resize-none"
+            className="w-full text-sm md:text-base font-roboto px-4 py-3 border-2 border-coral-200 rounded-xl focus:outline-none focus:border-coral-400 focus:ring-2 focus:ring-coral-100 transition-all resize-none"
             disabled={isSending}
           />
         </div>
 
         {/* Upload de captures d'écran */}
         <div>
-          <label className="block text-sm font-semibold text-cocoa-800 mb-2">
+          <label className="block text-sm font-semibold text-cocoa-800 mb-2 font-roboto">
             Captures d'écran (optionnel, max 3)
           </label>
           
@@ -503,10 +503,10 @@ export const ContactSupport = ({ userId, userEmail }: ContactSupportProps) => {
                 />
                 <div className="border-2 border-dashed border-coral-300 rounded-xl p-6 text-center cursor-pointer hover:border-coral-500 hover:bg-coral-50 transition-all">
                   <Upload className="w-8 h-8 text-coral-500 mx-auto mb-2" />
-                  <p className="text-sm font-semibold text-cocoa-800">
+                  <p className="text-xs md:text-sm font-semibold text-cocoa-800 font-roboto ">
                     Cliquez pour ajouter des captures d'écran
                   </p>
-                  <p className="text-xs text-cocoa-600 mt-1">
+                  <p className="text-xs md:text-sm text-cocoa-600 mt-1 font-roboto">
                     PNG, JPG, GIF (max 3 fichiers)
                   </p>
                 </div>
@@ -520,8 +520,8 @@ export const ContactSupport = ({ userId, userEmail }: ContactSupportProps) => {
           <div className="flex gap-3">
             <Lightbulb className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-gray-800">
-              <p className="font-semibold">Conseil</p>
-              <p className="mt-1">
+              <p className="font-semibold font-roboto">Conseil</p>
+              <p className="text-sm md:text-base mt-1 font-roboto">
                 Les captures d'écran nous aident à mieux comprendre votre problème et à le résoudre plus rapidement.
               </p>
             </div>
@@ -532,7 +532,7 @@ export const ContactSupport = ({ userId, userEmail }: ContactSupportProps) => {
         <button
           type="submit"
           disabled={isSending}
-          className="w-full py-4 bg-gradient-to-r from-coral-500 to-sunset-500 text-white font-bold rounded-xl hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+          className="w-full py-4 text-sm md:text-base font-roboto bg-gradient-to-r from-coral-500 to-sunset-500 text-white font-bold rounded-xl hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
         >
           {isSending ? (
             <>

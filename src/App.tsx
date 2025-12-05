@@ -1984,13 +1984,13 @@ function App() {
             </div>
 
             {/* Navigation centrale - Desktop */}
-            <nav className="hidden xl:flex items-center gap-0.5 flex-1 justify-center px-4">
+            <nav className="hidden xl:flex items-center gap-0.5 flex-1 justify-center px-4 font-roboto">
               <button
                 onClick={() => {
                   setView('record');
                   window.location.hash = 'record';
                 }}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap font-roboto ${
                   view === 'record'
                     ? 'text-coral-600 bg-coral-50'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -2004,7 +2004,7 @@ function App() {
                   setView('dashboard');
                   window.location.hash = 'dashboard';
                 }}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap font-roboto ${
                   view === 'dashboard'
                     ? 'text-coral-600 bg-coral-50'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -2018,7 +2018,7 @@ function App() {
                   setView('history');
                   window.location.hash = 'history';
                 }}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap font-roboto ${
                   view === 'history'
                     ? 'text-coral-600 bg-coral-50'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -2032,7 +2032,7 @@ function App() {
                   setView('upload');
                   window.location.hash = 'upload';
                 }}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap font-roboto ${
                   view === 'upload'
                     ? 'text-coral-600 bg-coral-50'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -2046,7 +2046,7 @@ function App() {
                   setView('settings');
                   window.location.hash = 'settings';
                 }}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap font-roboto ${
                   view === 'settings'
                     ? 'text-coral-600 bg-coral-50'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -2060,7 +2060,7 @@ function App() {
                   setView('subscription');
                   window.location.hash = 'subscription';
                 }}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap font-roboto ${
                   view === 'subscription'
                     ? 'text-coral-600 bg-coral-50'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -2074,7 +2074,7 @@ function App() {
                   setView('contact');
                   window.location.hash = 'contact';
                 }}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap font-roboto ${
                   view === 'contact'
                     ? 'text-coral-600 bg-coral-50'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -2088,7 +2088,7 @@ function App() {
             {/* Bouton déconnexion - Caché sur mobile (dans le menu burger) */}
             <button
               onClick={handleLogout}
-              className="hidden xl:flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all"
+              className="hidden xl:flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all font-roboto"
               title="Déconnexion"
             >
               <span>Déconnexion</span>
@@ -2110,12 +2110,12 @@ function App() {
             ></div>
 
             {/* Menu slide-in */}
-            <nav className={`fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl z-[60] xl:hidden overflow-y-auto ${isRecording ? 'pt-[124px]' : ''}`}>
+            <nav className={`fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl z-[60] xl:hidden overflow-y-auto font-roboto ${isRecording ? 'pt-[124px]' : ''}`}>
               {/* Header du menu */}
               <div className={`flex items-center justify-between p-4 border-b border-gray-200 ${isRecording ? 'fixed top-[124px] left-0 w-80 max-w-[85vw] bg-white z-10' : ''}`}>
                 <div className="flex items-center gap-2.5">
                   <img src="/logohallia.png" alt="Logo Hallia" className="w-8 h-8 object-contain" />
-                  <span className="text-lg font-thunder font-bold text-gray-900">HALL RECORDER</span>
+                  <span className="text-lg font-thunder font-bold text-gray-900 font-roboto">HALL RECORDER</span>
                 </div>
                 <button
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -2134,7 +2134,7 @@ function App() {
                     window.location.hash = 'record';
                     setIsMobileMenuOpen(false);
                   }}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all font-roboto ${
                     view === 'record'
                       ? 'text-orange-600 bg-orange-50'
                       : 'text-gray-700 hover:bg-gray-50'
@@ -2149,7 +2149,7 @@ function App() {
                     window.location.hash = 'dashboard';
                     setIsMobileMenuOpen(false);
                   }}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all font-roboto ${
                     view === 'dashboard'
                       ? 'text-orange-600 bg-orange-50'
                       : 'text-gray-700 hover:bg-gray-50'
@@ -2164,7 +2164,7 @@ function App() {
                     window.location.hash = 'history';
                     setIsMobileMenuOpen(false);
                   }}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all font-roboto ${
                     view === 'history'
                       ? 'text-orange-600 bg-orange-50'
                       : 'text-gray-700 hover:bg-gray-50'
@@ -2179,7 +2179,7 @@ function App() {
                     window.location.hash = 'upload';
                     setIsMobileMenuOpen(false);
                   }}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all font-roboto ${
                     view === 'upload'
                       ? 'text-orange-600 bg-orange-50'
                       : 'text-gray-700 hover:bg-gray-50'
@@ -2194,7 +2194,7 @@ function App() {
                     window.location.hash = 'settings';
                     setIsMobileMenuOpen(false);
                   }}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all font-roboto ${
                     view === 'settings'
                       ? 'text-orange-600 bg-orange-50'
                       : 'text-gray-700 hover:bg-gray-50'
@@ -2209,7 +2209,7 @@ function App() {
                     window.location.hash = 'subscription';
                     setIsMobileMenuOpen(false);
                   }}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all font-roboto ${
                     view === 'subscription'
                       ? 'text-orange-600 bg-orange-50'
                       : 'text-gray-700 hover:bg-gray-50'
@@ -2224,7 +2224,7 @@ function App() {
                     window.location.hash = 'contact';
                     setIsMobileMenuOpen(false);
                   }}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all font-roboto ${
                     view === 'contact'
                       ? 'text-orange-600 bg-orange-50'
                       : 'text-gray-700 hover:bg-gray-50'
@@ -2243,7 +2243,7 @@ function App() {
                     handleLogout();
                     setIsMobileMenuOpen(false);
                   }}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-all"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-all font-roboto"
                 >
                   <LogOut className="w-5 h-5" />
                   <span>Déconnexion</span>

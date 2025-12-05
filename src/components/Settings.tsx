@@ -54,6 +54,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
   const [newContactEmail, setNewContactEmail] = useState('');
   const { showAlert, showConfirm } = useDialog();
   const [isCreatingGroup, setIsCreatingGroup] = useState(false);
+  const [showAddContactModal, setShowAddContactModal] = useState<{ groupId: string; isOpen: boolean }>({ groupId: '', isOpen: false });
 
   useEffect(() => {
     loadSettings();
@@ -294,7 +295,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
     await loadContactGroups();
   };
 
-  const handleAddContact = async (groupId: string) => {
+  const handleAddContact = async (groupId: string, closeModal = false) => {
     if (!newContactEmail.trim()) {
       await showAlert({
         title: 'Email requis',
@@ -324,6 +325,9 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
 
     setNewContactName('');
     setNewContactEmail('');
+    if (closeModal) {
+      setShowAddContactModal({ groupId: '', isOpen: false });
+    }
     await loadContactGroups();
   };
 
@@ -731,9 +735,9 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
   // Supprimer l'affichage du récapitulatif séparé - tout sera affiché dans le mode édition
 
   return (
-    <div className="h-full bg-gradient-to-br from-peach-50 via-white to-coral-50 p-3 md:p-6 lg:p-8 overflow-auto">
+    <div className="h-full bg-gradient-to-br from-peach-50 via-white to-coral-50 p-3 md:p-6 lg:p-8 overflow-auto font-roboto">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-2xl md:text-3xl font-bold text-cocoa-900 mb-6 md:mb-8 animate-fadeInDown">
+        <h2 className="text-2xl md:text-3xl font-bold text-cocoa-900 mb-6 md:mb-8 animate-fadeInDown font-roboto">
           Paramètres
         </h2>
 
@@ -747,11 +751,11 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-bold text-cocoa-900 mb-2">Paramètres sauvegardés !</h3>
-                <p className="text-cocoa-600 mb-6">Vos paramètres ont été enregistrés avec succès et seront utilisés dans tous vos emails.</p>
+                <h3 className="text-2xl font-bold text-cocoa-900 mb-2 font-roboto">Paramètres sauvegardés !</h3>
+                <p className="text-cocoa-600 mb-6 font-roboto">Vos paramètres ont été enregistrés avec succès et seront utilisés dans tous vos emails.</p>
                 <button
                   onClick={() => setShowSaveSuccess(false)}
-                  className="px-6 py-3 bg-gradient-to-r from-coral-500 to-sunset-500 text-white rounded-xl font-semibold hover:from-coral-600 hover:to-sunset-600 transition-all shadow-md"
+                  className="px-6 py-3 bg-gradient-to-r from-coral-500 to-sunset-500 text-white rounded-xl font-semibold hover:from-coral-600 hover:to-sunset-600 transition-all shadow-md font-roboto"
                 >
                   Fermer
                 </button>
@@ -762,18 +766,18 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
 
         <div className="space-y-4 md:space-y-6">
         {/* Résumé par défaut - Design PRO */}
-        <div className="bg-[#FAFAFA] rounded-2xl shadow-sm border border-gray-200 p-4 md:p-6 animate-fadeInUp delay-200">
+        <div className="bg-[#FAFAFA] rounded-2xl shadow-sm border border-gray-200 px-2 py-4 md-p-5 lg-p-5 xl:p-5 animate-fadeInUp delay-200">
           {/* Header */}
           <div className="flex items-center gap-3 mb-4 md:mb-6">
-            <div className="p-2 md:p-2.5 bg-gradient-to-br from-coral-500 to-sunset-500 rounded-xl shadow-md flex-shrink-0">
+            <div className="hidden md:block p-2 md:p-2.5 bg-gradient-to-br from-coral-500 to-sunset-500 rounded-xl shadow-md flex-shrink-0">
               <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-base md:text-lg font-bold text-gray-900">Mode de résumé par défaut</h3>
-              <p className="text-xs md:text-sm text-gray-500">Choisissez la version générée automatiquement</p>
+              <h3 className="text-base md:text-lg font-bold text-gray-900 font-roboto">Mode de résumé par défaut</h3>
+              <p className="text-xs md:text-sm text-gray-500 font-roboto">Choisissez la version générée automatiquement</p>
             </div>
             {isSavingSummaryMode && (
-              <div className="hidden md:flex items-center gap-2 text-sm text-gray-500">
+              <div className="hidden md:flex items-center gap-2 text-sm text-gray-500 font-roboto">
                 <div className="animate-spin rounded-full h-4 w-4 border-2 border-coral-500 border-t-transparent"></div>
                 <span className="hidden lg:inline">Sauvegarde...</span>
               </div>
@@ -805,9 +809,9 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                 <div className={`p-2 rounded-lg ${defaultSummaryMode === 'detailed' ? 'bg-coral-100' : 'bg-gray-100'}`}>
                   <Sparkles className={`w-5 h-5 ${defaultSummaryMode === 'detailed' ? 'text-coral-600' : 'text-gray-500'}`} />
                 </div>
-                <span className="font-semibold text-gray-900">Résumé détaillé</span>
+                <span className="text-base font-semibold text-gray-900 font-roboto">Résumé détaillé</span>
               </div>
-              <p className="text-sm text-gray-600 leading-relaxed">
+              <p className="text-sm text-gray-600 leading-relaxed font-roboto">
                 Rapport complet avec l'ensemble des détails importants de votre réunion.
               </p>
             </button>
@@ -835,9 +839,9 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                 <div className={`p-2 rounded-lg ${defaultSummaryMode === 'short' ? 'bg-orange-100' : 'bg-gray-100'}`}>
                   <Sparkles className={`w-5 h-5 ${defaultSummaryMode === 'short' ? 'text-orange-600' : 'text-gray-500'}`} />
                 </div>
-                <span className="font-semibold text-gray-900">Résumé court</span>
+                <span className="font-semibold text-base text-gray-900 font-roboto">Résumé court</span>
               </div>
-              <p className="text-sm text-gray-600 leading-relaxed">
+              <p className="text-sm text-gray-600 leading-relaxed font-roboto">
                 L'essentiel en quelques lignes, idéal pour les réunions courtes ou un aperçu rapide.
               </p>
             </button>
@@ -845,50 +849,50 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
         </div>
 
         {/* Choix de la méthode d'envoi email - Design PRO */}
-        <div className="bg-[#FAFAFA] rounded-2xl shadow-sm border border-gray-200 p-6 animate-fadeInUp delay-300">
+        <div className="bg-[#FAFAFA] rounded-2xl shadow-sm border border-gray-200 px-2 py-4 md-p-5 lg-p-5 xl:p-5 animate-fadeInUp delay-300">
           {/* Header */}
           <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl shadow-md shadow-orange-200/50">
+              <div className=" hidden md:block p-2.5 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl shadow-md shadow-orange-200/50">
                 <Mail className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Méthode d'envoi email</h3>
-                <p className="text-sm text-gray-500">Configurez l'envoi de vos comptes-rendus</p>
+                <h3 className="text-base md:text-lg font-bold text-gray-900 font-roboto">Méthode d'envoi email</h3>
+                <p className="text-sm text-gray-500 font-roboto">Configurez l'envoi de vos comptes-rendus</p>
               </div>
             </div>
             <button
               onClick={handleSaveEmailMethod}
               disabled={isSavingEmailMethod}
-              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-lg font-medium hover:from-orange-600 hover:to-amber-600 transition-all shadow-md shadow-orange-200/50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center text-sm md:text-base gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-lg font-medium hover:from-orange-600 hover:to-amber-600 transition-all shadow-md shadow-orange-200/50 disabled:opacity-50 disabled:cursor-not-allowed font-roboto"
             >
               {isSavingEmailMethod ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                  <span>Sauvegarde...</span>
+                  <span className="font-roboto">Sauvegarde...</span>
                 </>
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  <span>Sauvegarder</span>
+                  <span className="font-roboto">Sauvegarder</span>
                 </>
               )}
             </button>
           </div>
 
           {/* Segmented Control */}
-          <div className="bg-gray-100 p-1 rounded-lg inline-flex w-full md:w-auto mb-6">
+          <div className="bg-gray-100 p-1 rounded-lg flex justify-center w-full md:inline-flex md:w-auto mb-6">
             <button
               type="button"
               onClick={() => setEmailMethod('gmail')}
-              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all ${
-                emailMethod === 'gmail'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
+              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all font-roboto ${
+                  emailMethod === 'gmail'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
             >
               {/* Logo Gmail moderne - M coloré */}
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+              <svg className="hidden md:block w-4 h-4" viewBox="0 0 24 24" fill="none">
                 <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 010 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z" fill="#EA4335"/>
                 <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 010 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z" fill="url(#gmail-gradient)"/>
                 <defs>
@@ -901,37 +905,37 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                   </linearGradient>
                 </defs>
               </svg>
-              <span>Gmail</span>
+              <span className="font-roboto">Gmail</span>
               {gmailConnected && <span className="w-2 h-2 bg-green-500 rounded-full"></span>}
             </button>
             <button
               type="button"
               onClick={() => setEmailMethod('local')}
-              className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 md:gap-2 px-2 md:px-4 py-2.5 rounded-md text-xs md:text-sm font-medium transition-all ${
-                emailMethod === 'local'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
+              className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 md:gap-2 px-2 md:px-4 py-2.5 rounded-md text-xs md:text-sm font-medium transition-all font-roboto ${
+                  emailMethod === 'local'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
             >
               <Mail className="w-4 h-4 flex-shrink-0" />
-              <span className="hidden sm:inline">Application email</span>
-              <span className="sm:hidden">App mail</span>
+              <span className="hidden sm:inline font-roboto">Application email</span>
+              <span className="sm:hidden font-roboto">App mail</span>
             </button>
             <button
               type="button"
               onClick={() => setEmailMethod('smtp')}
-              className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 md:gap-2 px-2 md:px-4 py-2.5 rounded-md text-xs md:text-sm font-medium transition-all ${
-                emailMethod === 'smtp'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
+              className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 md:gap-2 px-2 md:px-4 py-2.5 rounded-md text-xs md:text-sm font-medium transition-all font-roboto ${
+                  emailMethod === 'smtp'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
             >
               {/* Icône SMTP - Serveur technique */}
               <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm14 1a1 1 0 11-2 0 1 1 0 012 0zM2 13a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 01-2 2H4a2 2 0 01-2-2v-2zm14 1a1 1 0 11-2 0 1 1 0 012 0z"/>
               </svg>
-              <span className="hidden sm:inline">SMTP avancé</span>
-              <span className="sm:hidden">SMTP</span>
+              <span className="hidden sm:inline font-roboto">SMTP avancé</span>
+              <span className="sm:hidden font-roboto">SMTP</span>
             </button>
           </div>
 
@@ -939,7 +943,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
           <div className="transition-all duration-300 ease-in-out">
             {/* Gmail Content */}
             {emailMethod === 'gmail' && (
-              <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+              <div className="bg-white rounded-xl border border-gray-200 px-2 py-4 md:p-5 shadow-sm">
                 {!gmailConnected ? (
                   <div className="space-y-4">
                     <div className="flex items-start gap-3">
@@ -960,12 +964,12 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                         </svg>
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900">Connectez votre compte Gmail</h4>
-                        <p className="text-sm text-gray-600 mt-1">
+                        <h4 className="font-semibold text-gray-900 font-roboto">Connectez votre compte Gmail</h4>
+                        <p className="text-sm text-gray-600 mt-1 font-roboto">
                           Envoi automatique et direct depuis votre boîte Gmail. Aucune configuration technique requise.
                         </p>
                       </div>
-                      <span className="px-2.5 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">Recommandé</span>
+                      <span className="px-2.5 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium font-roboto">Recommandé</span>
                     </div>
                     <button
                       onClick={async () => {
@@ -988,12 +992,12 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                         }
                       }}
                       disabled={isConnectingGmail}
-                      className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-[#2563EB] text-white rounded-lg font-medium hover:bg-[#1D4ED8] transition-all disabled:opacity-50"
+                      className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-[#2563EB] text-white rounded-lg font-medium hover:bg-[#1D4ED8] transition-all disabled:opacity-50 font-roboto"
                     >
                       {isConnectingGmail ? (
                         <>
                           <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                          <span>Connexion en cours...</span>
+                          <span className="font-roboto">Connexion en cours...</span>
                         </>
                       ) : (
                         <>
@@ -1001,22 +1005,22 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
                             <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 010 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z" fill="white"/>
                           </svg>
-                          <span>Connecter mon compte Gmail</span>
+                          <span className="font-roboto">Connecter mon compte Gmail</span>
                         </>
                       )}
                     </button>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
-                      <div className="p-1.5 bg-green-500 rounded-full">
+                  <div className="space-y-4 ">
+                    <div className="flex items-center gap-3 py-1 px-2 md:p-3 bg-green-50 rounded-lg border border-green-200">
+                      <div className="p-1.5 bg-green-500 rounded-full hidden md:block">
                         <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
                       </div>
                       <div className="flex-1">
-                        <p className="font-medium text-green-800">Gmail connecté</p>
-                        <p className="text-sm text-green-700">{gmailEmail}</p>
+                        <p className="font-medium text-green-800 font-roboto">Gmail connecté</p>
+                        <p className="text-sm text-green-700 font-roboto">{gmailEmail}</p>
                       </div>
                     </div>
                     <button
@@ -1028,7 +1032,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                         setGmailEmail('');
                         await showAlert({ title: 'Gmail déconnecté', message: 'Compte Gmail déconnecté', variant: 'info' });
                       }}
-                      className="text-sm text-red-600 hover:text-red-700 font-medium"
+                      className="text-sm text-red-600 hover:text-red-700 font-medium font-roboto"
                     >
                       Déconnecter le compte
                     </button>
@@ -1039,21 +1043,21 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
 
             {/* Local Email Content */}
             {emailMethod === 'local' && (
-              <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+              <div className="bg-white rounded-xl border border-gray-200 px-2 py-4 md:p-5 shadow-sm">
                 <div className="flex items-start gap-3">
                   <div className="p-2 bg-blue-50 rounded-lg">
                     <Mail className="w-6 h-6 text-blue-600" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">Application email locale</h4>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <h4 className="font-semibold text-gray-900 font-roboto">Application email locale</h4>
+                    <p className="text-sm text-gray-600 mt-1 font-roboto">
                       Ouvre automatiquement votre application email (Outlook, Thunderbird, Mail...) avec le compte-rendu pré-rempli. Vous gardez le contrôle avant l'envoi.
                     </p>
-                    <div className="mt-3 flex items-center gap-2 text-xs text-gray-500">
+                    <div className="mt-3 flex items-center gap-2 text-xs text-gray-500 font-roboto">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      <span>Aucune configuration requise</span>
+                      <span className="font-roboto">Aucune configuration requise</span>
                     </div>
                   </div>
                 </div>
@@ -1074,15 +1078,15 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                           </svg>
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-gray-900">SMTP configuré</p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-sm font-medium text-gray-900 font-roboto">SMTP configuré</p>
+                          <p className="text-xs text-gray-500 font-roboto">
                             {smtpHost}:{smtpPort} ({smtpUser})
                           </p>
                         </div>
                       </div>
                       <button
                         onClick={() => setIsEditingSmtp(true)}
-                        className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                        className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors font-roboto"
                       >
                         Modifier
                       </button>
@@ -1094,7 +1098,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                     {/* SMTP Form - 2 columns */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5 font-roboto">
                           Serveur SMTP
                         </label>
                         <input
@@ -1102,11 +1106,11 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                           value={smtpHost}
                           onChange={(e) => setSmtpHost(e.target.value)}
                           placeholder="smtp.example.com"
-                          className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm font-roboto"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5 font-roboto">
                           Port
                         </label>
                         <input
@@ -1114,11 +1118,11 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                           value={smtpPort}
                           onChange={(e) => setSmtpPort(parseInt(e.target.value) || 587)}
                           placeholder="587"
-                          className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm font-roboto"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5 font-roboto">
                           Email / Identifiant
                         </label>
                         <input
@@ -1126,14 +1130,14 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                           value={smtpUser}
                           onChange={(e) => setSmtpUser(e.target.value)}
                           placeholder="votre@email.com"
-                          className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm font-roboto"
                         />
                       </div>
                       <div>
                         <div className="flex items-center gap-2 mb-1.5">
-                          <label className="text-sm font-medium text-gray-700">Mot de passe</label>
+                          <label className="text-sm font-medium text-gray-700 font-roboto">Mot de passe</label>
                           {hasExistingPassword && !isPasswordModified && (
-                            <span className="text-xs text-green-600 flex items-center gap-1">
+                            <span className="text-xs text-green-600 flex items-center gap-1 font-roboto">
                               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                               </svg>
@@ -1149,7 +1153,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                             onFocus={() => { if (hasExistingPassword && !isPasswordModified) setSmtpPassword(''); }}
                             placeholder={hasExistingPassword && !isPasswordModified ? "••••••••" : "Mot de passe"}
                             autoComplete="new-password"
-                            className="w-full px-3.5 py-2.5 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
+                            className="w-full px-3.5 py-2.5 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm font-roboto"
                           />
                           <button
                             type="button"
@@ -1161,7 +1165,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                         </div>
                       </div>
                       <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5 font-roboto">
                           Nom d'expéditeur <span className="text-gray-400 font-normal">(optionnel)</span>
                         </label>
                         <input
@@ -1169,7 +1173,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                           value={senderName}
                           onChange={(e) => setSenderName(e.target.value)}
                           placeholder="Mon Entreprise"
-                          className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm font-roboto"
                         />
                       </div>
                     </div>
@@ -1184,8 +1188,8 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                         className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       />
                       <div>
-                        <span className="text-sm font-medium text-gray-900">Connexion sécurisée (TLS/SSL)</span>
-                        <p className="text-xs text-gray-500">Recommandé pour la sécurité de vos données</p>
+                        <span className="text-sm font-medium text-gray-900 font-roboto">Connexion sécurisée (TLS/SSL)</span>
+                        <p className="text-xs text-gray-500 font-roboto">Recommandé pour la sécurité de vos données</p>
                       </div>
                     </label>
 
@@ -1195,7 +1199,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                         type="button"
                         onClick={handleTestSmtpConnection}
                         disabled={isTestingSmtp || !smtpHost || !smtpUser}
-                        className={`w-full flex items-center justify-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${
+                        className={`w-full flex items-center justify-center gap-2 px-5 py-3 rounded-lg font-medium transition-all font-roboto ${
                           isTestingSmtp
                             ? 'bg-gray-200 text-gray-500 cursor-wait'
                             : !smtpHost || !smtpUser
@@ -1206,14 +1210,14 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                         {isTestingSmtp ? (
                           <>
                             <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                            <span>Test en cours...</span>
+                            <span className="font-roboto">Test en cours...</span>
                           </>
                         ) : (
                           <>
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
-                            <span>Tester la connexion SMTP</span>
+                            <span className="font-roboto">Tester la connexion SMTP</span>
                           </>
                         )}
                       </button>
@@ -1225,7 +1229,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                             ? 'bg-green-50 text-green-800 border border-green-200'
                             : 'bg-red-50 text-red-800 border border-red-200'
                         }`}>
-                          <p className="font-medium">{smtpTestResult.message}</p>
+                          <p className="font-medium font-roboto">{smtpTestResult.message}</p>
                         </div>
                       )}
                     </div>
@@ -1235,7 +1239,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                       <svg className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                       </svg>
-                      <p className="text-xs text-amber-800">
+                      <p className="text-xs text-amber-800 font-roboto">
                         Pour Gmail, utilisez un <strong>mot de passe d'application</strong> depuis les paramètres de sécurité Google.
                       </p>
                     </div>
@@ -1245,7 +1249,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                       <div className="flex justify-end pt-2">
                         <button
                           onClick={() => setIsEditingSmtp(false)}
-                          className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                          className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors font-roboto"
                         >
                           Fermer
                         </button>
@@ -1259,32 +1263,32 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
         </div>
 
         {/* Signature Email - Design PRO */}
-        <div className="bg-[#FAFAFA] rounded-2xl shadow-sm border border-gray-200 p-6 animate-fadeInUp delay-300">
+        <div className="bg-[#FAFAFA] rounded-2xl shadow-sm border border-gray-200 px-2 py-4 md-p-5 lg-p-5 xl:p-5  animate-fadeInUp delay-300">
           {/* Header */}
           <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl shadow-md shadow-orange-200/50">
+              <div className="hidden md:block p-2.5 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl shadow-md shadow-orange-200/50">
                 <Mail className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Signature Email</h3>
-                <p className="text-sm text-gray-500">Ajoutée automatiquement à vos emails</p>
+                <h3 className=" text-lg font-bold text-gray-900 font-roboto">Signature Email</h3>
+                <p className="text-sm text-gray-500 font-roboto">Ajoutée automatiquement à vos emails</p>
               </div>
             </div>
             <button
               onClick={handleSaveSignature}
               disabled={isSavingSignature}
-              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-lg font-medium hover:from-orange-600 hover:to-amber-600 transition-all shadow-md shadow-orange-200/50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center text-sm md:text-base gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-lg font-medium hover:from-orange-600 hover:to-amber-600 transition-all shadow-md shadow-orange-200/50 disabled:opacity-50 disabled:cursor-not-allowed font-roboto"
             >
               {isSavingSignature ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                  <span>Sauvegarde...</span>
+                  <span className="font-roboto">Sauvegarde...</span>
                 </>
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  <span>Sauvegarder</span>
+                  <span className="font-roboto">Sauvegarder</span>
                 </>
               )}
             </button>
@@ -1295,12 +1299,12 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
             <div className="space-y-5">
               {/* Logo section */}
               <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                <label className="block text-sm font-medium text-gray-700 mb-3">
+                <label className="block text-sm font-medium text-gray-700 mb-3 font-roboto">
                   Logo de la signature <span className="text-gray-400 font-normal">(optionnel)</span>
                 </label>
-                <div className="flex items-center gap-4">
-                  {logoPreview ? (
-                    <div className="relative">
+                {logoPreview ? (
+                  <div className="space-y-3">
+                    <div className="relative inline-block">
                       <div className="w-20 h-20 rounded-lg border border-gray-200 bg-white p-2 flex items-center justify-center">
                         <img
                           src={logoPreview}
@@ -1315,32 +1319,46 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                         <X className="w-3 h-3" />
                       </button>
                     </div>
-                  ) : (
+                    <label className="cursor-pointer block">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoChange}
+                        className="hidden"
+                      />
+                      <div className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm w-full font-roboto">
+                        <Upload className="w-4 h-4" />
+                        Changer
+                      </div>
+                    </label>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-4">
                     <div className="w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center">
                       <Upload className="w-6 h-6 text-gray-400" />
                     </div>
-                  )}
-                  <label className="cursor-pointer">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleLogoChange}
-                      className="hidden"
-                    />
-                    <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm">
-                      <Upload className="w-4 h-4" />
-                      {logoPreview ? 'Changer' : 'Importer'}
-                    </div>
-                  </label>
-                </div>
-                <p className="text-xs text-gray-500 mt-3">
+                    <label className="cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoChange}
+                        className="hidden"
+                      />
+                      <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm font-roboto">
+                        <Upload className="w-4 h-4" />
+                        Importer
+                      </div>
+                    </label>
+                  </div>
+                )}
+                <p className="text-xs text-gray-500 mt-3 font-roboto">
                   Formats acceptés : PNG, JPG, SVG
                 </p>
               </div>
 
               {/* Texte de signature */}
               <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                <label className="block text-sm font-medium text-gray-700 mb-3">
+                <label className="block text-sm font-medium text-gray-700 mb-3 font-roboto">
                   Informations de signature
                 </label>
                 <textarea
@@ -1348,9 +1366,9 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                   onChange={(e) => setSignatureText(e.target.value)}
                   placeholder="Jean Dupont&#10;Directeur Commercial&#10;Mon Entreprise SA&#10;Tél : +33 1 23 45 67 89&#10;www.exemple.com"
                   rows={5}
-                  className="w-full px-3.5 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 resize-none text-sm leading-relaxed"
+                  className="w-full px-3.5 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 resize-none text-sm leading-relaxed font-roboto"
                 />
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs text-gray-500 mt-2 font-roboto">
                   Ces informations apparaîtront dans votre signature email.
                 </p>
               </div>
@@ -1358,14 +1376,14 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
 
             {/* Colonne droite : Aperçu */}
             <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-medium text-gray-700 mb-3 font-roboto">
                 Aperçu de la signature
               </label>
               <div className="bg-gray-50 rounded-lg p-5 border border-gray-200 min-h-[200px]">
                 {(signatureText || logoPreview) ? (
                   <div className="space-y-4">
                     {signatureText && (
-                      <pre className="whitespace-pre-wrap text-gray-800 font-sans text-sm leading-relaxed">{signatureText}</pre>
+                      <pre className="whitespace-pre-wrap text-gray-800 font-sans text-sm leading-relaxed font-roboto">{signatureText}</pre>
                     )}
                     {logoPreview && (
                       <div className={signatureText ? "pt-3 border-t border-gray-200" : ""}>
@@ -1378,7 +1396,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                     )}
                   </div>
                 ) : (
-                  <div className="h-full flex items-center justify-center text-gray-400 text-sm">
+                  <div className="h-full flex items-center justify-center text-gray-400 text-sm font-roboto">
                     <div className="text-center">
                       <Mail className="w-10 h-10 mx-auto mb-2 opacity-30" />
                       <p>Votre signature apparaîtra ici</p>
@@ -1399,16 +1417,16 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
             <div className="px-4 md:px-5 py-3 md:py-4 border-b border-gray-100">
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
                 <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                  <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <div className="hidden md:flex w-8 h-8 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg items-center justify-center flex-shrink-0">
                     <BookOpen className="w-4 h-4 text-white" />
                   </div>
                   <div className="flex flex-col min-w-0 flex-1">
-                    <span className="text-sm font-semibold text-gray-900">Correction automatique</span>
-                    <span className="text-xs text-gray-500 truncate">Personnalisez les mots corrigés dans les résumés</span>
+                    <span className="text-sm font-semibold text-gray-900 font-roboto">Correction automatique</span>
+                    <span className="text-xs text-gray-500 truncate font-roboto">Personnalisez les mots corrigés dans les résumés</span>
                   </div>
                 </div>
                 {customDictionary.length > 0 && (
-                  <span className="px-2 py-0.5 bg-orange-50 text-orange-600 text-xs font-medium rounded-full self-start sm:self-center">
+                  <span className="px-2 py-0.5 bg-orange-50 text-orange-600 text-xs font-medium rounded-full self-start sm:self-center font-roboto">
                     {customDictionary.length}
                   </span>
                 )}
@@ -1421,9 +1439,9 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                   value={newIncorrectWord}
                   onChange={(e) => setNewIncorrectWord(e.target.value)}
                   placeholder="Mot incorrect"
-                  className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:border-orange-400 focus:ring-1 focus:ring-orange-100 transition-all"
+                  className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:border-orange-400 focus:ring-1 focus:ring-orange-100 transition-all font-roboto"
                 />
-                <svg className="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-4 h-4 text-gray-300 flex-shrink-0 self-center sm:self-auto rotate-90 sm:rotate-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
                 <input
@@ -1431,7 +1449,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                   value={newCorrectWord}
                   onChange={(e) => setNewCorrectWord(e.target.value)}
                   placeholder="Correction"
-                  className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:border-orange-400 focus:ring-1 focus:ring-orange-100 transition-all"
+                  className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:border-orange-400 focus:ring-1 focus:ring-orange-100 transition-all font-roboto"
                 />
                 <button
                   onClick={handleAddWord}
@@ -1473,7 +1491,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
               </div>
             ) : (
               <div className="px-5 py-6 text-center">
-                <p className="text-sm text-gray-400">Aucune correction configurée</p>
+                <p className="text-sm text-gray-400 font-roboto">Aucune correction configurée</p>
               </div>
             )}
           </div>
@@ -1484,22 +1502,22 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
             <div className="px-5 py-4 border-b border-gray-100">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5 flex-1">
-                  <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <div className="hidden md:flex w-8 h-8 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg items-center justify-center flex-shrink-0">
                     <Users className="w-4 h-4 text-white" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-gray-900">Groupes de contacts</span>
-                    <span className="text-xs text-gray-500">Créez des listes pour envoyer vos résumés rapidement</span>
+                    <span className="text-sm font-semibold text-gray-900 font-roboto">Groupes de contacts</span>
+                    <span className="text-xs text-gray-500 font-roboto">Créez des listes pour envoyer vos résumés rapidement</span>
                   </div>
                   {contactGroups.length > 0 && (
-                    <span className="px-2 py-0.5 bg-orange-50 text-orange-600 text-xs font-medium rounded-full">
+                    <span className="px-2 py-0.5 bg-orange-50 text-orange-600 text-xs font-medium rounded-full font-roboto">
                       {contactGroups.length}
                     </span>
                   )}
                 </div>
                 <button
                   onClick={() => setIsCreatingGroup(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors font-roboto"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Nouveau</span>
@@ -1508,38 +1526,40 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
 
               {/* Formulaire de création inline */}
               {isCreatingGroup && (
-                <div className="mt-4 flex items-center gap-2">
+                <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-2">
                   <input
                     type="text"
                     value={newGroupName}
                     onChange={(e) => setNewGroupName(e.target.value)}
                     placeholder="Nom du groupe"
-                    className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:border-orange-400 focus:ring-1 focus:ring-orange-100 transition-all"
+                    className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:border-orange-400 focus:ring-1 focus:ring-orange-100 transition-all font-roboto"
                   />
                   <input
                     type="text"
                     value={newGroupDescription}
                     onChange={(e) => setNewGroupDescription(e.target.value)}
                     placeholder="Description"
-                    className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:border-orange-400 focus:ring-1 focus:ring-orange-100 transition-all"
+                    className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:border-orange-400 focus:ring-1 focus:ring-orange-100 transition-all font-roboto"
                   />
-                  <button
-                    onClick={handleCreateGroup}
-                    disabled={!newGroupName}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                      newGroupName
-                        ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600'
-                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    }`}
-                  >
-                    Créer
-                  </button>
-                  <button
-                    onClick={() => { setIsCreatingGroup(false); setNewGroupName(''); setNewGroupDescription(''); }}
-                    className="p-2 text-gray-400 hover:text-gray-600 rounded-lg transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleCreateGroup}
+                      disabled={!newGroupName}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all font-roboto ${
+                        newGroupName
+                          ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600'
+                          : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      }`}
+                    >
+                      Créer
+                    </button>
+                    <button
+                      onClick={() => { setIsCreatingGroup(false); setNewGroupName(''); setNewGroupDescription(''); }}
+                      className="p-2 text-gray-400 hover:text-gray-600 rounded-lg transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -1566,17 +1586,17 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                         <div className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
                           {/* Avatar compact */}
                           <div className={`w-8 h-8 rounded-full ${color.bg} flex items-center justify-center flex-shrink-0`}>
-                            <span className={`text-xs font-bold ${color.text}`}>{initials}</span>
+                            <span className={`text-xs font-bold ${color.text} font-roboto`}>{initials}</span>
                           </div>
                           {/* Nom + description */}
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">{group.name}</p>
+                            <p className="text-sm font-medium text-gray-900 truncate font-roboto">{group.name}</p>
                             {group.description && (
-                              <p className="text-xs text-gray-400 truncate">{group.description}</p>
+                              <p className="text-xs text-gray-400 truncate font-roboto">{group.description}</p>
                             )}
                           </div>
                           {/* Badge contacts */}
-                          <span className="text-xs text-gray-500 flex-shrink-0">
+                          <span className="text-xs text-gray-500 flex-shrink-0 font-roboto">
                             {group.contacts.length} contact{group.contacts.length !== 1 ? 's' : ''}
                           </span>
                           {/* Actions - toujours visibles */}
@@ -1611,8 +1631,8 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                                 {group.contacts.map((contact) => (
                                   <div key={contact.id} className="flex items-center gap-2 py-1.5 px-3 bg-white rounded-lg hover:bg-gray-50 transition-colors">
                                     <div className="flex-1 min-w-0">
-                                      <span className="text-sm text-gray-700 truncate block">{contact.name || contact.email}</span>
-                                      {contact.name && <span className="text-xs text-gray-400 truncate block">{contact.email}</span>}
+                                      <span className="text-sm text-gray-700 truncate block font-roboto">{contact.name || contact.email}</span>
+                                      {contact.name && <span className="text-xs text-gray-400 truncate block font-roboto">{contact.email}</span>}
                                     </div>
                                     <button
                                       onClick={() => handleDeleteContact(contact.id)}
@@ -1625,21 +1645,21 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                               </div>
                             )}
 
-                            {/* Ajouter contact inline */}
-                            <div className="flex items-center gap-2">
+                            {/* Ajouter contact inline - Desktop */}
+                            <div className="hidden md:flex items-center gap-2">
                               <input
                                 type="text"
                                 value={newContactName}
                                 onChange={(e) => setNewContactName(e.target.value)}
                                 placeholder="Nom"
-                                className="flex-1 px-2.5 py-1.5 bg-white border border-gray-200 rounded text-sm placeholder-gray-400 focus:border-orange-400 focus:ring-1 focus:ring-orange-100"
+                                className="flex-1 px-2.5 py-1.5 bg-white border border-gray-200 rounded text-sm placeholder-gray-400 focus:border-orange-400 focus:ring-1 focus:ring-orange-100 font-roboto"
                               />
                               <input
                                 type="email"
                                 value={newContactEmail}
                                 onChange={(e) => setNewContactEmail(e.target.value)}
                                 placeholder="Email"
-                                className="flex-1 px-2.5 py-1.5 bg-white border border-gray-200 rounded text-sm placeholder-gray-400 focus:border-orange-400 focus:ring-1 focus:ring-orange-100"
+                                className="flex-1 px-2.5 py-1.5 bg-white border border-gray-200 rounded text-sm placeholder-gray-400 focus:border-orange-400 focus:ring-1 focus:ring-orange-100 font-roboto"
                               />
                               <button
                                 onClick={() => handleAddContact(group.id)}
@@ -1653,6 +1673,15 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                                 <Plus className="w-3.5 h-3.5" />
                               </button>
                             </div>
+                            
+                            {/* Bouton Ajouter destinataire - Mobile */}
+                            <button
+                              onClick={() => setShowAddContactModal({ groupId: group.id, isOpen: true })}
+                              className="md:hidden w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition-colors font-medium text-sm font-roboto"
+                            >
+                              <Plus className="w-4 h-4" />
+                              Ajouter un destinataire
+                            </button>
                           </div>
                         )}
                       </div>
@@ -1662,10 +1691,10 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
               </div>
             ) : (
               <div className="px-5 py-8 text-center">
-                <p className="text-sm text-gray-400 mb-3">Aucun groupe</p>
+                <p className="text-sm text-gray-400 mb-3 font-roboto">Aucun groupe</p>
                 <button
                   onClick={() => setIsCreatingGroup(true)}
-                  className="text-sm text-orange-600 hover:text-orange-700 font-medium"
+                  className="text-sm text-orange-600 hover:text-orange-700 font-medium font-roboto"
                 >
                   + Créer un groupe
                 </button>
@@ -1675,6 +1704,102 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
         </div>
         </div>
       </div>
+
+      {/* Modal Ajouter destinataire - Mobile */}
+      {showAddContactModal.isOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 md:hidden font-roboto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm max-h-[80vh] flex flex-col overflow-hidden animate-scaleIn font-roboto">
+            {/* Header */}
+            <div 
+              className="p-4 text-white flex items-center justify-between font-roboto"
+              style={{
+                background: `conic-gradient(
+                  from 195.77deg at 84.44% -1.66%,
+                  #FE9736 0deg,
+                  #F4664C 76.15deg,
+                  #F97E41 197.31deg,
+                  #E3AB8D 245.77deg,
+                  #FE9736 360deg
+                )`
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <Plus className="w-5 h-5" />
+                <h3 className="text-lg font-semibold font-roboto">Ajouter un destinataire</h3>
+              </div>
+              <button
+                onClick={() => {
+                  setShowAddContactModal({ groupId: '', isOpen: false });
+                  setNewContactName('');
+                  setNewContactEmail('');
+                }}
+                className="p-1 hover:bg-white/20 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {/* Content */}
+            <div className="p-4 space-y-4 overflow-y-auto flex-1 font-roboto">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 font-roboto">Nom (optionnel)</label>
+                <input
+                  type="text"
+                  value={newContactName}
+                  onChange={(e) => setNewContactName(e.target.value)}
+                  placeholder="Nom du destinataire"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm placeholder-gray-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 font-roboto"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 font-roboto">Email <span className="text-red-500 font-roboto">*</span></label>
+                <input
+                  type="email"
+                  value={newContactEmail}
+                  onChange={(e) => setNewContactEmail(e.target.value)}
+                  placeholder="email@exemple.com"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm placeholder-gray-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 font-roboto"
+                />
+              </div>
+            </div>
+            
+            {/* Footer */}
+            <div className="p-4 border-t border-gray-200 flex gap-2 font-roboto">
+              <button
+                onClick={() => {
+                  setShowAddContactModal({ groupId: '', isOpen: false });
+                  setNewContactName('');
+                  setNewContactEmail('');
+                }}
+                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-gray-700 font-medium text-sm hover:bg-gray-50 transition-colors font-roboto"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => handleAddContact(showAddContactModal.groupId, true)}
+                disabled={!newContactEmail}
+                className={`flex-1 px-4 py-2.5 rounded-lg text-white font-medium text-sm transition-all font-roboto ${
+                  newContactEmail
+                    ? ''
+                    : 'bg-gray-300 cursor-not-allowed'
+                }`}
+                style={newContactEmail ? {
+                  background: `conic-gradient(
+                    from 195.77deg at 84.44% -1.66%,
+                    #FE9736 0deg,
+                    #F4664C 76.15deg,
+                    #F97E41 197.31deg,
+                    #E3AB8D 245.77deg,
+                    #FE9736 360deg
+                  )`
+                } : {}}
+              >
+                Ajouter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal du dictionnaire */}
       {showDictionaryModal && (
@@ -1688,8 +1813,8 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                     <BookOpen className="w-6 h-6" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold">Dictionnaire personnalisé</h2>
-                    <p className="text-blue-100 text-sm">
+                    <h2 className="text-xl font-bold font-roboto">Dictionnaire personnalisé</h2>
+                    <p className="text-blue-100 text-sm font-roboto">
                       {customDictionary.length} mot{customDictionary.length > 1 ? 's' : ''} enregistré{customDictionary.length > 1 ? 's' : ''}
                     </p>
                   </div>
@@ -1714,7 +1839,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                     value={dictionarySearch}
                     onChange={(e) => setDictionarySearch(e.target.value)}
                     placeholder="Rechercher un mot..."
-                    className="w-full pl-10 pr-4 py-2 bg-white/20 border border-white/30 rounded-xl text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white/50"
+                    className="w-full pl-10 pr-4 py-2 bg-white/20 border border-white/30 rounded-xl text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white/50 font-roboto"
                   />
                 </div>
               )}
@@ -1738,15 +1863,15 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                       >
                         <div className="flex-1 grid grid-cols-2 gap-6 min-w-0">
                           <div className="min-w-0">
-                            <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Incorrect</span>
-                            <p className="text-gray-800 font-medium">{entry.incorrect_word}</p>
+                            <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider font-roboto">Incorrect</span>
+                            <p className="text-gray-800 font-medium font-roboto">{entry.incorrect_word}</p>
                           </div>
                           <div className="min-w-0 flex items-center gap-2">
                             <div className="flex-1">
-                              <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Correction</span>
-                              <p className="text-green-700 font-semibold">{entry.correct_word}</p>
+                              <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider font-roboto">Correction</span>
+                              <p className="text-green-700 font-semibold font-roboto">{entry.correct_word}</p>
                             </div>
-                            <span className="text-green-500">→</span>
+                            <span className="text-green-500 font-roboto">→</span>
                           </div>
                         </div>
                         <button
@@ -1766,15 +1891,15 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                   ).length === 0 && (
                     <div className="text-center py-12 text-gray-500">
                       <Search className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                      <p className="font-medium">Aucun résultat pour "{dictionarySearch}"</p>
+                      <p className="font-medium font-roboto">Aucun résultat pour "{dictionarySearch}"</p>
                     </div>
                   )}
                 </div>
               ) : (
                 <div className="text-center py-16 text-gray-500">
                   <BookOpen className="w-16 h-16 mx-auto mb-4 opacity-20" />
-                  <p className="text-lg font-medium text-gray-600">Dictionnaire vide</p>
-                  <p className="text-sm mt-1">Ajoutez des mots via le formulaire ci-dessus</p>
+                  <p className="text-lg font-medium text-gray-600 font-roboto">Dictionnaire vide</p>
+                  <p className="text-sm mt-1 font-roboto">Ajoutez des mots via le formulaire ci-dessus</p>
                 </div>
               )}
             </div>
@@ -1786,7 +1911,7 @@ export const Settings = ({ userId, onDefaultSummaryModeChange }: SettingsProps) 
                   setShowDictionaryModal(false);
                   setDictionarySearch('');
                 }}
-                className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
+                className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg font-roboto"
               >
                 Fermer
               </button>
